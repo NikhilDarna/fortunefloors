@@ -1,0 +1,140 @@
+/* Horizontal Card Section */
+.horizontal-card-section {
+  background-color: #ffffff;
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+.horizontal-card-container {
+  text-align: center;
+}
+
+.horizontal-card-container1 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Villas (Modern Villa, Family House, etc.) */
+.smallcard {
+  display: flex;
+  flex-wrap: wrap;          /* ✅ allows wrapping */
+  justify-content: center;  /* ✅ centers all cards */
+  gap: 20px;                /* ✅ equal spacing between cards */
+  margin: 20px 0;
+}
+
+.card1 {
+  flex: 1 1 220px;          /* ✅ responsive sizing */
+  max-width: 250px;         /* ✅ same width */
+  min-height: 250px;        /* ✅ same height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* ✅ centers content */
+  align-items: center;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+}
+
+.card1:hover {
+  background-color: #eb253f;
+  color: white;
+  transform: translateY(-5px);
+}
+
+.card1:hover .card-icon {
+  color: white;
+}
+
+.card-icon {
+  height: 50px;
+  font-size: 30px;
+}
+
+/* Popular Places Section */
+.popular-places-section {
+  text-align: center;
+  padding: 50px 20px;
+  background-color: #ffffff;
+}
+
+.popular-places-section h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.popular-places-section .section-subtitle {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.popular-places-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  justify-items: center;
+}
+
+.place-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 220px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.place-card:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  background-color: #252feb;
+  color: #fff;
+}
+
+.place-card .place-image {
+  background-color: #ccc;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease;
+}
+
+.place-card:hover .place-image {
+  transform: scale(1.05);
+  background-color: #f8f8f8;
+  color: #fff;
+}
+
+.place-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.place-card span {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.place-card:hover h3,
+.place-card:hover span {
+  color: #fff;
+}
+
+/* Properties Section */
+.properties-section {
+  padding-top: 20px;
+}
