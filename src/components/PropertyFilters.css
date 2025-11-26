@@ -1,0 +1,331 @@
+/* 🌟 General Layout */
+.property-filters {
+  margin: 20px 0;
+}
+
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-left: 10%;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.price-slider-group {
+  flex-basis: 100%;
+}
+
+.price-slider input[type="range"] {
+  width: 100%;
+  accent-color: #0077ff;
+}
+
+.price-values {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* 🔘 Clear Filters Button */
+.clear-filters-btn {
+  padding: 8px 16px;
+  background-color: #ff6b6b;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.clear-filters-btn:hover {
+  background-color: #e63946;
+}
+
+/* 🏠 Property Types */
+.property-types {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.type-wrapper {
+  position: relative;
+}
+
+.type-btn {
+  background: #f2f2f2;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.type-btn:hover {
+  background: #ddd;
+}
+
+/* Popup shown on hover */
+.hover-popup {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  z-index: 10;
+  width: 180px;
+}
+
+.hover-item {
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.hover-item:hover {
+  background-color: #f3f3f3;
+}
+
+/* 💰 Above 1 Cr Button */
+.above-1cr-btn {
+  background-color: #af6565;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.above-1cr-btn:hover {
+  background-color: #3f4cac;
+  color: #fff;
+}
+
+.above-1cr-btn.active {
+  background-color: #0077ff;
+  color: white;
+  border-color: #0077ff;
+}
+
+/* 📍 Location Input Container */
+.location-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* 📝 Input Field */
+.location-input input {
+  width: 100%;
+  padding: 10px 90px 10px 12px; /* space for both icons */
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 15px;
+  height: 45px;
+  box-sizing: border-box;
+  line-height: normal;
+}
+
+/* 🎤📍 Icon Buttons (Inside Input) */
+.icon-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #333;
+  transition: all 0.2s ease;
+  z-index: 2;
+  margin: 0 !important;
+}
+
+.icon-btn:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-50%) scale(1.08);
+}
+
+/* 🎤 Mic Button */
+.mic-btn {
+  right: 48px;
+}
+
+/* 📍 Location Button */
+.loc-btn {
+  right: 10px;
+}
+
+/* 💬 Suggestions Dropdown */
+.suggestions-list {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 4px;
+  list-style: none;
+  padding: 0;
+  z-index: 100;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.suggestions-list li {
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.suggestions-list li:hover {
+  background-color: #f3f3f3;
+}
+
+/* 📱 Responsive Adjustments */
+@media (max-width: 600px) {
+  .filters-container {
+    padding-left: 5%;
+  }
+
+  .location-input input {
+    padding: 10px 75px 10px 10px;
+    height: 42px;
+    font-size: 14px;
+  }
+
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+  }
+
+  .mic-btn {
+    right: 40px;
+  }
+
+  .loc-btn {
+    right: 8px;
+  }
+}
+
+@media (max-width: 375px) {
+  .location-input input {
+    padding: 10px 70px 10px 10px;
+    height: 40px;
+    font-size: 13.5px;
+  }
+
+  .icon-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+  }
+
+  .mic-btn {
+    right: 36px;
+  }
+
+  .loc-btn {
+    right: 6px;
+  }
+}
+/* === Location Input Scoped Styles === */
+.property-filters .location-input {
+  position: relative !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+.property-filters .location-input input {
+  width: 100% !important;
+  height: 45px !important;
+  padding: 10px 90px 10px 12px !important;
+  border: 1px solid #ccc !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  box-sizing: border-box !important;
+}
+
+.property-filters .icon-btn {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background-color: #f5f5f5 !important;
+  color: #333 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 17px !important;
+  z-index: 5 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.property-filters .mic-btn {
+  right: 48px !important;
+}
+
+.property-filters .loc-btn {
+  right: 10px !important;
+}
+
+@media (max-width: 600px) {
+  .property-filters .location-input input {
+    padding: 10px 75px 10px 10px !important;
+    height: 42px !important;
+    font-size: 14px !important;
+  }
+  .property-filters .icon-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 15px !important;
+  }
+  .property-filters .mic-btn {
+    right: 40px !important;
+  }
+  .property-filters .loc-btn {
+    right: 8px !important;
+  }
+}
+
+@media (max-width: 375px) {
+  .property-filters .location-input input {
+    padding: 10px 70px 10px 10px !important;
+    height: 40px !important;
+    font-size: 13.5px !important;
+  }
+  .property-filters .icon-btn {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 14px !important;
+  }
+  .property-filters .mic-btn {
+    right: 36px !important;
+  }
+  .property-filters .loc-btn {
+    right: 6px !important;
+  }
+}

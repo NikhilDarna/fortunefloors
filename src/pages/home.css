@@ -1,7 +1,183 @@
-/* Horizontal Card Section */
-.horizontal-card-section {
+
+/* 🌟 Features Section */
+.features-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 30px;
+  margin: 10px auto;
+  max-width: 1200px;
+  padding: 10px;
+}
+/* Carousel card container */
+.properties-section .slick-slide {
+  padding: 10px; /* space between cards */
+  box-sizing: border-box;
+  
+}
+
+/* Adjust PropertyCard height */
+.properties-section .slick-slide > div {
+  height: 500px; /* smaller height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+/* Optional: if PropertyCard has internal content, adjust it */
+.PropertyCard {
+  height: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Arrows style */
+.slick-prev:before,
+.slick-next:before {
+  color: #333;
+  font-size: 30px;
+}
+
+.slick-prev {
+  left: -25px;
+}
+
+.slick-next {
+  right: -25px;
+}
+
+/* Dots style */
+.slick-dots li button:before {
+  color: #333;
+  font-size: 12px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .properties-section .slick-slide > div {
+    height: 300px; /* slightly taller on mobile if needed */
+  }
+}
+
+.feature-card {
+  flex: 1 1 280px;
+  background: #ffffff;
+  color: #1f2937;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  
+  transition: all 0.3s ease;
+  margin: 10px;
+}
+/* 🧱 Featured Section with Ads */
+.featured-section-with-ads {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-image: url(../assets/baground2.webp);
+  width: 100%;
+}
+
+/* 🎯 Center Property Carousel */
+.main-properties {
+  flex: 3;
+  max-width: 1000px;
+  height: 600px;
+  align-items: center;
   background-color: #ffffff;
-  padding-bottom: 10px;
+  
+}
+
+/* 📢 Ad Spaces */
+.ad-space {
+  flex: 1;
+  max-width: 360px;
+  height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+
+.ad-space img {
+  width: 100%;
+  border-radius: 8px;
+  height: 500px;
+  width:200px
+  
+}
+
+/* 📱 Responsive - hide ads on small screens */
+@media (max-width: 1024px) {
+  .ad-space {
+    display: none;
+  }
+
+  .main-properties {
+    max-width: 100%;
+  }
+}
+
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  
+}
+
+.feature-card h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #1e40af;
+}
+
+.feature-card p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+.feature-card .image-box {
+  width: 100%;
+  height: 250px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.feature-card .placeholder {
+  font-size: 32px;
+  color: rgba(0, 0, 0, 0.2);
+}
+
+/* Button */
+.add-btn {
+  background: #2563eb;
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top:100px;
+}
+
+.add-btn:hover {
+  background: #1e40af;
+  transform: translateY(-2px);
+}
+
+/* 🏡 Horizontal Card Section */
+.horizontal-card-section {
+  background-color: #f9fafb;
+  padding-bottom: 30px;
   text-align: center;
 }
 
@@ -15,35 +191,35 @@
   justify-content: center;
 }
 
-/* Villas (Modern Villa, Family House, etc.) */
+/* Villas Section */
 .smallcard {
   display: flex;
-  flex-wrap: wrap;          /* ✅ allows wrapping */
-  justify-content: center;  /* ✅ centers all cards */
-  gap: 20px;                /* ✅ equal spacing between cards */
-  margin: 20px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 40px 0;
 }
 
 .card1 {
-  flex: 1 1 220px;          /* ✅ responsive sizing */
-  max-width: 250px;         /* ✅ same width */
-  min-height: 250px;        /* ✅ same height */
+  flex: 1 1 220px;
+  max-width: 350px;
+  min-height: 250px;
   display: flex;
   flex-direction: column;
-  justify-content: center;  /* ✅ centers content */
+  justify-content: center;
   align-items: center;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 20px;
+  border-radius: 12px;
   background-color: #ffffff;
-  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   cursor: pointer;
   text-align: center;
 }
 
 .card1:hover {
-  background-color: #eb253f;
-  color: white;
+  background-color: #2563eb;
+  color: #ffffff;
   transform: translateY(-5px);
 }
 
@@ -54,23 +230,25 @@
 .card-icon {
   height: 50px;
   font-size: 30px;
+  color: #2563eb;
 }
 
-/* Popular Places Section */
+/* 🌆 Popular Places Section */
 .popular-places-section {
   text-align: center;
-  padding: 50px 20px;
-  background-color: #ffffff;
+  padding: 60px 20px;
+  background-color: #f9fafb;
 }
 
 .popular-places-section h2 {
   font-size: 2rem;
   margin-bottom: 10px;
+  color: #1e40af;
 }
 
 .popular-places-section .section-subtitle {
   font-size: 1rem;
-  color: #555;
+  color: #6b7280;
   margin-bottom: 30px;
 }
 
@@ -82,11 +260,10 @@
 }
 
 .place-card {
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   max-width: 220px;
   text-align: center;
   transition: all 0.3s ease;
@@ -94,28 +271,28 @@
 }
 
 .place-card:hover {
-  transform: translateY(-8px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  background-color: #252feb;
-  color: #fff;
+  transform: translateY(-6px) scale(1.04);
+  background-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .place-card .place-image {
-  background-color: #ccc;
+  background-color: #e5e7eb;
   height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  font-weight: bold;
-  color: #555;
+  font-weight: 500;
+  color: #374151;
   margin-bottom: 10px;
-  transition: transform 0.3s ease-in-out, background-color 0.3s ease;
+  transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .place-card:hover .place-image {
   transform: scale(1.05);
-  background-color: #f8f8f8;
+  background-color: #1e40af;
   color: #fff;
 }
 
@@ -126,15 +303,440 @@
 
 .place-card span {
   font-size: 0.9rem;
-  color: #777;
+  color: #6b7280;
 }
 
-.place-card:hover h3,
-.place-card:hover span {
+/* 📏 Area Converter Section */
+.area-converter-section {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 47px;
+  text-align: center;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #f5f6f9, #f9fafa);
+  border-radius: 10px;
+  animation: fadeIn 1s ease;
+  display: flex;
+}
+.feature-select {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #f5f6f9, #f9fafa);
+  border-radius: 10px;
+  animation: fadeIn 1s ease;
+}
+.feature-input {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #f5f6f9, #f9fafa);
+  border-radius: 10px;
+  animation: fadeIn 1s ease;
+}
+.feature-input1 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 5px;
+  text-align: center;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #f5f6f9, #f9fafa);
+  border-radius: 10px;
+  animation: fadeIn 1s ease;
+}
+.feature-input2 {
+  margin-top: 5px;
+  margin-bottom: 10px;
+  margin-left: 5px;
+  text-align: center;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #f5f6f9, #f9fafa);
+  border-radius: 10px;
+  animation: fadeIn 1s ease;
+}
+
+/* Simple fade animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.addproperty{
+  padding-bottom: 20px;
+}
+/* === FEATURED SECTION WITH ADS === */
+.featured-section-with-ads {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 25px;
+  padding: 30px;
+  flex-wrap: wrap;
+}
+
+/* === MAIN PROPERTIES === */
+.main-properties {
+  flex: 1 1 68%;
+  min-width: 320px;
+  border-radius: 10px;
+}
+
+/* === AD SECTION === */
+.ad-space {
+  flex: 0 0 30%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Make ad image large and responsive */
+.ad-space img {
+  width: 100%;
+  height: auto;
+  max-height: 700px; /* 🔥 Increased size */
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover effect for engagement */
+.ad-space img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* === RESPONSIVE BEHAVIOR === */
+
+/* For large desktops */
+@media (min-width: 1400px) {
+  .main-properties {
+    flex: 1 1 65%;
+  }
+
+  .ad-space {
+    flex: 0 0 32%;
+  }
+
+  .ad-space img {
+    max-height: 800px;
+  }
+}
+
+/* For tablets */
+@media (max-width: 1024px) {
+  .featured-section-with-ads {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ad-space {
+    width: 100%;
+    margin-top: 30px;
+  }
+
+  .ad-space img {
+    max-height: 500px;
+  }
+}
+
+/* For mobile screens */
+@media (max-width: 600px) {
+  .featured-section-with-ads {
+    padding: 15px;
+  }
+
+  .ad-space img {
+    width: 100%;
+    max-height: 400px;
+    border-radius: 10px;
+  }
+}
+.properties-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px;
+}
+.properties-section-header h2{
+  padding: 5px;
+}
+.see-all-btn {
+  background: none;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  padding: 5px;
+}
+
+.see-all-btn:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* === Responsive Layout === */
+@media (max-width: 768px) {
+  .property-filters .filters-row {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .property-filters input {
+    width: 100%;
+    max-width: none;
+  }
+
+  .property-filters .filters-buttons {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .property-filters button {
+    width: 100%;
+  }
+}
+
+
+
+
+
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .property-filters .filters-row {
+    flex-direction: row;
+  }
+  .property-filters input {
+    width: 100%;
+  }
+  .property-filters .filters-buttons {
+    flex-direction: row;
+    width: 100%;
+  }
+  .property-filters button {
+    width: 100%;
+  }
+}
+/* =============================
+   PROPERTY FILTERS SECTION
+============================= */
+
+
+
+
+
+
+
+
+/* =============================
+   FEATURES SECTION (3 Cards)
+============================= */
+.features-section {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 30px;
+  margin-top: 60px;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.feature-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 340px;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.feature-card h2 {
+  font-size: 1.4rem;
+  color: #003366;
+  margin-bottom: 10px;
+}
+
+.feature-card p {
+  color: #444;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.feature-card button,
+.feature-card .add-btn {
+  background: linear-gradient(145deg, #1e40af, #3b82f6);
   color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
 
-/* Properties Section */
-.properties-section {
-  padding-top: 20px;
+.feature-card button:hover {
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
 }
+
+.feature-card input,
+.feature-card select {
+  padding: 8px 10px;
+  margin: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.feature-card input:focus,
+.feature-card select:focus {
+  outline: none;
+  border: 1px solid #3b82f6;
+}
+
+/* Responsive Fix */
+@media (max-width: 900px) {
+  .features-section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .feature-card {
+    max-width: 420px;
+  }
+}
+
+
+.apply-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.apply-btn:hover {
+  background: #2563eb;
+}
+
+.clear-btn {
+  background: #6b7280;
+  color: white;
+}
+
+.clear-btn:hover {
+  background: #4b5563;
+}
+
+
+.articles-grid-sellrent {
+  flex: 0 0 70%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+    @media (max-width: 900px) {
+      .articles-section-sellrent {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 95%;
+        padding: 20px;
+      }
+
+      .articles-section-sellrent > div:first-child {
+        flex: none;
+        padding: 0 0 20px;
+      }
+
+      .articles-grid-sellrent {
+        grid-template-columns: repeat(2, 1fr);
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .articles-grid-sellrent {
+        grid-template-columns: 1fr;
+        width: 100%;
+      }
+
+      .article-card-sellrent {
+        flex-direction: row;
+        width: 100%;
+      }
+    }
+@media (max-width: 900px) {
+    .articles-section {
+      flex-direction: column;
+      padding: 30px 20px;
+      align-items: center;
+    }
+    .articles-left {
+      text-align: center !important;
+      padding-right: 0 !important;
+      margin-bottom: 20px;
+    }
+    .articles-right {
+      grid-template-columns: repeat(2, 1fr) !important;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .hero-section-99acres {
+      flex-direction: column !important;
+      text-align: center !important;
+    }
+    .hero-section-99acres img {
+      max-width: 260px !important;
+    }
+    .articles-right {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+    }
+    .articles-section {
+      width: 95% !important;
+      margin-top: 20px !important;
+    }
+  }
+@media (max-width: 900px) {
+    .articles-section {
+      flex-direction: column;
+      padding: 30px 20px;
+      align-items: center;
+    }
+    .articles-left {
+      text-align: center !important;
+      padding-right: 0 !important;
+      margin-bottom: 20px;
+    }
+    .articles-right {
+      grid-template-columns: repeat(2, 1fr) !important;
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .hero-section-99acres {
+      flex-direction: column !important;
+      text-align: center !important;
+    }
+    .hero-section-99acres img {
+      max-width: 260px !important;
+    }
+    .articles-right {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+    }
+    .articles-section {
+      width: 95% !important;
+      margin-top: 20px !important;
+    }
+  }

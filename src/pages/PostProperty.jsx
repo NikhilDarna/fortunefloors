@@ -1,31 +1,142 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "../pages/postproperty.css";
 
 const PostProperty = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    propertyType: 'house',
-    transactionType: 'sale',
-    price: '',
-    location: '',
-    area: '',
-    bedrooms: '',
-    bathrooms: ''
-  });
-  const [photos, setPhotos] = useState([]);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
+  // ✅ Correct mapping (use "sale" instead of "sell")
+  const typeOptions = {
+    sale: {
+      residential: [
+        "Flat/Apartment",
+        "Independent House / Villa",
+        "Independent / Builder Floor",
+        "Plot / Land",
+        "1 RK/ Studio Apartment",
+        "Serviced Apartment",
+        "Farmhouse",
+        "Other",
+      ],
+      commercial: [
+        "Office",
+        "Retail",
+        "Plot / Land",
+        "Storage",
+        "Industry",
+        "Hospitality",
+        "Other",
+      ],
+    },
+    rent: {
+      residential: [
+        "Flat/Apartment",
+        "Independent House / Villa",
+        "Independent / Builder Floor",
+        "1 RK/ Studio Apartment",
+        "Serviced Apartment",
+        "Farmhouse",
+        "Other",
+      ],
+      commercial: [
+        "Office",
+        "Retail",
+        "Plot / Land",
+        "Storage",
+        "Industry",
+        "Hospitality",
+        "Other",
+      ],
+    },
+    pg: {
+      residential: [
+        "PG - Male",
+        "PG - Female",
+        "PG - Co-living",
+        "Serviced Apartment",
+        "Other",
+      ],
+      commercial: ["Office", "Retail", "Other"],
+    },
+    plot: {
+      residential: [
+        "Residential Plot",
+        "Farm Land",
+        "Agricultural Land",
+        "Farmhouse Plot",
+        "Other",
+      ],
+      commercial: [
+        "Commercial Plot",
+        "Industrial Land",
+        "Warehouse Land",
+        "Institutional Land",
+        "Other",
+      ],
+    },
+  };
+
+  // ✅ Use "sale" here (not "sell") and add fallback safety
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    transactionType: "sale",
+    category: "residential",
+    propertyType:
+      typeOptions["sale"]?.["residential"]?.[0] || "Flat/Apartment",
+    price: "",
+    location: "",
+    area: "",
+    bedrooms: "",
+    bathrooms: "",
+    singleOwner: "yes",
+    ownerName: "",
+    linkedDocx: "",
+    postedBy: user?.fullName || user?.username || user?.email || "Unknown User",
+  });
+
+  const [photos, setPhotos] = useState([]);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Handle input
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // ✅ Handle transaction type safely
+  const handleTransactionType = (transactionType) => {
+    const newCategory =
+      transactionType === "pg" ? "residential" : formData.category;
+    const newPropertyType =
+      typeOptions[transactionType]?.[newCategory]?.[0] ||
+      "Flat/Apartment";
+
+    setFormData((prev) => ({
+      ...prev,
+      transactionType,
+      category: newCategory,
+      propertyType: newPropertyType,
+    }));
+  };
+
+  const handleCategory = (category) => {
+    const newPropertyType =
+      typeOptions[formData.transactionType]?.[category]?.[0] ||
+      "Flat/Apartment";
+    setFormData((prev) => ({
+      ...prev,
+      category,
+      propertyType: newPropertyType,
+    }));
+  };
+
+  const handlePropertyTypeSelect = (propertyType) => {
+    setFormData((prev) => ({ ...prev, propertyType }));
   };
 
   const handlePhotoChange = (e) => {
@@ -36,54 +147,52 @@ const PostProperty = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setSuccess('');
-
-    const submitData = new FormData();
-    
-    // Add form data
-    Object.keys(formData).forEach(key => {
-      submitData.append(key, formData[key]);
-    });
-    
-    // Add photos
-    photos.forEach(photo => {
-      submitData.append('photos', photo);
-    });
+    setError("");
+    setSuccess("");
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/properties', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: submitData
+      const submitData = new FormData();
+      Object.keys(formData).forEach((key) => {
+        submitData.append(key, formData[key]);
+      });
+      photos.forEach((photo) => {
+        submitData.append("photos", photo);
+      });
+
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/properties", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: submitData,
       });
 
       const data = await response.json();
-
       if (response.ok) {
-        setSuccess('Property submitted successfully! It will be reviewed by admin before being published.');
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
+        setSuccess(
+          "Property submitted successfully! It will be reviewed by admin before being published."
+        );
+        setTimeout(() => navigate("/dashboard"), 2000);
       } else {
-        setError(data.error || 'Failed to submit property');
+        setError(data.error || "Failed to submit property");
       }
-    } catch (error) {
-      setError('Network error. Please try again.');
+    } catch (err) {
+      console.error(err);
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ Safe property type options
+  const currentOptions =
+    typeOptions[formData.transactionType]?.[formData.category] || [];
+
   return (
     <div className="post-property">
       <div className="container">
         <div className="post-header">
-          <h1>Post New Property</h1>
-          <p>List your property and reach thousands of potential buyers/tenants</p>
+          <h1>Start posting your property, it’s free</h1>
+          <p>Add basic details about your property to get started</p>
         </div>
 
         <div className="post-form-container">
@@ -91,17 +200,28 @@ const PostProperty = () => {
             <div className="profile-info">
               <div className="profile-avatar">
                 {user?.profilePhoto ? (
-                  <img src={`http://localhost:5000/uploads/${user.profilePhoto}`} alt="Profile" />
+                  <img
+                    src={`http://localhost:5000/uploads/${user.profilePhoto}`}
+                    alt="Profile"
+                  />
                 ) : (
-                  <div className="avatar-placeholder">{user?.fullName?.charAt(0) || user?.username?.charAt(0)}</div>
+                  <div className="avatar-placeholder">
+                    {user?.fullName?.charAt(0) || user?.username?.charAt(0)}
+                  </div>
                 )}
               </div>
               <div className="profile-details">
                 <h3>{user?.fullName || user?.username}</h3>
-                <p className="user-type">{user?.role.charAt(0).toUpperCase() + user?.role.slice(1)}</p>
+                <p className="user-type">
+                  {user?.role
+                    ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+                    : ""}
+                </p>
                 <div className="rating">
                   <span className="stars">★★★★☆</span>
-                  <span className="rating-text">{user?.rating || 4.5} (Based on previous listings)</span>
+                  <span className="rating-text">
+                    {user?.rating || 4.5} (Based on previous listings)
+                  </span>
                 </div>
                 <p className="contact">{user?.phone}</p>
                 <p className="contact">{user?.email}</p>
@@ -114,9 +234,9 @@ const PostProperty = () => {
             {success && <div className="success-message">{success}</div>}
 
             <form onSubmit={handleSubmit}>
+              {/* ---- Basic Info ---- */}
               <div className="form-section">
                 <h3>Basic Information</h3>
-                
                 <div className="form-group">
                   <label htmlFor="title">Property Title</label>
                   <input
@@ -142,46 +262,84 @@ const PostProperty = () => {
                     required
                   />
                 </div>
+              </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="propertyType">Property Type</label>
-                    <select
-                      id="propertyType"
-                      name="propertyType"
-                      value={formData.propertyType}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="house">House</option>
-                      <option value="apartment">Apartment</option>
-                      <option value="villa">Villa</option>
-                      <option value="plot">Plot/Land</option>
-                      <option value="commercial">Commercial</option>
-                      <option value="office">Office Space</option>
-                    </select>
+              {/* ---- Transaction + Category ---- */}
+              <div className="form-section">
+                <h3>Add Basic Details</h3>
+                <div className="form-group">
+                  <label>You're looking to ...</label>
+                  <div className="option-group">
+                    {["sale", "rent", "pg", "plot"].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        className={`option-btn ${
+                          formData.transactionType === t ? "active" : ""
+                        }`}
+                        onClick={() => handleTransactionType(t)}
+                      >
+                        {t === "sale"
+                          ? "Sell"
+                          : t === "rent"
+                          ? "Rent / Lease"
+                          : t === "pg"
+                          ? "PG"
+                          : "Plot"}
+                      </button>
+                    ))}
                   </div>
+                </div>
 
-                  <div className="form-group">
-                    <label htmlFor="transactionType">For</label>
-                    <select
-                      id="transactionType"
-                      name="transactionType"
-                      value={formData.transactionType}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="sale">Sale</option>
-                      <option value="rent">Rent</option>
-                      <option value="plot">Plot</option>
-                    </select>
+                {/* Category */}
+                <div className="form-group">
+                  <label>And it's a ...</label>
+                  <div className="option-group">
+                    <label className="radio-inline">
+                      <input
+                        type="radio"
+                        name="category"
+                        value="residential"
+                        checked={formData.category === "residential"}
+                        onChange={() => handleCategory("residential")}
+                      />{" "}
+                      Residential
+                    </label>
+
+                    <label className="radio-inline">
+                      <input
+                        type="radio"
+                        name="category"
+                        value="commercial"
+                        checked={formData.category === "commercial"}
+                        onChange={() => handleCategory("commercial")}
+                        disabled={formData.transactionType === "pg"}
+                      />{" "}
+                      Commercial
+                    </label>
                   </div>
+                </div>
+
+                {/* Property Type Buttons */}
+                <div className="option-group wrap" style={{ marginTop: 12 }}>
+                  {currentOptions.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`option-btn ${
+                        formData.propertyType === opt ? "active" : ""
+                      }`}
+                      onClick={() => handlePropertyTypeSelect(opt)}
+                    >
+                      {opt}
+                    </button>
+                  ))}
                 </div>
               </div>
 
+              {/* ---- Property Details ---- */}
               <div className="form-section">
                 <h3>Property Details</h3>
-                
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="price">Price (₹)</label>
@@ -195,7 +353,6 @@ const PostProperty = () => {
                       required
                     />
                   </div>
-
                   <div className="form-group">
                     <label htmlFor="area">Area (sq ft)</label>
                     <input
@@ -235,7 +392,6 @@ const PostProperty = () => {
                       min="0"
                     />
                   </div>
-
                   <div className="form-group">
                     <label htmlFor="bathrooms">Bathrooms</label>
                     <input
@@ -251,6 +407,7 @@ const PostProperty = () => {
                 </div>
               </div>
 
+              {/* Photos */}
               <div className="form-section">
                 <h3>Property Photos</h3>
                 <div className="form-group">
@@ -264,7 +421,6 @@ const PostProperty = () => {
                     onChange={handlePhotoChange}
                     className="file-input"
                   />
-                  <p className="file-help">Select up to 10 images (Max 5MB each)</p>
                   {photos.length > 0 && (
                     <div className="selected-files">
                       <p>{photos.length} file(s) selected</p>
@@ -273,8 +429,28 @@ const PostProperty = () => {
                 </div>
               </div>
 
-              <button type="submit" className="submit-btn" disabled={loading}>
-                {loading ? 'Submitting...' : 'Submit Property for Review'}
+              {/* Owner Details */}
+              <div className="form-section">
+                <h3>Owner Details</h3>
+                <div className="form-group">
+                  <label>Owner Name</label>
+                  <input
+                    type="text"
+                    name="ownerName"
+                    value={formData.ownerName}
+                    onChange={handleChange}
+                    placeholder="Enter Owner Name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={loading}
+              >
+                {loading ? "Submitting..." : "Submit Property for Review"}
               </button>
             </form>
           </div>

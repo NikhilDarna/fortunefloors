@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
-import footerlogo from '../assets/react.svg';
+import footerlogo from '../assets/logo.png';
 
 
 function Footer({ user }) {
@@ -12,10 +12,10 @@ function Footer({ user }) {
         <div className='footerContainer footer-column'>
           <div className='row footerlogo'>
             <div>
-              <img src={"./react.svg"} alt="Logo" />
+              <img src={footerlogo} alt="Logo" />
             </div>
             <div>
-              <p>hai this is realistate site</p>
+              <p class="para">Welcome to Find Your Dream Home</p>
             </div>
           </div>
         </div>

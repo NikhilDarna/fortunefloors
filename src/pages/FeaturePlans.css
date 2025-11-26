@@ -1,0 +1,102 @@
+.plans-page {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #f8f9fa;
+}
+
+.plans-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.plans-page p {
+  color: #555;
+  margin-bottom: 40px;
+}
+
+.plans-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 30px;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.plan-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px 20px;
+  transition: all 0.3s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.plan-card h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.plan-card h3 {
+  color: #007bff;
+  font-weight: 600;
+  margin: 10px 0 20px;
+}
+
+.plan-card ul {
+  text-align: left;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.plan-card li {
+  margin: 8px 0;
+  color: #444;
+}
+
+.placeholder {
+  color: #888;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.subscribe-btn {
+  background: #007bff;
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.subscribe-btn:hover {
+  background: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .plans-page h1 {
+    font-size: 2rem;
+  }
+
+  .plan-card {
+    padding: 25px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .plans-container {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-card {
+    width: 100%;
+  }
+}

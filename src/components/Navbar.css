@@ -1,0 +1,589 @@
+.ff-navbar {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  font-family: "Inter", sans-serif;
+}
+
+/* ===== Top Bar ===== */
+.ff-topbar.unified {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 40px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+/* ===== Left Section ===== */
+.ff-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ff-logo {
+  height: 55px;
+}
+
+.ff-location {
+  font-size: 15px;
+  color: #555;
+}
+
+/* ===== Menu ===== */
+.ff-menu {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+  transition: all 0.3s ease;
+}
+
+.ff-menu-name {
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.ff-menu-name:hover {
+  color: #0072ff;
+}
+
+/* ===== Right Section ===== */
+.ff-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* ===== Profile ===== */
+.profile-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.profile-icon {
+  font-size: 30px;
+  color: #0072ff;
+  transition: transform 0.2s ease;
+}
+
+.profile-icon:hover {
+  transform: scale(1.1);
+}
+
+/* ===== Profile Dropdown ===== */
+.profile-menu {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  z-index: 999;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease;
+}
+
+.profile-menu a,
+.profile-menu button {
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  color: #333;
+  font-size: 14px;
+  text-align: left;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.profile-menu a:hover,
+.profile-menu button:hover {
+  background: #f4f7ff;
+  color: #0072ff;
+}
+
+/* ===== Post Property Button ===== */
+.ff-post-btn {
+  background: #0072ff;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.ff-post-btn:hover {
+  background: #005fd1;
+}
+
+/* ===== Dropdown Panel ===== */
+.ff-dropdown-panel.center-popup {
+  position: fixed;
+  top: 22%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 850px;
+  max-width: 95vw;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  padding: 25px;
+  gap: 25px;
+  z-index: 999;
+  animation: fadeIn 0.25s ease;
+}
+
+.panel-left {
+  flex: 1 1 30%;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+}
+
+.left-item {
+  padding: 10px 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.left-item.active,
+.left-item:hover {
+  background: #f4f7ff;
+  color: #0072ff;
+}
+
+.panel-middle {
+  flex: 1 1 40%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 15px;
+}
+
+.dropdown-link {
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.dropdown-link:hover {
+  color: #0072ff;
+}
+
+.panel-image {
+  flex: 1 1 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel-image img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Hamburger ===== */
+.hamburger {
+  display: none;
+  font-size: 26px;
+  color: #0072ff;
+  cursor: pointer;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .ff-topbar.unified {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px 20px;
+    gap: 12px;
+  }
+
+  .ff-menu {
+    justify-content: center;
+    gap: 30px;
+  }
+
+  .ff-right {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 900px) {
+  .hamburger {
+    display: block;
+  }
+
+  .ff-menu {
+    position: absolute;
+    top: 75px;
+    left: 0;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease;
+    z-index: 1001;
+  }
+
+  .ff-menu.active {
+    max-height: 700px;
+    padding: 10px 20px;
+  }
+
+  .ff-menu-name {
+    padding: 12px 10px;
+    width: 100%;
+    border-bottom: 1px solid #eee;
+  }
+
+  .mobile-submenu {
+    width: 100%;
+    background: #f9f9f9;
+    padding: 10px 20px;
+  }
+
+  .mobile-left-item {
+    font-weight: 600;
+    color: #333;
+    margin-top: 8px;
+  }
+ 
+  .mobile-link {
+    padding: 5px 15px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+    border-radius: 5px;
+    display: block;
+  }
+
+  .mobile-link:hover {
+    color: #0072ff;
+    background: #eef5ff;
+  }
+
+  .ff-right {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .ff-post-btn {
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 15px;
+  }
+
+  .profile-menu {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-menu a,
+  .profile-menu button {
+    color: #0072ff;
+    font-weight: 500;
+    background: #fff;
+    width: 100%;
+    border-radius: 5px;
+    margin: 3px 0;
+  }
+
+  .profile-menu a:hover,
+  .profile-menu button:hover {
+    background: #eef5ff;
+  }
+}
+
+/* ===== Tiny Devices (Phones) ===== */
+@media (max-width: 600px) {
+  .ff-logo {
+    height: 45px;
+  }
+
+  .ff-topbar.unified {
+    padding: 10px 15px;
+  }
+
+  .ff-location {
+    font-size: 13px;
+  }
+
+  .ff-menu-name {
+    font-size: 15px;
+  }
+
+  .ff-post-btn {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+
+  .profile-icon {
+    font-size: 26px;
+  }
+}
+
+/* ===== Extra Small Devices ===== */
+@media (max-width: 400px) {
+  .ff-topbar.unified {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .ff-logo {
+    height: 40px;
+  }
+
+  .ff-menu-name {
+    font-size: 14px;
+  }
+
+  .ff-location {
+    display: none;
+  }
+}
+.ff-navbar {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  font-family: "Inter", sans-serif;
+}
+
+.ff-topbar.unified {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 40px;
+}
+
+.ff-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ff-logo {
+  height: 55px;
+}
+
+.ff-location {
+  font-size: 15px;
+  color: #555;
+}
+
+.hamburger {
+  display: none;
+  font-size: 28px;
+  color: #0072ff;
+  cursor: pointer;
+}
+
+/* Mobile Slide Menu */
+.mobile-slide-menu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 75%;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
+  transition: right 0.4s ease;
+  z-index: 1200;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.mobile-slide-menu.open {
+  right: 0;
+}
+
+.mobile-top-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ff-post-btn {
+  background: #0072ff;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+.mobile-login {
+  background: #eef5ff;
+  color: #0072ff;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.mobile-links .mobile-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+}
+
+.mobile-submenu {
+  padding: 10px 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.mobile-left-item {
+  font-weight: 600;
+  color: #333;
+  margin-top: 6px;
+}
+
+.mobile-link {
+  padding: 5px 10px;
+  color: #555;
+  cursor: pointer;
+}
+
+.mobile-link:hover {
+  color: #0072ff;
+}
+
+/* Desktop Menu */
+.desktop-menu {
+  display: flex;
+  gap: 40px;
+}
+
+.ff-menu-name {
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.ff-menu-name:hover {
+  color: #0072ff;
+}
+
+.profile-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.profile-icon {
+  font-size: 30px;
+  color: #0072ff;
+}
+
+.profile-menu {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  z-index: 999;
+}
+
+.profile-menu a,
+.profile-menu button {
+  padding: 10px 15px;
+  color: #333;
+  font-size: 14px;
+  text-align: left;
+  text-decoration: none;
+  background: none;
+  border: none;
+}
+
+.profile-menu a:hover,
+.profile-menu button:hover {
+  background: #f4f7ff;
+  color: #0072ff;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .desktop-only,
+  .desktop-menu {
+    display: none;
+  }
+
+  .hamburger {
+    display: block;
+  }
+}
+
+@media (max-width: 600px) {
+  .ff-logo {
+    height: 45px;
+  }
+
+  .ff-topbar.unified {
+    padding: 10px 15px;
+  }
+
+  .ff-location {
+    font-size: 13px;
+  }
+}

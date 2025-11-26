@@ -1,0 +1,12 @@
+.custom-language-dropdown {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.custom-language-dropdown:hover {
+  border-color: #666;
+}

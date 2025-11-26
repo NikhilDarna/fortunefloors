@@ -1,0 +1,80 @@
+.fortune-options-section {
+  position: relative;
+  background-color: #fff;
+  padding: 60px 30px;
+  text-align: center;
+}
+
+.fortune-options-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 40px;
+}
+
+.fortune-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 25px;
+  padding: 10px 0;
+  scrollbar-width: none;
+}
+
+.fortune-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.fortune-card {
+  min-width: 230px;
+  flex: 0 0 auto;
+  text-align: center;
+  transition: transform 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.fortune-card:hover {
+  transform: scale(1.05);
+}
+
+.fortune-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.fortune-text {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 26px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.carousel-btn.left {
+  left: 10px;
+}
+
+.carousel-btn.right {
+  right: 10px;
+}
+
+.carousel-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}

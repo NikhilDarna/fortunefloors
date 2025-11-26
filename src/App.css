@@ -129,16 +129,18 @@ body {
 
 /* Home Page Styles */
 .hero-section {
-  background: linear-gradient(135deg, #2563EB 0%, #1e40af 100%);
+  background: url(./assets/image.jpg);
   color: white;
   padding: 4rem 0;
-  text-align: center;
+  text-align: left;
+  padding-left: 20%;
 }
 
 .hero-content h1 {
   font-size: 3rem;
   margin-bottom: 1rem;
   font-weight: 700;
+  color: white;
 }
 
 .hero-content p {
@@ -230,7 +232,7 @@ body {
 .properties-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
+  gap: 1rem;
   margin: 2rem 0;
 }
 
@@ -238,7 +240,7 @@ body {
   background: white;
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   
 }
@@ -303,12 +305,12 @@ body {
 }
 
 .property-content {
-  padding: 1.5rem;
+  padding: 0.5rem;
 }
 
 .property-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 300;
   margin-bottom: 0.5rem;
   color: #1f2937;
 }
@@ -316,21 +318,21 @@ body {
 .property-location {
   color: #6b7280;
   margin-bottom: 1rem;
-  font-size: 0.9rem;
+  font-size: 0.3rem;
 }
 
 .property-price {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 0.5rem;
+  
   color: #2563EB;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .property-features {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.5rem;
   color: #6b7280;
 }
 

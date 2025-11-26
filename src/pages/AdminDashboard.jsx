@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -10,9 +11,11 @@ const AdminDashboard = () => {
     totalProperties: 0,
     pendingProperties: 0,
     totalUsers: 0,
-    activeUsers: 0
+    activeUsers: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [rejectingId, setRejectingId] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   useEffect(() => {
     if (activeTab === 'properties') {
@@ -27,18 +30,18 @@ const AdminDashboard = () => {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/admin/properties', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setProperties(data);
-        
-        setStats(prev => ({
+
+        setStats((prev) => ({
           ...prev,
           totalProperties: data.length,
-          pendingProperties: data.filter(p => p.status === 'pending').length
+          pendingProperties: data.filter((p) => p.status === 'pending').length,
         }));
       }
     } catch (error) {
@@ -53,18 +56,18 @@ const AdminDashboard = () => {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/admin/users', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
-        
-        setStats(prev => ({
+
+        setStats((prev) => ({
           ...prev,
           totalUsers: data.length,
-          activeUsers: data.filter(u => u.is_active).length
+          activeUsers: data.filter((u) => u.is_active).length,
         }));
       }
     } catch (error) {
@@ -72,20 +75,25 @@ const AdminDashboard = () => {
     }
   };
 
-  const handlePropertyStatus = async (propertyId, status) => {
+  const handlePropertyStatus = async (propertyId, status, reason = '') => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/admin/properties/${propertyId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status })
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/admin/properties/${propertyId}/status`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status, reason }),
+        }
+      );
 
       if (response.ok) {
-        fetchProperties(); // Refresh the list
+        setRejectingId(null);
+        setRejectReason('');
+        fetchProperties();
       }
     } catch (error) {
       console.error('Error updating property status:', error);
@@ -96,9 +104,8 @@ const AdminDashboard = () => {
     const statusClasses = {
       pending: 'badge-warning',
       approved: 'badge-success',
-      rejected: 'badge-danger'
+      rejected: 'badge-danger',
     };
-    
     return (
       <span className={`badge ${statusClasses[status]}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -134,13 +141,13 @@ const AdminDashboard = () => {
         </div>
 
         <div className="admin-tabs">
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'properties' ? 'active' : ''}`}
             onClick={() => setActiveTab('properties')}
           >
             Properties Management
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
@@ -161,6 +168,7 @@ const AdminDashboard = () => {
                       <tr>
                         <th>Property</th>
                         <th>Owner</th>
+                        <th>Mobile Number</th>
                         <th>Type</th>
                         <th>Price</th>
                         <th>Status</th>
@@ -178,46 +186,114 @@ const AdminDashboard = () => {
                           </td>
                           <td>
                             <div className="owner-info">
-                              <p><strong>{property.full_name}</strong></p>
+                              <p>
+                                <strong>{property.full_name}</strong>
+                              </p>
                               <p>{property.email}</p>
                             </div>
+                          </td>
+                          <td>
+                            <p>{property.phone}</p>
                           </td>
                           <td>{property.transaction_type}</td>
                           <td>₹{parseInt(property.price).toLocaleString()}</td>
                           <td>{getStatusBadge(property.status)}</td>
                           <td>
                             <div className="action-buttons">
-                              {property.status === 'pending' && (
+                              {rejectingId === property.id ? (
+                                <div className="reject-box">
+                                  <textarea
+                                    value={rejectReason}
+                                    onChange={(e) =>
+                                      setRejectReason(e.target.value)
+                                    }
+                                    placeholder="Enter rejection reason..."
+                                    rows={3}
+                                    style={{
+                                      width: '100%',
+                                      marginTop: '6px',
+                                      padding: '6px',
+                                    }}
+                                  />
+                                  <div
+                                    style={{
+                                      display: 'flex',
+                                      gap: '8px',
+                                      marginTop: '6px',
+                                    }}
+                                  >
+                                    <button
+                                      className="btn btn-danger btn-sm"
+                                      onClick={() =>
+                                        handlePropertyStatus(
+                                          property.id,
+                                          'rejected',
+                                          rejectReason
+                                        )
+                                      }
+                                    >
+                                      Submit Rejection
+                                    </button>
+                                    <button
+                                      className="btn btn-secondary btn-sm"
+                                      onClick={() => {
+                                        setRejectingId(null);
+                                        setRejectReason('');
+                                      }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
                                 <>
-                                  <button 
-                                    className="btn btn-success btn-sm"
-                                    onClick={() => handlePropertyStatus(property.id, 'approved')}
-                                  >
-                                    Approve
-                                  </button>
-                                  <button 
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() => handlePropertyStatus(property.id, 'rejected')}
-                                  >
-                                    Reject
-                                  </button>
+                                  {property.status === 'pending' && (
+                                    <>
+                                      <button
+                                        className="btn btn-success btn-sm"
+                                        onClick={() =>
+                                          handlePropertyStatus(
+                                            property.id,
+                                            'approved'
+                                          )
+                                        }
+                                      >
+                                        Approve
+                                      </button>
+                                      <button
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() =>
+                                          setRejectingId(property.id)
+                                        }
+                                      >
+                                        Reject
+                                      </button>
+                                    </>
+                                  )}
+                                  {property.status === 'approved' && (
+                                    <button
+                                      className="btn btn-warning btn-sm"
+                                      onClick={() =>
+                                        setRejectingId(property.id)
+                                      }
+                                    >
+                                      Reject
+                                    </button>
+                                  )}
+                                  {property.status === 'rejected' && (
+                                    <button
+                                      className="btn btn-success btn-sm"
+                                      onClick={() =>
+                                        handlePropertyStatus(
+                                          property.id,
+                                          'approved'
+                                        )
+                                      }
+                                    >
+                                      Approve
+                                    </button>
+                                  )}
                                 </>
-                              )}
-                              {property.status === 'approved' && (
-                                <button 
-                                  className="btn btn-warning btn-sm"
-                                  onClick={() => handlePropertyStatus(property.id, 'rejected')}
-                                >
-                                  Reject
-                                </button>
-                              )}
-                              {property.status === 'rejected' && (
-                                <button 
-                                  className="btn btn-success btn-sm"
-                                  onClick={() => handlePropertyStatus(property.id, 'approved')}
-                                >
-                                  Approve
-                                </button>
                               )}
                             </div>
                           </td>
@@ -238,6 +314,7 @@ const AdminDashboard = () => {
                   <thead>
                     <tr>
                       <th>User</th>
+                      <th>Mobile Number</th>
                       <th>Role</th>
                       <th>Properties</th>
                       <th>Joined</th>
@@ -254,6 +331,9 @@ const AdminDashboard = () => {
                           </div>
                         </td>
                         <td>
+                          <p>{user.phone}</p>
+                        </td>
+                        <td>
                           <span className="role-badge">{user.role}</span>
                         </td>
                         <td>
@@ -262,9 +342,17 @@ const AdminDashboard = () => {
                             <span>{user.approved_properties} approved</span>
                           </div>
                         </td>
-                        <td>{new Date(user.created_at).toLocaleDateString()}</td>
                         <td>
-                          <span className={`badge ${user.is_active ? 'badge-success' : 'badge-danger'}`}>
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              user.is_active
+                                ? 'badge-success'
+                                : 'badge-danger'
+                            }`}
+                          >
                             {user.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </td>

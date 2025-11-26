@@ -25,7 +25,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,9 @@ const Login = () => {
                 required
               />
             </div>
-            
+            <p className="auth-link">
+            <Link to="/ForgotPassword">ForgotPassword</Link>
+          </p>
             <button type="submit" className="auth-btn" disabled={loading}>
               {loading ? 'Logging in...' : 'Login'}
             </button>
@@ -89,11 +91,6 @@ const Login = () => {
           <p className="auth-link">
             Don't have an account? <Link to="/register">Register here</Link>
           </p>
-          
-          <div className="demo-credentials">
-            <h4>Demo Credentials:</h4>
-            <p><strong>Admin:</strong> admin / admin123</p>
-          </div>
         </div>
       </div>
     </div>

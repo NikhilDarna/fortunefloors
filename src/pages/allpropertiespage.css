@@ -1,0 +1,30 @@
+.all-properties-page {
+  padding: 40px 80px;
+  background-color: #fafafa;
+  min-height: 100vh;
+}
+
+.all-properties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.all-properties-header h1 {
+  font-size: 2rem;
+  color: #222;
+}
+
+.property-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.loading, .no-properties {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+  margin-top: 40px;
+}

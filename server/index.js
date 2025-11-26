@@ -74,9 +74,14 @@ function initializeDatabase() {
     total_ratings INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT 1
-  )`);
+  )`, (err) => {
+    if (err) console.log("Users table error:", err);
+  });
+  db.run(`ALTER TABLE users ADD COLUMN otp TEXT`, () => {});
+  db.run(`ALTER TABLE users ADD COLUMN otp_expiry INTEGER`, () => {});
 
-  // Create properties table
+
+  // ✅ Fixed properties table (added missing columns)
   db.run(`CREATE TABLE IF NOT EXISTS properties (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -89,6 +94,9 @@ function initializeDatabase() {
     bedrooms INTEGER,
     bathrooms INTEGER,
     photos TEXT,
+    single_owner TEXT,   -- ✅ Added
+    owner_name TEXT,     -- ✅ Added
+    linked_docx TEXT,    -- ✅ Added
     user_id INTEGER NOT NULL,
     status TEXT DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -108,6 +116,16 @@ function initializeDatabase() {
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (property_id) REFERENCES properties (id)
   )`);
+  // Create wishlist table
+  db.run(`CREATE TABLE IF NOT EXISTS wishlists (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    property_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, property_id),
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (property_id) REFERENCES properties (id)
+  )`);
 
   // Create admin user
   const adminPassword = bcrypt.hashSync('admin123', 10);
@@ -117,6 +135,7 @@ function initializeDatabase() {
     [adminPassword]
   );
 }
+
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -222,7 +241,6 @@ app.post('/api/login', (req, res) => {
     }
   );
 });
-
 // Properties (public & user)
 app.get('/api/properties', (req, res) => {
   const { type, location, minPrice, maxPrice, status = 'approved' } = req.query;
@@ -272,56 +290,125 @@ app.get('/api/properties', (req, res) => {
 // Add new property
 app.post('/api/properties', authenticateToken, upload.array('photos', 10), (req, res) => {
   try {
-    const {
-      title,
-      description,
-      propertyType,
-      transactionType,
-      price,
-      location,
-      area,
-      bedrooms,
-      bathrooms
-    } = req.body;
+   const {
+  title,
+  description,
+  propertyType,
+  transactionType,
+  price,
+  location,
+  area,
+  bedrooms,
+  bathrooms,
+  singleOwner,
+  ownerName,
+  linkedDocx
+} = req.body;
 
-    const photos = req.files ? req.files.map((f) => f.filename) : [];
+const photos = req.files ? req.files.map((f) => f.filename) : [];
+
+db.run(
+  `INSERT INTO properties 
+   (title, description, property_type, transaction_type, price, location, area, bedrooms, bathrooms, photos, user_id, single_owner, owner_name, linked_docx)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [
+    title,
+    description,
+    propertyType,
+    transactionType,
+    price,
+    location,
+    area,
+    bedrooms,
+    bathrooms,
+    JSON.stringify(photos),
+    req.user.id,
+    singleOwner,
+    ownerName,
+    linkedDocx
+  ],
+  function (err) {
+    if (err) return res.status(500).json({ error: 'Failed to create property' });
 
     db.run(
-      `INSERT INTO properties 
-       (title, description, property_type, transaction_type, price, location, area, bedrooms, bathrooms, photos, user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        title,
-        description,
-        propertyType,
-        transactionType,
-        price,
-        location,
-        area,
-        bedrooms,
-        bathrooms,
-        JSON.stringify(photos),
-        req.user.id
-      ],
-      function (err) {
-        if (err) return res.status(500).json({ error: 'Failed to create property' });
-
-        // Notify admin
-        db.run(
-          'INSERT INTO notifications (user_id, property_id, message, type) SELECT id, ?, ?, ? FROM users WHERE role = "admin"',
-          [this.lastID, `New property "${title}" submitted for approval`, 'property_submission']
-        );
-
-        res.json({
-          id: this.lastID,
-          message: 'Property submitted successfully. Waiting for admin approval.'
-        });
-      }
+      'INSERT INTO notifications (user_id, property_id, message, type) SELECT id, ?, ?, ? FROM users WHERE role = "admin"',
+      [this.lastID, `New property "${title}" submitted for approval`, 'property_submission']
     );
+
+    res.json({
+      id: this.lastID,
+      message: 'Property submitted successfully. Waiting for admin approval.'
+    });
+  }
+);
+
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
 });
+app.get('/api/properties', (req, res) => {
+  try {
+    const { type, location, minPrice, maxPrice } = req.query;
+
+    let query = `
+      SELECT * FROM properties
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (type && type !== 'all') {
+      // Normalize case
+      const normalized = type.toLowerCase();
+
+      // ✅ Match transaction_type OR category OR property_type
+      query += `
+        AND (
+          LOWER(transaction_type) = ?
+          OR LOWER(category) = ?
+          OR LOWER(property_type) LIKE ?
+        )
+      `;
+      params.push(normalized, normalized, `%${normalized}%`);
+    }
+
+    if (location) {
+      query += ` AND LOWER(location) LIKE LOWER(?)`;
+      params.push(`%${location}%`);
+    }
+
+    if (minPrice) {
+      query += ` AND price >= ?`;
+      params.push(minPrice);
+    }
+
+    if (maxPrice) {
+      query += ` AND price <= ?`;
+      params.push(maxPrice);
+    }
+
+    query += ` ORDER BY id DESC`;
+
+    db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error('❌ DB Error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(rows);
+    });
+
+  } catch (error) {
+    console.error('❌ Server Error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+app.get('/api/locations', (req, res) => {
+  db.all('SELECT DISTINCT location FROM properties WHERE location IS NOT NULL', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch locations' });
+    const locations = rows.map(r => r.location);
+    res.json(locations);
+  });
+});
+
 
 // ---------------- Admin Routes ----------------
 // (unchanged logic, just modernized imports)
@@ -445,6 +532,131 @@ app.patch('/api/notifications/:id/read', authenticateToken, (req, res) => {
   );
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+
+
+
+
+
+
+
+// ---------------- Wishlist Routes ----------------
+
+// Get all wishlist properties for the logged-in user
+app.get('/api/wishlist', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+
+  db.all(
+    `
+    SELECT p.*, u.username, u.full_name, u.profile_photo, u.phone, u.rating
+    FROM wishlists w
+    JOIN properties p ON w.property_id = p.id
+    JOIN users u ON p.user_id = u.id
+    WHERE w.user_id = ?
+    ORDER BY w.created_at DESC
+  `,
+    [userId],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'Database error' });
+      res.json(rows.map((p) => ({ ...p, photos: p.photos ? JSON.parse(p.photos) : [] })));
+    }
+  );
+});
+
+// Add property to wishlist
+app.post('/api/wishlist/:propertyId', authenticateToken, (req, res) => {
+  db.run(
+    `INSERT OR IGNORE INTO wishlists (user_id, property_id) VALUES (?, ?)`,
+    [req.user.id, req.params.propertyId],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'Database error' });
+      res.json({ message: 'Added to wishlist' });
+    }
+  );
+});
+
+// Remove property from wishlist
+app.delete('/api/wishlist/:propertyId', authenticateToken, (req, res) => {
+  db.run(
+    `DELETE FROM wishlists WHERE user_id = ? AND property_id = ?`,
+    [req.user.id, req.params.propertyId],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'Database error' });
+      res.json({ message: 'Removed from wishlist' });
+    }
+  );
+});
+import nodemailer from 'nodemailer';
+
+// EMAIL CONFIGURATION
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "yourgmail@gmail.com",
+    pass: "your-app-password" // use Google App Password
+  }
+});
+// ---------------- FORGOT PASSWORD ----------------
+app.post('/api/forgot-password', (req, res) => {
+  const { email } = req.body;
+
+  db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, user) => {
+    if (!user) {
+      return res.status(400).json({ error: "Email not registered" });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+    // Save OTP
+    db.run(
+      `UPDATE users SET otp = ?, otp_expiry = ? WHERE email = ?`,
+      [otp, expiry, email],
+      (err) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+
+        // Send OTP Email
+        transporter.sendMail({
+          from: "yourgmail@gmail.com",
+          to: email,
+          subject: "Your Password Reset OTP",
+          text: `Your OTP is ${otp}. It will expire in 5 minutes.`
+        });
+
+        res.json({ message: "OTP sent to email" });
+      }
+    );
+  });
+});
+// ---------------- RESET PASSWORD ----------------
+app.post('/api/reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
+    if (!user) return res.status(400).json({ error: "User not found" });
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    if (Date.now() > user.otp_expiry) {
+      return res.status(400).json({ error: "OTP expired" });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    db.run(
+      `UPDATE users SET password = ?, otp = NULL, otp_expiry = NULL WHERE email = ?`,
+      [hashed, email],
+      (err) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+
+        res.json({ message: "Password updated successfully" });
+      }
+    );
+  });
+});
+
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Server running on http://127.0.0.1:${PORT}`);
 });
