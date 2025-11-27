@@ -66,7 +66,7 @@ const Home = () => {
     hectare: 10000,
   };
 
-  // 🔹 Fetch properties on load or filter/type change
+  // 🔹 Fetch properties on load or filter/type change nikhil
 useEffect(() => {
   fetchProperties();
 }, [activeType, filters]);
