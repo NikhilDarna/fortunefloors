@@ -21,6 +21,7 @@ const Navbar = () => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setMobileMenuOpen(false);
+        setActiveDropdown(null);
       }
     };
     document.addEventListener("click", handleClickOutside);
@@ -31,12 +32,16 @@ const Navbar = () => {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-        );
-        const data = await res.json();
-        setLocation(data.address.city || data.address.town || "Unknown");
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await res.json();
+          setLocation(data.address.city || data.address.town || "Unknown");
+        } catch (err) {
+          setLocation("Unknown");
+        }
       });
     }
   }, []);
@@ -60,7 +65,12 @@ const Navbar = () => {
           img: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
         "Property Types": {
-          links: [`Flats in ${location}`, `Houses in ${location}`, "Villas", "Commercial Spaces"],
+          links: [
+            `Flats in ${location}`,
+            `Houses in ${location}`,
+            "Villas",
+            "Commercial Spaces",
+          ],
           img: "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
       },
@@ -124,9 +134,10 @@ const Navbar = () => {
     },
   };
 
-  // Handle link click
+  // Handle link click (desktop & mobile)
   const handleLinkClick = (link) => {
     let toUrl = "/";
+
     if (link.includes("Under 30L")) toUrl = "/?filter=budget&value=0-3000000";
     else if (link.includes("30L–50L")) toUrl = "/?filter=budget&value=3000000-5000000";
     else if (link.includes("50L–1Cr")) toUrl = "/?filter=budget&value=5000000-10000000";
@@ -139,12 +150,14 @@ const Navbar = () => {
     } else if (link === "Post Property") {
       toUrl = user ? "/post-property" : "/login";
     } else if (link === "Agent Services") toUrl = "/agents";
-    else if (link === "Commercial Listings") toUrl = "/?filter=type&value=commercial";
+    else if (link === "Commercial Listings")
+      toUrl = "/?filter=type&value=commercial";
     else if (link === "Pricing Guide") toUrl = "/pricing";
     else if (link === "FAQs") toUrl = "/faqs";
 
     navigate(toUrl);
     setMobileMenuOpen(false);
+    setActiveDropdown(null);
   };
 
   return (
@@ -152,26 +165,29 @@ const Navbar = () => {
       <div className="ff-topbar unified">
         {/* Left Section */}
         <div className="ff-left">
-          <Link to="/">
-            <img src={navlogo} alt="Logo" className="ff-logo" />
-          </Link>
-          <div className="ff-location">📍 {location}</div>
-
-          {/* Hamburger (right of location) */}
-          <div
-            className="hamburger"
-            onClick={(e) => {
-              e.stopPropagation();
-              setMobileMenuOpen(!mobileMenuOpen);
+          <Link
+            to="/"
+            className="ff-logo-wrapper"
+            onClick={() => {
+              navigate("/");
+              setMobileMenuOpen(false);
+              setActiveDropdown(null);
             }}
           >
-            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
-          </div>
+            <img src={navlogo} alt="Logo" className="ff-logo" />
+          </Link>
         </div>
 
         {/* Center Menu */}
         <div className={`ff-menu ${mobileMenuOpen ? "active" : ""}`}>
-          <div className="ff-dropdown" onClick={() => navigate("/")}>
+          <div
+            className="ff-dropdown"
+            onClick={() => {
+              navigate("/");
+              setMobileMenuOpen(false);
+              setActiveDropdown(null);
+            }}
+          >
             <span className="ff-menu-name">Home</span>
           </div>
 
@@ -202,7 +218,7 @@ const Navbar = () => {
               </span>
 
               {/* Desktop Dropdown */}
-              {activeDropdown === item && window.innerWidth > 100 && (
+              {activeDropdown === item && window.innerWidth > 900 && (
                 <div className="ff-dropdown-panel center-popup">
                   <div className="panel-left">
                     {dropdowns[item].left.map((leftItem) => (
@@ -264,6 +280,10 @@ const Navbar = () => {
 
         {/* Right Section (Desktop Only) */}
         <div className="ff-right">
+          <div className="ff-location">📍 {location}</div>
+          <Link to="/post-property" className="ff-post-btn">
+            Post Property
+          </Link>
           <div
             className="profile-wrapper"
             onMouseEnter={() => setShowProfileMenu(true)}
@@ -289,9 +309,16 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          <Link to="/post-property" className="ff-post-btn">
-            Post Property
-          </Link>
+          <div
+            className="hamburger"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileMenuOpen((prev) => !prev);
+              setActiveDropdown(null);
+            }}
+          >
+            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+          </div>
         </div>
       </div>
     </header>
