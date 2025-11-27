@@ -234,8 +234,9 @@ const applyNavbarFilter = (filterType, value) => {
 
       <div className="container">
         {/* 🏷️ Property Type Buttons */}
-        <div className="property-types">
-          {["all", "sale", "rent", "plot",  "pg"].map((type) => (
+        <div className="container1">
+          <div className="property-types">
+          {["Dream Properties", "sale", "rent", "plot",  "pg"].map((type) => (
             <button
               key={type}
               className={`type-btn ${activeType === type ? "active" : ""}`}
@@ -246,10 +247,13 @@ const applyNavbarFilter = (filterType, value) => {
                 : type.charAt(0).toUpperCase() + type.slice(1)}
             </button>
           ))}
+          </div>
+          {/* 🔹 Filters */}
+          <PropertyFilters onFilterChange={handleFilterChange} />
         </div>
+        
 
-        {/* 🔹 Filters */}
-        <PropertyFilters onFilterChange={handleFilterChange} />
+        
         
         <FortuneOptions/>
         

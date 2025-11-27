@@ -213,11 +213,11 @@ const PropertyFilters = ({ onFilterChange }) => {
             onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
           />
         </div>
-
+        
         {/* 🧭 Drag Min Price */}
         <div className="filter-group price-slider-group">
+        <label>Drag to Increase Minimum Price</label>
           <div className="price-header">
-            <label>Drag to Increase Minimum Price</label>
             <button
               type="button"
               onClick={handleAbove1CrClick}
@@ -225,6 +225,12 @@ const PropertyFilters = ({ onFilterChange }) => {
             >
               {above1Cr ? "Showing Above ₹1 Cr" : "Above ₹1 Cr"}
             </button>
+            {/* Clear Filters */}
+            <div className="filter-actions">
+              <button onClick={clearFilters} className="clear-filters-btn">
+                Clear Filters
+              </button>
+            </div>
           </div>
 
           <div className="price-slider">
@@ -245,12 +251,7 @@ const PropertyFilters = ({ onFilterChange }) => {
           </div>
         </div>
 
-        {/* ❌ Clear Filters */}
-        <div className="filter-actions">
-          <button onClick={clearFilters} className="clear-filters-btn">
-            Clear Filters
-          </button>
-        </div>
+        
       </div>
     </div>
   );

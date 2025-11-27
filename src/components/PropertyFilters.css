@@ -1,13 +1,13 @@
 /* 🌟 General Layout */
-.property-filters {
-  margin: 20px 0;
-}
+
 
 .filters-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 10px;
+  align-items: center;
   padding-left: 10%;
+  
 }
 
 .filter-group {
@@ -22,8 +22,8 @@
 }
 
 .price-slider input[type="range"] {
-  width: 100%;
-  accent-color: #0077ff;
+  width: 80%;
+  accent-color: #04e20b;
 }
 
 .price-values {
@@ -33,26 +33,11 @@
   margin-top: 5px;
 }
 
-/* 🔘 Clear Filters Button */
-.clear-filters-btn {
-  padding: 8px 16px;
-  background-color: #ff6b6b;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.clear-filters-btn:hover {
-  background-color: #e63946;
-}
 
 /* 🏠 Property Types */
 .property-types {
   display: flex;
   gap: 10px;
-  margin-bottom: 12px;
   position: relative;
 }
 
@@ -99,7 +84,7 @@
 
 /* 💰 Above 1 Cr Button */
 .above-1cr-btn {
-  background-color: #af6565;
+  background-color: rgb(33, 33, 228);
   border: 1px solid #ccc;
   border-radius: 6px;
   padding: 6px 12px;
@@ -109,16 +94,35 @@
 }
 
 .above-1cr-btn:hover {
-  background-color: #3f4cac;
+  background-color: #000000 !important;
   color: #fff;
 }
 
 .above-1cr-btn.active {
-  background-color: #0077ff;
+  background-color: rgb(33, 33, 228);
   color: white;
-  border-color: #0077ff;
+  border-color:black !important;
+}
+.clear-filters-btn {
+  background-color: rgb(33, 33, 228) !important;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
+.clear-filters-btn:hover {
+  background-color: #000000 !important;
+  color: #fff;
+}
+
+.clear-filters-btn.active {
+  background-color:rgb(33, 33, 228);
+  color: white;
+  border-color: black !important;
+}
 /* 📍 Location Input Container */
 .location-input {
   position: relative;
@@ -186,7 +190,7 @@
   list-style: none;
   padding: 0;
   z-index: 100;
-  max-height: 160px;
+  max-height: 100px;
   overflow-y: auto;
 }
 
@@ -328,4 +332,116 @@
   .property-filters .loc-btn {
     right: 6px !important;
   }
+}
+@media (max-width: 600px) {
+
+  /* Make the whole container responsive */
+  .filters-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Row 1 → Location (full width) */
+  .location-group {
+    flex: 1 1 100% !important;
+  }
+
+  /* Row 2 → Price From + Price To (50% each) */
+  .filter-group:nth-of-type(2),
+  .filter-group:nth-of-type(3) {
+    flex: 1 1 calc(50% - 6px) !important;
+    min-width: calc(50% - 6px) !important;
+  }
+
+  /* Row 3 wrapper (Above ₹1 Cr + Slider) */
+  .price-slider-group {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  /* Above ₹1 Cr button (50%) */
+  .price-header {
+    flex: 1 1 calc(50% - 6px) !important;
+    min-width: calc(50% - 6px) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  /* Slider container (50%) */
+  .price-slider {
+    flex: 1 1 calc(50% - 6px) !important;
+    min-width: calc(50% - 6px) !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Hide Min/Max text from row alignment issues */
+  .price-values {
+    flex: 1 1 100% !important;
+    margin-top: -5px !important;
+  }
+}
+@media (max-width: 600px) {
+
+  /* ⭐ Put Slider + Clear Filters in one row */
+  .slider-and-clear {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+
+  /* slider takes 70% width */
+  .slider-and-clear .price-slider {
+    flex: 1 1 70% !important;
+  }
+
+  /* clear button takes 30% width */
+  .slider-and-clear .filter-actions {
+    flex: 1 1 30% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .slider-and-clear .clear-filters-btn {
+    width: 100% !important;
+    padding: 10px !important;
+  }
+
+}
+.price-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.above-1cr-btn,
+.clear-filters-btn {
+  flex: 1;                   /* same width */
+  padding: 10px 0;           /* same height */
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* remove nested div width issues */
+.filter-actions {
+  flex: 1;
+}
+
+.property-filters,
+.filters-container {
+  margin-top: 2px !important;
+  padding-top: 2px !important;
 }

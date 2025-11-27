@@ -136,17 +136,57 @@ body {
   padding-left: 20%;
 }
 
+.hero-section img{
+  height: 100%;
+  width: 100%;
+}
+
+/* Responsive text */
 .hero-content h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: clamp(1rem, 2vw, 3rem);
   font-weight: 700;
-  color: white;
+  margin: 0;
 }
 
 .hero-content p {
-  font-size: 1.25rem;
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  margin-top: 10px;
   opacity: 0.9;
 }
+
+/* Mobile fix (remove large left padding on small screens) */
+@media (max-width: 430px) {
+    .hero-section {
+    background: url(./assets/project-img.jpg) center center / contain no-repeat;
+    padding: 4rem 0;
+    text-align: left;
+    padding-left: 3%;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    color:#10b981  !important;
+  }
+  .hero-section {
+    padding-left: 1%;
+    padding-right: 35%;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    text-align: center;
+    background-position: center;
+  }
+  .hero-content h1{
+     font-weight: 300;
+     font-size: 25px !important;
+     font-weight: bold;
+  }
+  .hero-content p{
+     font-weight: 300;
+     font-size: 18px !important;
+     padding-left:28%
+  }
+}
+
 
 .property-types {
   display: flex;

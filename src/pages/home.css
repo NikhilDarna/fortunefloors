@@ -740,3 +740,27 @@
       margin-top: 20px !important;
     }
   }
+  @media (max-width: 600px) {
+  .container1 {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .property-types {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    gap: 5px !important;
+  }
+
+  .type-btn {
+    flex: 1 !important;
+    padding: 6px 4px !important;    /* reduced padding */
+    margin: 0 !important;           /* remove extra button gaps */
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+}
