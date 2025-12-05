@@ -8,29 +8,44 @@ const ForgotPassword = () => {
   const [step, setStep] = useState(1);
 
   const sendOtp = async () => {
-    const res = await axios.post("http://localhost:5000/forgot-password", { email });
-    if (res.data.status === "success") {
-      alert("OTP sent to email");
-      setStep(2);
+  try {
+    const res = await axios.post("http://localhost:5000/api/forgot-password", { email });
+
+    console.log("Backend RESPONSE:", res.data);
+
+    if (res.data.message === "OTP sent to email") {
+      alert("OTP sent to your email!");
+      setStep(2);  // ✅ Move to OTP page
     } else {
-      alert(res.data.message);
+      alert(res.data.error || "Something went wrong");
     }
-  };
+
+  } catch (err) {
+    alert(err.response?.data?.error || "Server error");
+  }
+};
+
 
   const resetPassword = async () => {
-    const res = await axios.post("http://localhost:5000/reset-password", {
+  try {
+    const res = await axios.post("http://localhost:5000/api/reset-password", {
       email,
       otp,
       newPassword,
     });
 
-    if (res.data.status === "success") {
-      alert("Password reset successful");
-      setStep(1);
+    if (res.data.message === "Password updated successfully") {
+      alert("Password updated!");
+      setStep(1);  // Back to email login step
     } else {
-      alert(res.data.message);
+      alert(res.data.error);
     }
-  };
+
+  } catch (err) {
+    alert(err.response?.data?.error || "Server error");
+  }
+};
+
 
   return (
     <div style={{ padding: "40px" }}>

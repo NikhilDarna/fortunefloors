@@ -10,7 +10,7 @@ const GoogleSuccess = () => {
   useEffect(() => {
     const token = params.get("token");
     if (token) {
-      const user = { username: "Google User", role: "user" };
+      const user = { username: "Google User", role: "normal" };
       login(token, user);
       navigate("/dashboard");
     }

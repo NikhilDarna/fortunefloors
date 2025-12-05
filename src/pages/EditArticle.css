@@ -1,0 +1,49 @@
+.edit-container {
+  max-width: 650px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.edit-form {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.edit-form label {
+  display: block;
+  margin: 14px 0 6px;
+  font-weight: 600;
+  color: #1a237e;
+}
+
+.edit-form input[type="text"],
+.edit-form textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.edit-old-image {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  background: #0d47a1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: #062d6e;
+}

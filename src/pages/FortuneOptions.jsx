@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import "./FortuneOptions.css";
 
 import Delhi from "../assets/brochers/pg/pg2.webp";
@@ -22,10 +22,39 @@ const cities = [
 const FortuneOptions = () => {
   const scrollRef = useRef(null);
 
-  const scroll = (direction) => {
-    const { current } = scrollRef;
-    if (direction === "left") current.scrollBy({ left: -400, behavior: "smooth" });
-    else current.scrollBy({ left: 400, behavior: "smooth" });
+  // Mobile Auto Infinite Scroll
+  useEffect(() => {
+    const slider = scrollRef.current;
+
+    if (!slider || window.innerWidth > 768) return;
+
+    const autoScroll = setInterval(() => {
+      if (!slider) return;
+
+      slider.scrollBy({
+        left: slider.offsetWidth / 2,
+        behavior: "smooth",
+      });
+
+      // ⭐ Reset to the start to create infinite loop
+      if (
+        slider.scrollLeft + slider.offsetWidth >= slider.scrollWidth - 10
+      ) {
+        setTimeout(() => {
+          slider.scrollTo({ left: 0, behavior: "instant" });
+        }, 600);
+      }
+    }, 2500);
+
+    return () => clearInterval(autoScroll);
+  }, []);
+
+  const scroll = (dir) => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({
+      left: dir === "left" ? -400 : 400,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -34,10 +63,14 @@ const FortuneOptions = () => {
         GET STARTED WITH EXPLORING REAL ESTATE OPTIONS
       </h2>
 
-      <button className="carousel-btn left" onClick={() => scroll("left")}>‹</button>
+      {/* Desktop arrows */}
+      <button className="carousel-btn left desktop-only" onClick={() => scroll("left")}>
+        ‹
+      </button>
 
       <div className="fortune-carousel" ref={scrollRef}>
-        {cities.map((city, index) => (
+        {/* ⭐ Duplicate cards for infinite scroll */}
+        {[...cities, ...cities].map((city, index) => (
           <div className="fortune-card" key={index}>
             <img src={city.image} alt={city.name} className="fortune-image" />
             <p className="fortune-text">{city.name}</p>
@@ -45,7 +78,9 @@ const FortuneOptions = () => {
         ))}
       </div>
 
-      <button className="carousel-btn right" onClick={() => scroll("right")}>›</button>
+      <button className="carousel-btn right desktop-only" onClick={() => scroll("right")}>
+        ›
+      </button>
     </section>
   );
 };

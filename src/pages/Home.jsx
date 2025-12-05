@@ -9,14 +9,15 @@ import Testimonials from "./Testimonials";
 import PgArticle from "./pg_article.jsx";
 import FortuneOptions  from "./FortuneOptions.jsx";
 import { useLocation } from "react-router-dom";
+import Propertycards from "./FeaturedCarousel";
+import BuilderProperties from "./BuilderProperty";
 
 
 import './home.css';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import ad1 from "../assets/ad1.png";
 import image from "../assets/mainimage.png";
-import image1 from "../assets/1.jpg";
+
 
 import acers from "../assets/brochers/acers.jpg";
 import acers1 from "../assets/brochers/acres1.jpeg";
@@ -251,39 +252,11 @@ const applyNavbarFilter = (filterType, value) => {
           {/* 🔹 Filters */}
           <PropertyFilters onFilterChange={handleFilterChange} />
         </div>
-        
-
-        
-        
         <FortuneOptions/>
         
         {/* 🏡 Featured Properties with Side Ads */}
-        <div className="featured-section-with-ads">
-          <div className="main-properties">
-            <div className="properties-section-header">
-              <h2>Featured Properties</h2>
-              <Link to="/all-properties" className="see-all-btn">See All</Link>
-            </div>
-
-            {loading ? (
-              <div className="loading">Loading properties...</div>
-            ) : filteredProperties.length === 0 ? (
-              <div className="no-properties">No properties found.</div>
-            ) : (
-              <Slider {...carouselSettings}>
-                {filteredProperties.map((property) => (
-                  <div key={property.id}>
-                    <PropertyCard property={property} />
-                  </div>
-                ))}
-              </Slider>
-            )}
-          </div>
-
-          <div className="ad-space right-ad">
-            <img src={ad1} alt="Ad Right" />
-          </div>
-        </div>
+        <Propertycards properties={filteredProperties} loading={loading} />
+        
 
         {/* 🧩 Sell or Rent Section */}
           <div
@@ -500,33 +473,7 @@ const applyNavbarFilter = (filterType, value) => {
             </div>
           </div>
 
-         {/* 🏠 Popular Properties with Side Ads */}
-        <div className="featured-section-with-ads">
-          <div className="main-properties">
-            <div className="properties-section-header">
-              <h2>Popular Properties</h2>
-              <Link to="/all-properties" className="see-all-btn">See All</Link>
-            </div>
-
-            {loading ? (
-              <div className="loading">Loading properties...</div>
-            ) : filteredProperties.length === 0 ? (
-              <div className="no-properties">No properties found.</div>
-            ) : (
-              <Slider {...carouselSettings}>
-                {filteredProperties.map((property) => (
-                  <div key={property.id}>
-                    <PropertyCard property={property} />
-                  </div>
-                ))}
-              </Slider>
-            )}
-          </div>
-
-          <div className="ad-space right-ad">
-            <img src={ad1} alt="Ad Right" />
-          </div>
-        </div>
+        <BuilderProperties properties={filteredProperties} loading={loading} />
         
        
        <PgArticle/>

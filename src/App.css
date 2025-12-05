@@ -1,4 +1,12 @@
 /* Global Styles */
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -1472,6 +1480,174 @@ body {
 /* Utility Classes */
 .text-center {
   text-align: center;
+}
+/* ===== Page Layout ===== */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+  background: #f3f4f6;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #111827;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* ===== Tabs ===== */
+.login-tabs {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  background: #f3f4f6;
+  padding: 0.4rem;
+  border-radius: 0.75rem;
+}
+
+.login-tabs button {
+  flex: 1;
+  padding: 0.7rem 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  border-radius: 0.5rem;
+  transition: 0.3s ease;
+}
+
+.login-tabs button.active {
+  background: #2563EB;
+  color: white;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+}
+
+/* ===== Form Inputs ===== */
+.auth-form input {
+  width: 100%;
+  padding: 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.auth-form input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+/* ===== Buttons ===== */
+.auth-form button,
+.google-btn {
+  width: 100%;
+  padding: 0.9rem;
+  background: #2563EB;
+  border: none;
+  color: white;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 0.3rem;
+}
+
+.auth-form button:hover,
+.google-btn:hover {
+  background: #1d4ed8;
+}
+
+.auth-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== Google Button ===== */
+.google-btn {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  background: #efefef;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.google-btn:hover {
+  background: #e5e5e5;
+}
+
+/* ===== Error & Success Messages ===== */
+.error-message {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #fecaca;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  background: #d1fae5;
+  color: #059669;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #a7f3d0;
+  margin-bottom: 1rem;
+}
+
+/* ===== Auth Links ===== */
+.auth-link {
+  text-align: center;
+  margin-top: 1.2rem;
+}
+
+.auth-link a {
+  color: #2563EB;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ===== Resend OTP ===== */
+.resend-otp {
+  text-align: center;
+  margin-top: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: #2563EB;
+}
+
+/* ===== Logout Button (used globally) ===== */
+.logout-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
 }
 
 .mt-1 { margin-top: 0.25rem; }

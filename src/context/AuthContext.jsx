@@ -15,31 +15,51 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 
+  // ---------------------------------------------------
+  // 1️⃣ CHECK GOOGLE SESSION
+  // ---------------------------------------------------
   useEffect(() => {
-    if (token) {
-      try {
-        // ✅ Decode JWT payload
+    fetch("http://localhost:5000/auth/user", {
+      credentials: "include", // IMPORTANT
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.loggedIn) {
+          setUser(data.user);
+          setToken(null); // Google login does not use JWT
+          setLoading(false);
+        } else {
+          checkLocalToken(); // fallback to normal login
+        }
+      })
+      .catch(() => checkLocalToken());
+  }, []);
+
+  // ---------------------------------------------------
+  // 2️⃣ JWT Normal Login (Fallback)
+  // ---------------------------------------------------
+  const checkLocalToken = () => {
+    try {
+      if (token) {
         const payload = JSON.parse(atob(token.split(".")[1]));
         const userData = JSON.parse(localStorage.getItem("user"));
 
-        // ✅ Validate token expiry and user data
         if (payload.exp * 1000 > Date.now() && userData) {
           setUser(userData);
         } else {
           logout();
         }
-      } catch (error) {
-        console.error("Invalid token, logging out...", error);
-        logout();
       }
-    } else {
-      setUser(null);
+    } catch (error) {
+      console.error("Invalid token", error);
+      logout();
     }
-
     setLoading(false);
-  }, [token]);
+  };
 
-  // ✅ Login and persist token + user info
+  // ---------------------------------------------------
+  // 3️⃣ JWT Login Handler
+  // ---------------------------------------------------
   const login = (token, userData) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
@@ -47,22 +67,29 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  // ✅ Logout and clear all
+  // ---------------------------------------------------
+  // 4️⃣ Logout (Google + JWT)
+  // ---------------------------------------------------
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken(null);
     setUser(null);
+
+    // clear google session in backend
+    fetch("http://localhost:5000/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
   };
 
-  // ✅ Context value accessible in all components
   const value = {
     user,
     token,
     login,
     logout,
     loading,
-    isAuthenticated: !!user && !!token,
+    isAuthenticated: !!user,
   };
 
   return (

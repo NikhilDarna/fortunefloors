@@ -11,24 +11,27 @@ const Navbar = () => {
   const [location, setLocation] = useState("Fetching...");
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeLeftItem, setActiveLeftItem] = useState(null);
+  const [activeRightItem, setActiveRightItem] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuRef = useRef(null);
 
-  // Detect click outside menu to close it
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setMobileMenuOpen(false);
         setActiveDropdown(null);
+        setActiveLeftItem(null);
+        setActiveRightItem(null);
       }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Auto detect location
+  // Try to auto-detect city using Nominatim (optional)
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -38,7 +41,7 @@ const Navbar = () => {
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
           );
           const data = await res.json();
-          setLocation(data.address.city || data.address.town || "Unknown");
+          setLocation(data.address?.city || data.address?.town || "Unknown");
         } catch (err) {
           setLocation("Unknown");
         }
@@ -51,7 +54,6 @@ const Navbar = () => {
     window.location.href = "/";
   };
 
-  // Dropdown data
   const dropdowns = {
     Buy: {
       left: ["Popular Choices", "Budget", "Property Types"],
@@ -65,12 +67,7 @@ const Navbar = () => {
           img: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
         "Property Types": {
-          links: [
-            `Flats in ${location}`,
-            `Houses in ${location}`,
-            "Villas",
-            "Commercial Spaces",
-          ],
+          links: [`Flats in ${location}`, `Houses in ${location}`, "Villas", "Commercial Spaces"],
           img: "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
       },
@@ -83,12 +80,7 @@ const Navbar = () => {
           img: "https://images.pexels.com/photos/259962/pexels-photo-259962.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
         "Property Types": {
-          links: [
-            `Flats for Rent in ${location}`,
-            `Houses for Rent in ${location}`,
-            "PGs / Hostels",
-            "Office Space",
-          ],
+          links: [`Flats for Rent in ${location}`, `Houses for Rent in ${location}`, "PGs / Hostels", "Office Space"],
           img: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
       },
@@ -132,9 +124,45 @@ const Navbar = () => {
         },
       },
     },
+    pg: {
+      left: ["For Men", "For Girls", "Co-living", "Women"],
+      right: {
+        "For Men": {
+          links: ["Luxury PG", "Deluxe PG", "Normal PG", "Sharing"],
+          img: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=600",
+          right: {
+            Sharing: {
+              links: ["1-Share", "2-Share", "3-Share", "5-Share", "8-Share"],
+            },
+          },
+        },
+        "For Girls": {
+          links: ["Luxury PG", "Deluxe PG", "Normal PG", "Sharing"],
+          img: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=600",
+          right: {
+            Sharing: {
+              links: ["1-Share", "2-Share", "3-Share", "5-Share", "8-Share"],
+            },
+          },
+        },
+        "Co-living": {
+          links: ["Luxury PG", "Deluxe PG"],
+          img: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=600",
+        },
+        "Women": {
+          links: ["Luxury PG", "Deluxe PG", "Normal PG", "Sharing"],
+          img: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=600",
+          right: {
+            Sharing: {
+              links: ["1-Share", "2-Share", "3-Share", "5-Share", "8-Share"],
+            },
+          },
+        },
+      },
+    },
   };
 
-  // Handle link click (desktop & mobile)
+  // Handle many quick navigation shortcuts
   const handleLinkClick = (link) => {
     let toUrl = "/";
 
@@ -150,14 +178,15 @@ const Navbar = () => {
     } else if (link === "Post Property") {
       toUrl = user ? "/post-property" : "/login";
     } else if (link === "Agent Services") toUrl = "/agents";
-    else if (link === "Commercial Listings")
-      toUrl = "/?filter=type&value=commercial";
+    else if (link === "Commercial Listings") toUrl = "/?filter=type&value=commercial";
     else if (link === "Pricing Guide") toUrl = "/pricing";
     else if (link === "FAQs") toUrl = "/faqs";
 
     navigate(toUrl);
     setMobileMenuOpen(false);
     setActiveDropdown(null);
+    setActiveLeftItem(null);
+    setActiveRightItem(null);
   };
 
   return (
@@ -172,6 +201,8 @@ const Navbar = () => {
               navigate("/");
               setMobileMenuOpen(false);
               setActiveDropdown(null);
+              setActiveLeftItem(null);
+              setActiveRightItem(null);
             }}
           >
             <img src={navlogo} alt="Logo" className="ff-logo" />
@@ -180,17 +211,27 @@ const Navbar = () => {
 
         {/* Center Menu */}
         <div className={`ff-menu ${mobileMenuOpen ? "active" : ""}`}>
-          <div
-            className="ff-dropdown"
-            onClick={() => {
-              navigate("/");
-              setMobileMenuOpen(false);
-              setActiveDropdown(null);
-            }}
-          >
-            <span className="ff-menu-name">Home</span>
+          {/* HOME + optional admin Post Article (kept separate so clicks don't collide) */}
+          <div className="ff-dropdown home-block">
+            <span
+              className="ff-menu-name"
+              onClick={() => {
+                navigate("/");
+                setMobileMenuOpen(false);
+                setActiveDropdown(null);
+                setActiveLeftItem(null);
+                setActiveRightItem(null);
+              }}
+            >
+              Home
+            </span>
+
+            
           </div>
 
+          
+
+          {/* Render the big dropdowns (Buy / Rent / Sell / etc) */}
           {Object.keys(dropdowns).map((item) => (
             <div
               key={item}
@@ -198,36 +239,49 @@ const Navbar = () => {
               onMouseEnter={() => {
                 if (window.innerWidth > 900) {
                   setActiveDropdown(item);
-                  setActiveLeftItem(Object.keys(dropdowns[item].right)[0]);
+                  const firstLeft = dropdowns[item].left?.[0] || null;
+                  setActiveLeftItem(firstLeft);
+                  setActiveRightItem(null);
                 }
               }}
               onMouseLeave={() => {
                 if (window.innerWidth > 900) {
                   setActiveDropdown(null);
                   setActiveLeftItem(null);
+                  setActiveRightItem(null);
                 }
               }}
             >
               <span
                 className="ff-menu-name"
-                onClick={() =>
-                  setActiveDropdown(activeDropdown === item ? null : item)
-                }
+                onClick={() => {
+                  const newVal = activeDropdown === item ? null : item;
+                  setActiveDropdown(newVal);
+                  if (newVal) {
+                    const firstLeft = dropdowns[item].left?.[0] || null;
+                    setActiveLeftItem(firstLeft);
+                    setActiveRightItem(null);
+                  } else {
+                    setActiveLeftItem(null);
+                    setActiveRightItem(null);
+                  }
+                }}
               >
                 {item}
               </span>
 
-              {/* Desktop Dropdown */}
+              {/* Desktop dropdown panel */}
               {activeDropdown === item && window.innerWidth > 900 && (
                 <div className="ff-dropdown-panel center-popup">
                   <div className="panel-left">
                     {dropdowns[item].left.map((leftItem) => (
                       <div
                         key={leftItem}
-                        className={`left-item ${
-                          activeLeftItem === leftItem ? "active" : ""
-                        }`}
-                        onMouseEnter={() => setActiveLeftItem(leftItem)}
+                        className={`left-item ${activeLeftItem === leftItem ? "active" : ""}`}
+                        onMouseEnter={() => {
+                          setActiveLeftItem(leftItem);
+                          setActiveRightItem(null);
+                        }}
                       >
                         {leftItem}
                       </div>
@@ -235,38 +289,66 @@ const Navbar = () => {
                   </div>
 
                   <div className="panel-middle">
-                    {dropdowns[item].right[activeLeftItem]?.links.map((link) => (
-                      <div
-                        key={link}
-                        className="dropdown-link"
-                        onClick={() => handleLinkClick(link)}
-                      >
-                        {link}
-                      </div>
-                    ))}
+                    {dropdowns[item].right[activeLeftItem]?.links?.map((link) => {
+                      const middleData = dropdowns[item].right[activeLeftItem];
+                      const hasSubmenu = middleData?.right && middleData.right[link];
+
+                      return (
+                        <div
+                          key={link}
+                          className={`dropdown-link ${activeRightItem === link ? "active" : ""}`}
+                          onMouseEnter={() => {
+                            if (hasSubmenu) setActiveRightItem(link);
+                            else setActiveRightItem(null);
+                          }}
+                          onClick={() => {
+                            if (!hasSubmenu) handleLinkClick(link);
+                          }}
+                        >
+                          {link} {hasSubmenu && "›"}
+                        </div>
+                      );
+                    })}
                   </div>
 
-                  <div className="panel-image">
-                    <img
-                      src={dropdowns[item].right[activeLeftItem]?.img}
-                      alt="preview"
-                    />
-                  </div>
+                  {/* Right column: third-level menu or image preview */}
+                  {(() => {
+                    const middleData = dropdowns[item].right[activeLeftItem] || {};
+                    const thirdData = middleData.right?.[activeRightItem] || null;
+
+                    if (thirdData?.links?.length) {
+                      return (
+                        <div className="panel-right-third">
+                          {thirdData.links.map((subLink) => (
+                            <div
+                              key={subLink}
+                              className="dropdown-sublink"
+                              onClick={() => handleLinkClick(subLink)}
+                            >
+                              {subLink}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="panel-image">
+                        <img src={dropdowns[item].right[activeLeftItem]?.img} alt="preview" />
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
-              {/* Mobile Dropdown */}
+              {/* Mobile dropdown rendering */}
               {activeDropdown === item && window.innerWidth <= 900 && (
                 <div className="mobile-submenu">
                   {dropdowns[item].left.map((leftItem) => (
                     <div key={leftItem}>
                       <div className="mobile-left-item">{leftItem}</div>
-                      {dropdowns[item].right[leftItem]?.links.map((link) => (
-                        <div
-                          key={link}
-                          className="mobile-link"
-                          onClick={() => handleLinkClick(link)}
-                        >
+                      {dropdowns[item].right[leftItem]?.links?.map((link) => (
+                        <div key={link} className="mobile-link" onClick={() => handleLinkClick(link)}>
                           {link}
                         </div>
                       ))}
@@ -276,14 +358,44 @@ const Navbar = () => {
               )}
             </div>
           ))}
+          {/* Articles link (separate dropdown cell) */}
+          <div className="ff-dropdown">
+            <Link
+              to="/Articles"
+              className="ff-menu-name"
+              onClick={(e) => {
+                // stopPropagation to be safe in mobile/menu states
+                e.stopPropagation();
+                setMobileMenuOpen(false);
+                setActiveDropdown(null);
+              }}
+            >
+              Articles
+            </Link>
+          </div>
+          {/* Admin only: Post New Article */}
+            {user?.role === "admin" && (
+              <Link
+                to="/admin/post-article"
+                className="ff-menu-name admin-article-link"
+                onClick={(e) => {
+                  // Prevent parent Home click from firing
+                  e.stopPropagation();
+                }}
+              >
+                Post New Article
+              </Link>
+            )}
         </div>
 
-        {/* Right Section (Desktop Only) */}
+        {/* Right Section (desktop) */}
         <div className="ff-right">
           <div className="ff-location">📍 {location}</div>
+
           <Link to="/post-property" className="ff-post-btn">
             Post Property
           </Link>
+
           <div
             className="profile-wrapper"
             onMouseEnter={() => setShowProfileMenu(true)}
@@ -301,7 +413,7 @@ const Navbar = () => {
                   <>
                     <Link to="/profile">My Profile</Link>
                     <Link to="/dashboard">Dashboard</Link>
-                    {user.role === "admin" && <Link to="/admin">Admin Panel</Link>}
+                    {user?.role === "admin" && <Link to="/admin">Admin Panel</Link>}
                     <Link to="/wishlist">Wishlist</Link>
                     <button onClick={handleLogout}>Logout</button>
                   </>
@@ -309,12 +421,15 @@ const Navbar = () => {
               </div>
             )}
           </div>
+
           <div
             className="hamburger"
             onClick={(e) => {
               e.stopPropagation();
               setMobileMenuOpen((prev) => !prev);
               setActiveDropdown(null);
+              setActiveLeftItem(null);
+              setActiveRightItem(null);
             }}
           >
             {mobileMenuOpen ? <FaTimes /> : <FaBars />}

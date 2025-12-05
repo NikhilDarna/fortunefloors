@@ -10,11 +10,18 @@ import AdminDashboard from './pages/AdminDashboard';
 import PropertyDetails from './pages/PropertyDetails';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WishlistProvider } from "./components/wishlistcontext";
+import GoogleSuccess from './pages/SocialLoginSuccess';
 import SubscriptionPlans from "./pages/SubscriptionPlans";
 import WishlistPage from "./pages/WishlistPage";
 import FeaturePlans from "./pages/FeaturePlans";
 import AllProperties from "./pages/allpropertiespage";
 import ForgotPassword from './pages/ForgotPassword';
+import PostArticle from './pages/PostArticle';
+import Articles from './pages/Articles';
+import SingleArticle from './pages/SingleArticle';
+import EditArticle from "./pages/EditArticle";
+
+
 
 import './App.css';
 
@@ -54,12 +61,21 @@ function App() {
                   </AdminRoute>
                 }
               />
-              <Route path="/property/:id" element={<PropertyDetails />} />
+              <Route path="/property/:slug" element={<PropertyDetails />} />
               <Route path="/subscription" element={<SubscriptionPlans />} />
               <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/feature-plans" element={<FeaturePlans />} />
               <Route path="/all-properties" element={<AllProperties />} />
               <Route path="/ForgotPassword" element={<ForgotPassword />} />
+              <Route path="/social-login-success" element={<GoogleSuccess />} />
+              <Route path="/admin/post-article" element={<PostArticle />} />
+              <Route path="/Articles" element={<Articles />} />
+              <Route path="/article/:slug" element={<SingleArticle />} />
+              <Route
+                path="/admin/edit-article/:id"
+                element={<ProtectedRoute><EditArticle /></ProtectedRoute>}
+              />
+
             </Routes>
 
             <Footer />

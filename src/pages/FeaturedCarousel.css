@@ -1,0 +1,226 @@
+/* MAIN WRAPPER */
+.popular-main-container {
+  display: flex;
+  width: 100%;
+  padding: 20px 40px;
+  gap: 25px;
+}
+
+/* LEFT SECTION */
+.popular-left {
+  width: 70%;
+}
+
+/* RIGHT SIDE AD */
+.popular-right-ad {
+  width: 30%;
+}
+
+.popular-right-ad img {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+/* HEADER */
+.popular-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.popular-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* SCROLLER */
+.scroll-wrapper {
+  position: relative;
+}
+
+.popular-scroller {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.popular-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* DESKTOP CARD */
+.popular-card {
+  width: 300px;
+  flex: 0 0 auto;
+}
+
+/* 🔥 REMOVE ALL SPACE UNDER IMAGE */
+.popular-card .property-card {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: #fff;
+  border-radius: 14px;
+}
+
+.popular-card .property-card img {
+  width: 100%;
+  height: 150px !important;
+  object-fit: cover;
+  border-radius: 14px 14px 0 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  line-height: 0 !important;
+}
+
+/* 🔥 REMOVE ALL INNER SPACING */
+.popular-card .property-card * {
+  padding: 0 !important;
+  margin: 2px 0 !important;
+  line-height: 1.2 !important;
+}
+
+/* BUTTON FIX */
+.popular-card .property-card button,
+.popular-card .property-card  {
+  margin-top: 6px !important;
+}
+.view-details-btn {
+  width: 30%;
+  height: 10%;
+  background: #1a55ff;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0 !important;     /* ↑ Bigger button height */
+  border-radius: 8px;
+  margin: 8px 0 !important;        /* Better spacing */
+  font-size: 14px !important;      /* ↑ Larger text */
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: .2px;
+  display: block;
+}
+
+/* ARROWS */
+.arrow-btn {
+  background: #333;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.arrow-btn.left {
+  left: -15px;
+}
+
+.arrow-btn.right {
+  right: -15px;
+}
+
+/* MOBILE VIEW */
+@media (max-width: 768px) {
+  .popular-main-container {
+    flex-direction: column;
+    padding: 10px 12px;
+    gap: 15px;
+  }
+
+  .popular-left {
+    width: 100%;
+  }
+
+  .popular-right-ad {
+    display: none;
+  }
+
+  .popular-header h2 {
+    font-size: 22px;
+  }
+
+  .popular-card {
+    width: 85%;
+    flex: 0 0 auto;
+  }
+
+  .popular-card .property-card img {
+    height: 140px;
+  }
+
+  .popular-scroller {
+    gap: 14px;
+  }
+
+  .arrow-btn {
+    display: none !important;
+  }
+}
+/* ⭐⭐⭐ MOBILE DOUBLE ROW HORIZONTAL SCROLL ⭐⭐⭐ */
+@media (max-width: 768px) {
+
+  .row-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .row-scroller {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+  }
+
+  .row-scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .popular-card {
+    width: 48% !important; /* 2 cards fit per viewport */
+    flex: 0 0 auto !important;
+  }
+
+  .popular-right-ad {
+    display: block !important;
+    margin-top: 20px;
+    width: 100% !important;
+  }
+
+  .popular-right-ad img {
+    width: 100%;
+    height: auto;
+  }
+
+  .arrow-btn {
+    display: none !important;
+  }
+  .view-details-btn {
+  width: 50%;
+  height: 10%;
+  background: #1a55ff;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0 !important;     /* ↑ Bigger button height */
+  border-radius: 8px;
+  margin: 8px 0 !important;        /* Better spacing */
+  font-size: 14px !important;      /* ↑ Larger text */
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: .2px;
+  display: block;
+}
+
+}

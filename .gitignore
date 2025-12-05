@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+import.me
+ta.env
+*.env
+*.me
+

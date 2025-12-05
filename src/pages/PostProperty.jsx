@@ -152,12 +152,22 @@ const PostProperty = () => {
 
     try {
       const submitData = new FormData();
+
+      // 1️⃣ Send TITLE manually FIRST (highest priority)
+      submitData.append("title", formData.title);
+
+      // 2️⃣ Then send all other text fields
       Object.keys(formData).forEach((key) => {
-        submitData.append(key, formData[key]);
+        if (key !== "title") {
+          submitData.append(key, formData[key]);
+        }
       });
+
+      // 3️⃣ Finally send PHOTOS (must be last)
       photos.forEach((photo) => {
         submitData.append("photos", photo);
       });
+ 
 
       const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:5000/api/properties", {
@@ -336,7 +346,7 @@ const PostProperty = () => {
                   ))}
                 </div>
               </div>
-
+              
               {/* ---- Property Details ---- */}
               <div className="form-section">
                 <h3>Property Details</h3>

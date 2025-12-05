@@ -1,8 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+
+
+// 🔥 Slug generator
+const createSlug = (title, location) =>
+  `${title}-${location}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 
 const PropertyDetails = () => {
-  const { id } = useParams();
+  const { slug } = useParams(); // ⬅️ using slug instead of id
   const navigate = useNavigate();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,14 +31,20 @@ const PropertyDetails = () => {
 
   useEffect(() => {
     fetchPropertyDetails();
-  }, [id]);
+  }, [slug]);
 
   const fetchPropertyDetails = async () => {
     try {
       const response = await fetch(`http://localhost:5000/api/properties`);
       const properties = await response.json();
-      const foundProperty = properties.find((p) => p.id === parseInt(id));
-      setProperty(foundProperty);
+
+      // 🔥 find property by title slug
+      const foundProperty = properties.find(
+        (p) => createSlug(p.title, p.location) === slug
+      );
+
+
+      setProperty(foundProperty || null);
     } catch (error) {
       console.error("Error fetching property details:", error);
     } finally {
@@ -65,7 +81,18 @@ const PropertyDetails = () => {
   if (!property) return <div className="error">Property not found</div>;
 
   return (
+    
     <div className="property-details">
+      <Helmet>
+        <title>{property.title} | {property.location} | FortuneFloors</title>
+        <meta name="description" content={property.description.substring(0, 150)} />
+        <meta name="keywords" content={`${property.title}, ${property.location}, property for sale, real estate, flats, houses,fortune floors, fortune real estate, real estate hyderabad, real estate india, property for sale hyderabad, flats for sale hyderabad, apartments for rent hyderabad, houses for sale hyderabad, buy property hyderabad, rent property hyderabad, property dealers hyderabad, real estate brokers hyderabad, single sharing rooms hyderabad, double sharing rooms hyderabad, pg in hyderabad, coliving hyderabad, single sharing pg hyderabad, multiple sharing pg hyderabad, sharing rooms for rent hyderabad, bachelor rooms hyderabad, furnished flats hyderabad, unfurnished flats hyderabad, gated community flats hyderabad, villas for sale hyderabad, independent house for sale hyderabad, builder floors hyderabad, plots for sale hyderabad, land for sale hyderabad, commercial property hyderabad, office space for rent hyderabad, shop for rent hyderabad, retail space hyderabad, luxury flats hyderabad, affordable flats hyderabad, 1bhk for rent hyderabad, 2bhk for rent hyderabad, 3bhk for rent hyderabad, 1bhk for sale hyderabad, 2bhk for sale hyderabad, 3bhk for sale hyderabad, buy home in hyderabad, rent house in hyderabad, real estate investment hyderabad, property listing hyderabad, best real estate website hyderabad, verified properties hyderabad, flats for rent india, houses for sale india, property for sale india, rent homes india, buy houses india, pg rooms india, coliving india`} />
+
+        <link
+          rel="canonical"
+          href={`https://fortunefloors.com/property/${slug}`}
+        />
+      </Helmet>
       <div className="container">
         {/* ---------- Property Images ---------- */}
         <div className="property-images">
@@ -117,7 +144,6 @@ const PropertyDetails = () => {
           <div className="property-features">
             <h3>Property Features</h3>
             <div className="features-grid">
-              {/* ✅ Added below: property type details */}
               {property.category && (
                 <div className="feature">
                   <span className="feature-icon">🏢</span>
@@ -136,7 +162,6 @@ const PropertyDetails = () => {
                   <span>Listing Type: {property.listingType}</span>
                 </div>
               )}
-              {/* Existing features */}
               {property.area && (
                 <div className="feature">
                   <span className="feature-icon">📏</span>
