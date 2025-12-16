@@ -1,0 +1,664 @@
+/* -------------------------------------------------------------------
+    Global
+------------------------------------------------------------------- */
+.expo-page {
+  background:#f7fbff;
+  color:#00335f;
+  font-family: "Inter", sans-serif;
+}
+/* -------------------------------------------------------------------
+    HERO
+------------------------------------------------------------------- */
+.expo-hero {
+  background: linear-gradient(145deg,#353030,#064e88);
+  padding-bottom: 100px;
+  color:white;
+}
+
+/* NAV */
+.expo-nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:22px 60px;
+}
+.expo-nav a{
+  color:white;
+  margin-left:30px;
+  font-weight:500;
+  opacity:.8;
+}
+.expo-nav a:hover{
+  opacity:1;
+  color: red;
+}
+
+.expo-logo-mark{
+  font-weight:1300;
+  font-size:36px;
+  color:red;
+}
+.venue-addres-span{
+  font-family:'Times New Roman', Times, serif;
+  font-size: 20px;
+}
+.expo-logo-text{
+  margin-left:8px;
+  opacity:.8;
+  font-size: 22px;
+}
+
+/* HERO CONTENT */
+.expo-hero-content{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  padding:10px 60px;
+}
+.expo-hero-left{
+  width:75%;
+  text-align: center;
+}
+.expo-badge{
+  background:#48bcff;
+  color:#032c4d;
+  display:inline-block;
+  padding:6px 14px;
+  border-radius:6px;
+  font-weight:600;
+  margin-bottom:12px;
+}
+.expo-hero-left h1{
+  font-size:52px;
+  font-weight:700;
+}
+.expo-hero-left h1 span{
+  color:red;
+}
+.expo-badge-header{
+  color: #ffffff !important;
+}
+.expo-hero-subtitle{
+  margin-top:15px;
+  opacity:.85;
+  font-size:18px;
+}
+
+.expo-hero-cta{
+  margin-top:30px;
+  display:flex;
+  gap:20px;
+  padding-top: 20px;
+  justify-content: center;
+}
+.btn{
+  padding:12px 32px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.3s;
+}
+.btn-primary{
+  background:#48bcff;
+  color:#03304f;
+  border:0;
+}
+.btn-outline{
+  border:2px solid #48bcff;
+  color:#48bcff;
+  background:transparent;
+}
+.btn-outline:hover{
+  background:#065684 !important;
+  color:#ffffff !important;
+}
+.btn-primary:hover{
+  background:#065684 !important;
+  color:#ffffff !important;
+}
+/* META */
+.expo-hero-meta{
+  display:flex;
+  gap:40px;
+  padding-top: 30px;
+  justify-content: center;
+  
+}
+.expo-hero-meta strong{
+  display:block;
+}
+.expo-hero-right{
+  width:25%;
+  display:flex;
+  flex-direction:column;
+  gap:40px;
+}
+
+
+/* Highlight Box */
+.expo-highlight-card{
+  background:white;
+  border-radius:16px;
+  padding:35px;
+  color:#04355e;
+  font-size:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,.13);
+  text-align: center;
+}
+.expo-highlight-card h3{
+  font-size:26px;
+  font-weight:700;
+}
+.expo-highlight-card li{
+  margin:10px 0;
+}
+
+/* Stats */
+.expo-stats{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  text-align:center;
+}
+.expo-stats h4{
+  font-size:34px;
+  color:#48bcff;
+}
+
+/* -------------------------------------------------------------------
+    SECTIONS
+------------------------------------------------------------------- */
+.section{
+  padding:20px 0;
+}
+.section-alt{
+  background:#edf8ff;
+}
+.container{
+  width:83%;
+  margin:auto;
+}
+.section h2{
+  font-size:42px;
+  margin-bottom:20px;
+  text-align:center;
+}
+.section-subtitle{
+  max-width:600px;
+  margin:auto;
+  text-align:center;
+  opacity:.8;
+}
+
+
+/* -------------------------------------------------------------------
+    ABOUT cards with flip
+------------------------------------------------------------------- */
+.about-grid{
+  display:flex;
+  gap:30px;
+  margin-top:55px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+/* CARD FLIP */
+.about-card{
+  width:340px;
+  height:200px;
+  perspective:1000px;
+}
+.about-card:hover .flip{
+  transform:rotateY(280deg);
+}
+.flip{
+  width:100%;
+  height:100%;
+  border-radius:14px;
+  transition:.7s;
+  transform-style:preserve-3d;
+}
+.flip-front,
+.flip-back{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  border-radius:14px;
+  padding:30px;
+  color:white;
+  backface-visibility:hidden;
+}
+.flip-front{
+  background:#0b2e5c;
+  border-top:5px solid #48bcff;
+}
+.flip-back{
+  background:#45aaf7;
+  transform:rotateY(180deg);
+  color:#01263f;
+}
+
+
+/* -------------------------------------------------------------------
+    Why Participate - modern cards
+------------------------------------------------------------------- */
+.grid-4{
+  display:flex;
+  flex-wrap:wrap;
+  gap:25px;
+  justify-content:center;
+  margin-top:40px;
+}
+.feature-card{
+  width:260px;
+  background:white;
+  padding:26px;
+  border-radius:14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.09);
+  border-left:6px solid #48bcff;
+}
+.feature-card h3{
+  color:#003f74;
+}
+
+
+/* -------------------------------------------------------------------
+    WHO SHOULD EXHIBIT
+------------------------------------------------------------------- */
+.who-grid{
+  display:flex;
+  flex-direction:column;
+  gap:35px;
+  margin-top:45px;
+}
+.who-item{
+  display:flex;
+  gap:30px;
+  background:white;
+  border-radius:14px;
+  padding:20px;
+  border-left:6px solid #48bcff;
+}
+.who-number{
+  font-size:42px;
+  font-weight:700;
+  color:#48bcff;
+}
+
+
+/* -------------------------------------------------------------------
+    FORMS
+------------------------------------------------------------------- */
+.forms-grid{
+  display:flex;
+  gap:40px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-top:45px;
+}
+.form-card{
+  width:450px;
+  background:white;
+  border-radius:18px;
+  padding:40px;
+  box-shadow:0 8px 22px rgba(0,0,0,.08);
+}
+.form-subtext{
+  opacity:.85;
+  margin-bottom:20px;
+}
+.form-row{
+  display:flex;
+  gap:20px;
+}
+.form-group{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:15px;
+}
+.form-group input,
+.form-group select,
+textarea{
+  border:2px solid #d5ecff;
+  padding:12px;
+  border-radius:10px;
+  background:#f7fcff;
+}
+
+.full-width{
+  width:100%;
+  margin-top:25px;
+}
+
+/* -------------------------------------------------------------------
+    FAQ
+------------------------------------------------------------------- */
+.faq-list{
+  max-width:750px;
+  margin:auto;
+}
+.faq-item{
+  background:white;
+  border-radius:12px;
+  padding:16px 22px;
+  margin-bottom:15px;
+  border-left:6px solid #48bcff;
+}
+.faq-item summary{
+  cursor:pointer;
+  font-weight:600;
+}
+.faq-item p{
+  margin-top:12px;
+  opacity:.8;
+}
+/* ================= MOBILE / TABLET ================= */
+@media(max-width:1200px){
+  .expo-hero-content{
+    flex-direction:column;
+    padding:40px 20px;
+  }
+  .expo-hero-left,
+  .expo-hero-right{
+    width:100%;
+  }
+  .expo-highlight-card{
+    margin-top:40px;
+  }
+}
+
+
+/* ================= MOBILE ================= */
+@media(max-width:768px){
+
+  /* NAV */
+  .expo-nav{
+    flex-direction:column;
+    padding:20px;
+    text-align:center;
+  }
+  .expo-nav-links{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-top:15px;
+  }
+  .expo-nav-links a{
+    margin:6px 10px;
+  }
+
+  /* HERO */
+  .expo-hero-left h1{
+    font-size:34px;
+  }
+  .expo-hero-left{
+    width:100%;
+  }
+  .expo-hero-meta{
+    flex-direction:column;
+    text-align:left;
+    gap:15px;
+  }
+
+  /* STATS */
+  .expo-stats{
+    flex-direction:column;
+  }
+
+  /* ABOUT GRID */
+  .about-grid{
+    flex-direction:column;
+  }
+
+  /* WHY PARTICIPATE */
+  .grid-4{
+    flex-direction:column;
+    align-items:center;
+  }
+
+  /* WHO SHOULD EXHIBIT */
+  .who-item{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  /* FORMS */
+  .forms-grid{
+    flex-direction:column;
+    width:100%;
+  }
+  .form-card{
+    width:100%;
+  }
+  .form-row{
+    flex-direction:column;
+  }
+}
+
+/* EXTRA SMALL */
+@media(max-width:480px){
+
+  .expo-hero{
+    padding-bottom:60px;
+  }
+  .expo-buttons{
+    flex-direction:column;
+  }
+
+  .expo-hero-left h1{
+    font-size:28px;
+    line-height:36px;
+  }
+
+  .btn{
+    width:100%;
+    text-align:center;
+  }
+
+  .expo-badge{
+    font-size:12px;
+  }
+
+  .expo-logo-text{
+    font-size:14px;
+    color: #ffffff !important;
+  }
+}
+/* MOBILE CARD AUTO HEIGHT */
+@media(max-width:768px){
+
+  .about-card,
+  .feature-card,
+  .who-item,
+  .form-card {
+    height:auto !important;
+    min-height:auto !important;
+    align-items: center;
+    text-align: center;
+  }
+
+  .about-card{
+    width:100% !important;
+  }
+
+  /* flip inner full height mobile */
+  .flip,
+  .flip-front,
+  .flip-back{
+    height:auto !important;
+    position:relative;
+    transform:none !important;
+    backface-visibility:visible !important;
+  }
+
+  /* remove flip on mobile hover */
+  .about-card:hover .flip{
+    transform:none !important;
+  }
+
+  /* space inside */
+  .about-card p{
+    margin-top:6px;
+  }
+}
+/* =============== MOBILE CLEAN FIX =============== */
+@media(max-width:768px){
+
+  /* remove giant spacing top/bottom */
+  .section{
+    padding:40px 0!important;
+  }
+  .section-alt{
+    padding:40px 0!important;
+  }
+
+  .expo-page{
+    padding:0!important;
+  }
+
+  /* hero padding reduce */
+  .expo-hero {
+    padding:40px 15px!important;
+  }
+
+  /* remove extra white gap between blocks */
+  section,
+  .container{
+    margin:0!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+
+
+  /* card grid fix */
+  .grid-4,
+  .about-grid{
+    margin-top:15px!important;
+    gap:15px!important;
+  }
+
+  /* ABOUT CARD full width */
+  .about-card{
+    width:100%!important;
+    margin:0!important;
+  }
+
+  /* remove big padding inside cards */
+  .feature-card,
+  .about-card,
+  .who-item,
+  .form-card{
+    padding:18px!important;
+    margin:0!important;
+  }
+
+  /* FLIP disable on mobile */
+  .flip,
+  .flip-front,
+  .flip-back{
+    position:relative!important;
+    height:auto!important;
+    transform:none!important;
+    backface-visibility:visible!important;
+  }
+  .about-card:hover .flip{
+    transform:none!important;
+  }
+
+  /* WHO list spacing */
+  .who-item{
+    gap:15px!important;
+  }
+
+  /* form card full width */
+  .form-card{
+    width:100%!important;
+  }
+
+}
+@media(max-width:768px){
+  .feature-card{
+    padding:16px!important;
+  }
+  .feature-card h3{
+    margin-bottom:6px!important;
+  }
+  .feature-card-1{
+    padding-top: 100px !important;
+  }
+}
+/* OUTER WRAPPER */
+.sponsor-marquee {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.sponsor-card img {
+  width: 120px;          /* fixed width */
+  height: 70px;          /* fixed height */
+  object-fit: contain;   /* keep image aspect ratio, no stretch */
+  display: block;
+  margin: 0 auto 10px;
+}
+
+/* CENTER FRAME */
+.scroll-frame {
+  width: 70%;              /* centered visible area */
+  overflow: hidden;
+  position: relative;
+}
+
+/* TRACK: circular loop */
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: circularLoop 15s linear infinite;
+}
+
+/* CARD */
+.sponsor-card {
+  width: 180px;
+  display: inline-block;
+  margin: 0 20px;
+  padding: 20px;
+  text-align: center;
+}
+
+/* PERFECT CIRCULAR LOOP */
+@keyframes circularLoop {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.33%);  /* move only HALF because we duplicate the track */
+  }
+}
+.expo-hero-cta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Desktop: 4 in a row */
+  gap: 15px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .expo-hero-cta {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .expo-hero-cta {
+    grid-template-columns: repeat(2, 1fr); /* 2 buttons per row */
+  }
+
+  .expo-hero-cta .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -18,18 +18,21 @@ const Navbar = () => {
   const menuRef = useRef(null);
 
   // Close menus when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMobileMenuOpen(false);
-        setActiveDropdown(null);
-        setActiveLeftItem(null);
-        setActiveRightItem(null);
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+ useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (menuRef.current && !menuRef.current.contains(e.target)) {
+      setMobileMenuOpen(false);
+      document.body.classList.remove("menu-open");
+      setActiveDropdown(null);
+      setActiveLeftItem(null);
+      setActiveRightItem(null);
+    }
+  };
+
+  document.addEventListener("click", handleClickOutside);
+  return () => document.removeEventListener("click", handleClickOutside);
+}, []);
+
 
   // Try to auto-detect city using Nominatim (optional)
   useEffect(() => {
@@ -59,7 +62,7 @@ const Navbar = () => {
       left: ["Popular Choices", "Budget", "Property Types"],
       right: {
         "Popular Choices": {
-          links: ["Ready to Move", "Owner Properties", "Budget Homes", "New Projects"],
+          links: ["Ready to Move", "Owner Properties","Semi Furnishing","Furnishing" ],
           img: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
         Budget: {
@@ -164,30 +167,73 @@ const Navbar = () => {
 
   // Handle many quick navigation shortcuts
   const handleLinkClick = (link) => {
-    let toUrl = "/";
+  let toUrl = "/properties";
 
-    if (link.includes("Under 30L")) toUrl = "/?filter=budget&value=0-3000000";
-    else if (link.includes("30L–50L")) toUrl = "/?filter=budget&value=3000000-5000000";
-    else if (link.includes("50L–1Cr")) toUrl = "/?filter=budget&value=5000000-10000000";
-    else if (link.includes("Above 1Cr")) toUrl = "/?filter=budget&value=10000000+";
-    else if (link.toLowerCase().includes("in")) {
-      const parts = link.split("in ");
-      const city = parts[1] ? parts[1].trim() : "";
-      const type = parts[0].trim().split(" ")[0];
-      toUrl = `/?filter=location&type=${type}&value=${encodeURIComponent(city)}`;
-    } else if (link === "Post Property") {
-      toUrl = user ? "/post-property" : "/login";
-    } else if (link === "Agent Services") toUrl = "/agents";
-    else if (link === "Commercial Listings") toUrl = "/?filter=type&value=commercial";
-    else if (link === "Pricing Guide") toUrl = "/pricing";
-    else if (link === "FAQs") toUrl = "/faqs";
+  // 🔹 READY TO MOVE
+  if (link === "Ready to Move") {
+    toUrl = "/all-properties?readyToMove=true";
+  }
+   if (link === "Villas") {
+    toUrl = "/all-properties";
+  }
+  if (link === "Commercial Spaces") {
+    toUrl = "/all-properties";
+  }
+  // 🔹 OWNER PROPERTIES
+  else if (link === "Owner Properties") {
+    toUrl = "/all-properties?directFromOwner=true";
+  }
+  
+  // 🔹 BACHELOR FRIENDLY
+  else if (link === "Bachelor Friendly") {
+    toUrl = "/all-properties?bachelorFriendly=true";
+  }
 
-    navigate(toUrl);
-    setMobileMenuOpen(false);
-    setActiveDropdown(null);
-    setActiveLeftItem(null);
-    setActiveRightItem(null);
-  };
+  // 🔹 FURNISHED
+  else if (link === "Furnished") {
+    toUrl = "/all-properties?furnishing=fully-furnished";
+  }
+  // 🔹 FURNISHED
+  else if (link === "Semi Furnishing") {
+    toUrl = "/all-properties?furnishing=fully-furnished";
+  }
+  // 🔹 FURNISHED
+  else if (link ==="Furnishing") {
+    toUrl = "/all-properties?furnishing=fully-furnished";
+  }
+  // 🔹 BUDGET FILTERS
+  else if (link.includes("Under 30L")) {
+    toUrl = "/all-properties?maxPrice=3000000";
+  } else if (link.includes("30L–50L")) {
+    toUrl = "/all-properties?minPrice=3000000&maxPrice=5000000";
+  } else if (link.includes("50L–1Cr")) {
+    toUrl = "/all-properties?minPrice=5000000&maxPrice=10000000";
+  } else if (link.includes("Above 1Cr")) {
+    toUrl = "/all-properties?minPrice=10000000";
+  }
+
+  // 🔹 LOCATION BASED
+  else if (link.toLowerCase().includes("in ")) {
+    const city = link.split("in ")[1]?.trim();
+    if (city) {
+      toUrl = `/all-properties?location=${encodeURIComponent(city)}`;
+    }
+  }
+
+  // 🔹 POST PROPERTY
+  else if (link === "Post Property") {
+    toUrl = user ? "/post-property" : "/login";
+  }
+
+  navigate(toUrl);
+
+  // 🔒 Close menus cleanly
+  setMobileMenuOpen(false);
+  setActiveDropdown(null);
+  setActiveLeftItem(null);
+  setActiveRightItem(null);
+};
+
 
   return (
     <header className="ff-navbar" ref={menuRef}>
@@ -204,8 +250,8 @@ const Navbar = () => {
               setActiveLeftItem(null);
               setActiveRightItem(null);
             }}
-          >
-            <img src={navlogo} alt="Logo" className="ff-logo" />
+          > <h1>FortuneFloors.com</h1>
+            {/* <img src={navlogo} alt="Logo" className="ff-logo" /> */}
           </Link>
         </div>
 
@@ -361,7 +407,7 @@ const Navbar = () => {
           {/* Articles link (separate dropdown cell) */}
           <div className="ff-dropdown">
             <Link
-              to="/Articles"
+              to="/blogs"
               className="ff-menu-name"
               onClick={(e) => {
                 // stopPropagation to be safe in mobile/menu states
@@ -370,22 +416,35 @@ const Navbar = () => {
                 setActiveDropdown(null);
               }}
             >
-              Articles
+              Blogs
             </Link>
           </div>
           {/* Admin only: Post New Article */}
             {user?.role === "admin" && (
               <Link
-                to="/admin/post-article"
+                to="/admin/post-Blogs"
                 className="ff-menu-name admin-article-link"
                 onClick={(e) => {
                   // Prevent parent Home click from firing
                   e.stopPropagation();
                 }}
               >
-                Post New Article
+                Post New Blog
               </Link>
             )}
+            <Link
+              to="/property-expo"
+              className="ff-menu-name"
+              onClick={(e) => {
+                // stopPropagation to be safe in mobile/menu states
+                e.stopPropagation();
+                setMobileMenuOpen(false);
+                setActiveDropdown(null);
+              }}
+            >
+              Property Expo
+            </Link>
+
         </div>
 
         {/* Right Section (desktop) */}
@@ -426,7 +485,13 @@ const Navbar = () => {
             className="hamburger"
             onClick={(e) => {
               e.stopPropagation();
-              setMobileMenuOpen((prev) => !prev);
+
+              const newState = !mobileMenuOpen;
+              setMobileMenuOpen(newState);
+
+              // prevent body scroll when menu is open
+              document.body.classList.toggle("menu-open", newState);
+
               setActiveDropdown(null);
               setActiveLeftItem(null);
               setActiveRightItem(null);
@@ -434,6 +499,7 @@ const Navbar = () => {
           >
             {mobileMenuOpen ? <FaTimes /> : <FaBars />}
           </div>
+
         </div>
       </div>
     </header>

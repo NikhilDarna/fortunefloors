@@ -18,7 +18,7 @@ const PostProperty = () => {
         "Plot / Land",
         "1 RK/ Studio Apartment",
         "Serviced Apartment",
-        "Farmhouse",
+        "Farmhouse","Shop",
         "Other",
       ],
       commercial: [
@@ -39,6 +39,7 @@ const PostProperty = () => {
         "1 RK/ Studio Apartment",
         "Serviced Apartment",
         "Farmhouse",
+        "Shop",
         "Other",
       ],
       commercial: [
@@ -84,6 +85,7 @@ const PostProperty = () => {
     title: "",
     description: "",
     transactionType: "sale",
+    listingSubType: "sell",
     category: "residential",
     propertyType:
       typeOptions["sale"]?.["residential"]?.[0] || "Flat/Apartment",
@@ -92,6 +94,10 @@ const PostProperty = () => {
     area: "",
     bedrooms: "",
     bathrooms: "",
+    furnishing: "unfurnished", // ✅ NEW
+    readyToMove: false,        // ✅ NEW
+    directFromOwner: false,    // ✅ NEW
+    bachelorFriendly: false,
     singleOwner: "yes",
     ownerName: "",
     linkedDocx: "",
@@ -123,6 +129,13 @@ const PostProperty = () => {
       propertyType: newPropertyType,
     }));
   };
+  const handleCheckboxChange = (e) => {
+  const { name, checked } = e.target;
+  setFormData((prev) => ({
+    ...prev,
+    [name]: checked,
+  }));
+};
 
   const handleCategory = (category) => {
     const newPropertyType =
@@ -346,7 +359,65 @@ const PostProperty = () => {
                   ))}
                 </div>
               </div>
-              
+              {/* ---- Property Preferences ---- */}
+              <div className="form-section">
+                <h3>Property Preferences</h3>
+
+                {/* Furnishing */}
+                <div className="form-group">
+                  <label>Furnishing</label>
+                  <div className="option-group">
+                    {["unfurnished", "semi-furnished", "fully-furnished"].map((f) => (
+                      <button
+                        key={f}
+                        type="button"
+                        className={`option-btn ${
+                          formData.furnishing === f ? "active" : ""
+                        }`}
+                        onClick={() =>
+                          setFormData((prev) => ({ ...prev, furnishing: f }))
+                        }
+                      >
+                        {f.replace("-", " ").toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Checkboxes */}
+                <div className="checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="readyToMove"
+                      checked={formData.readyToMove}
+                      onChange={handleCheckboxChange}
+                    />
+                    Ready to Move
+                  </label>
+
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="directFromOwner"
+                      checked={formData.directFromOwner}
+                      onChange={handleCheckboxChange}
+                    />
+                    Direct From Owner
+                  </label>
+
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="bachelorFriendly"
+                      checked={formData.bachelorFriendly}
+                      onChange={handleCheckboxChange}
+                    />
+                    Bachelor Friendly
+                  </label>
+                </div>
+              </div>
+
               {/* ---- Property Details ---- */}
               <div className="form-section">
                 <h3>Property Details</h3>

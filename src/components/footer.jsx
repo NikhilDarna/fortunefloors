@@ -12,10 +12,11 @@ function Footer({ user }) {
         <div className='footerContainer footer-column'>
           <div className='row footerlogo'>
             <div>
-              <img src={footerlogo} alt="Logo" />
+              <h1 className="LogoTxt">FortuneFloors.com</h1>
+              {/*<img src={footerlogo} alt="Logo" />*/}
             </div>
             <div>
-              <p class="para">Welcome to Find Your Dream Home</p>
+              <p className="para">Welcome to Find Your Dream Home</p>
             </div>
           </div>
         </div>

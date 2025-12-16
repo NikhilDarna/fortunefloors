@@ -28,3 +28,19 @@
   color: #555;
   margin-top: 40px;
 }
+.no-properties {
+  text-align: center;
+  padding: 80px 20px;
+  color: #555;
+}
+
+.no-properties h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.no-properties p {
+  font-size: 15px;
+  color: #777;
+}

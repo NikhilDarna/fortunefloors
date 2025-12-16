@@ -408,3 +408,62 @@
     display: block;
   }
 }
+/* ============================
+    MOBILE SLIDE-IN MENU (LEFT SIDE)
+============================ */
+@media (max-width: 900px) {
+  .ff-menu {
+    position: fixed;
+    left: 0;
+    top: 14.5%;
+    height: 100vh;
+    width: 180px;
+    background: linear-gradient(145deg,#ebe8e8,#027ee4);;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+    transform: translateX(-100%);
+    transition: transform 0.35s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;   /* <-- scrollable */
+    padding: 20px 12px;
+    z-index: 2000;
+  }
+
+  .ff-menu.active {
+    transform: translateX(0); /* slide in from left */
+  }
+
+  /* prevent content going under navbar */
+  body.menu-open {
+    overflow: hidden;
+  }
+}
+/* ===========================
+   MOBILE MENU ITEM SEPARATOR
+=========================== */
+
+@media (max-width: 900px) {
+
+  /* Main menu item */
+  .ff-menu-name {
+    position: relative;
+    padding: 2px 10px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  /* Line below each menu item */
+  .ff-menu-name::after {
+    content: "";
+    display: block;
+    width: 40%;              /* 👈 50% width */
+    height: 2px;
+    background-color: #ddd;  /* line color */
+    margin-top: 10px;
+  }
+
+  /* Remove line for last item (optional) */
+  .ff-dropdown:last-child .ff-menu-name::after {
+    display: none;
+  }
+}

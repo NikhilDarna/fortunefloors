@@ -29,16 +29,23 @@ const AllProperties = () => {
       </div>
 
       {loading ? (
-        <div className="loading">Loading properties...</div>
-      ) : properties.length === 0 ? (
-        <div className="no-properties">No properties found.</div>
-      ) : (
-        <div className="property-grid">
-          {properties.map((property) => (
-            <PropertyCard key={property.id} property={property} />
-          ))}
-        </div>
-      )}
+  <div className="loading">Loading properties...</div>
+) : properties.length === 0 ? (
+  <div className="no-properties">
+    <h2>No properties found</h2>
+    <p>
+      There are currently no properties listed under this category.
+      <br />
+      Please check back later or try a different filter.
+    </p>
+  </div>
+) : (
+  <div className="property-grid">
+    {properties.map((property) => (
+      <PropertyCard key={property.id} property={property} />
+    ))}
+  </div>
+)}
     </div>
   );
 };

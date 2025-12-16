@@ -5,7 +5,10 @@
   font-family: 'Inter', Arial, sans-serif;
   color: var(--highlight);          /* Cream White */
 }
-
+.LogoTxt{
+  padding-top: 15%;
+  color:#ffffff !important;
+}
 .footerContainer {
   display: flex;
   flex-direction: column;

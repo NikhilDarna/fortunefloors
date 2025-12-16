@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import "./EditArticle.css"; 
+import "./EditBlogs.css"; 
 
-const EditArticle = () => {
+const EditBlogs = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -14,7 +14,7 @@ const EditArticle = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/admin/article/${id}`, {
+      .get(`http://localhost:5000/api/admin/blog/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       })
       .then((res) => {
@@ -22,7 +22,7 @@ const EditArticle = () => {
         setContent(res.data.content);
         setOldImage(res.data.image);
       })
-      .catch(() => alert("Failed to load article"));
+      .catch(() => alert("Failed to load blog"));
   }, [id]);
 
   const handleUpdate = async (e) => {
@@ -35,7 +35,7 @@ const EditArticle = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/article/${id}`,
+        `http://localhost:5000/api/admin/blog/${id}`,
         formData,
         {
           headers: {
@@ -45,8 +45,8 @@ const EditArticle = () => {
         }
       );
 
-      alert("Article updated!");
-      navigate("/Articles");
+      alert("Blog updated!");
+      navigate("/blogs");
     } catch (err) {
       console.log(err);
       alert("Update failed");
@@ -54,24 +54,24 @@ const EditArticle = () => {
   };
 
   return (
-    <div className="edit-container">
-      <h1>Edit Article</h1>
+    <div className="editblogs-container">
+      <h1>Edit Blog</h1>
 
-      <form className="edit-form" onSubmit={handleUpdate}>
+      <form className="editblogs-form" onSubmit={handleUpdate}>
         
         <label>Title</label>
         <input 
-          type="text" 
-          value={title} 
-          onChange={(e) => setTitle(e.target.value)} 
-          required 
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
         />
 
         <label>Content</label>
-        <textarea 
-          rows="6" 
-          value={content} 
-          onChange={(e) => setContent(e.target.value)} 
+        <textarea
+          rows="6"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
           required
         ></textarea>
 
@@ -79,22 +79,22 @@ const EditArticle = () => {
         {oldImage && (
           <img
             src={`http://localhost:5000/uploads/${oldImage}`}
-            className="edit-old-image"
+            className="editblogs-old-image"
             alt="Old"
           />
         )}
 
         <label>Upload New Image (optional)</label>
         <input 
-          type="file" 
-          accept="image/*" 
-          onChange={(e) => setFile(e.target.files[0])} 
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files[0])}
         />
 
-        <button type="submit" className="save-btn">Save Changes</button>
+        <button type="submit" className="saveblogs-btn">Save Changes</button>
       </form>
     </div>
   );
 };
 
-export default EditArticle;
+export default EditBlogs;

@@ -5,14 +5,15 @@ import sqlite3 from 'sqlite3';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import path from 'path';
+import slugify from "slugify";
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import slugify from "slugify";
-
-
-
-
-
+import "./config/passport.js";
+import GoogleStrategy from "passport-google-oauth20";
+import session from "express-session";
+import passport from "passport";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Fix __dirname and __filename in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -27,15 +28,21 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.get('/api/test', (req, res) => {
-  res.json({ message: "API working fine!" });
-});
+// Article uploader: allow image and video files up to 10MB
+const articleMediaFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image or video files are allowed for article media"), false);
+  }
+};
+
+
 
 // Create uploads directory if it doesn't exist
 if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
   fs.mkdirSync(path.join(__dirname, 'uploads'));
 }
-
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -43,36 +50,21 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, 'uploads/'));
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-// 🔥 Article Upload Multer (10MB for image or video)
-const BlogsStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "uploads/"));
-  },
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(
-        file.originalname
-      )}`
-    );
-  }
+  const ext = path.extname(file.originalname);
+
+  // Get title name safely
+  let title = req.body.title || "property";
+
+  // clean: replace spaces → underscores, remove special chars
+  title = title.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+
+  const unique = Date.now();
+
+  cb(null, `${title}_${unique}${ext}`);
+}
+
 });
 
-const BlogsUpload = multer({
-  storage: BlogsStorage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image or video allowed!"), false);
-    }
-  }
-});
 const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
@@ -162,6 +154,16 @@ function initializeDatabase() {
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (property_id) REFERENCES properties (id)
   )`);
+  // Create articles table
+  db.run(`CREATE TABLE IF NOT EXISTS articles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    content TEXT NOT NULL,
+    image TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
 
   // Create admin user
   const adminPassword = bcrypt.hashSync('admin123', 10);
@@ -170,37 +172,100 @@ function initializeDatabase() {
      VALUES ('admin', 'admin@fortune.com', ?, 'admin', 'Fortune Admin')`,
     [adminPassword]
   );
-  // Create Blogs table
-db.run(`CREATE TABLE IF NOT EXISTS blogs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  slug TEXT,
-  content TEXT,
-  image TEXT,
-  user_id INTEGER NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users (id)
-)`);
-
+  
 }
-function addColumnIfNotExists(column, definition) {
-  db.all("PRAGMA table_info(properties)", [], (err, columns) => {
-    if (err) return console.error(err);
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"]
+}));
 
-    const exists = columns.some((c) => c.name === column);
-    if (!exists) {
-      db.run(`ALTER TABLE properties ADD COLUMN ${column} ${definition}`);
+app.use(express.json());
+
+
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "mysecret123",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // must be false for localhost
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    },
+  })
+);
+
+
+app.use(express.json());
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET,
+      callbackURL: "http://localhost:5000/auth/google/callback",
+    },
+    (accessToken, refreshToken, profile, done) => {
+      return done(null, profile);
     }
-  });
-}
+  )
+);
 
-// Call once on server start
-addColumnIfNotExists("listing_sub_type", "TEXT");
-addColumnIfNotExists("category", "TEXT");
-addColumnIfNotExists("furnishing", "TEXT");
-addColumnIfNotExists("ready_to_move", "INTEGER DEFAULT 0");
-addColumnIfNotExists("direct_from_owner", "INTEGER DEFAULT 0");
-addColumnIfNotExists("bachelor_friendly", "INTEGER DEFAULT 0");
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
+app.get("/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+// FINAL CALLBACK (ONLY ONE)
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login",
+    session: true,
+  }),
+  (req, res) => {
+    // create JWT and redirect to frontend
+    const token = jwt.sign(
+      {
+        name: req.user.displayName,
+        email: req.user.emails[0].value,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.redirect(
+      `http://localhost:5173/social-login-success?token=${token}`
+    );
+  }
+);
+
+// check user session
+app.get("/auth/user", (req, res) => {
+  if (req.user) return res.json({ loggedIn: true, user: req.user });
+  res.json({ loggedIn: false });
+});
+
+// logout
+app.post("/auth/logout", (req, res) => {
+  req.logout(() => {
+    req.session.destroy(() => {
+      res.json({ message: "Logged out" });
+    });
+  });
+});
 
 
 // Authentication middleware
@@ -228,6 +293,7 @@ const requireAdmin = (req, res, next) => {
   }
   next();
 };
+
 
 // ----------------- Routes -----------------
 
@@ -307,236 +373,166 @@ app.post('/api/login', (req, res) => {
     }
   );
 });
+// Properties (public & user)
+app.get('/api/properties', (req, res) => {
+  const { type, location, minPrice, maxPrice, status = 'approved' } = req.query;
 
+  let query = `
+    SELECT p.*, u.username, u.full_name, u.profile_photo, u.rating, u.phone
+    FROM properties p
+    JOIN users u ON p.user_id = u.id
+    WHERE p.status = ?
+  `;
+  const params = [status];
 
+  if (type && type !== 'all') {
+    query += ' AND p.transaction_type = ?';
+    params.push(type);
+  }
 
+  if (location) {
+    query += ' AND p.location LIKE ?';
+    params.push(`%${location}%`);
+  }
 
+  if (minPrice) {
+    query += ' AND p.price >= ?';
+    params.push(minPrice);
+  }
+
+  if (maxPrice) {
+    query += ' AND p.price <= ?';
+    params.push(maxPrice);
+  }
+
+  query += ' ORDER BY p.created_at DESC';
+
+  db.all(query, params, (err, properties) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+
+    const processedProperties = properties.map((p) => ({
+      ...p,
+      photos: p.photos ? JSON.parse(p.photos) : []
+    }));
+
+    res.json(processedProperties);
+  });
+});
 
 // Add new property
-app.post(
-  "/api/properties",
-  authenticateToken,
-  upload.array("photos", 10),
-  (req, res) => {
-    try {
-      const {
-        title,
-        description,
-        propertyType,
-        transactionType,
-        listingSubType,     // ✅ NEW
-        category,           // ✅ NEW
-        price,
-        location,
-        area,
-        bedrooms,
-        bathrooms,
-        furnishing,         // ✅ NEW
-        readyToMove,        // ✅ NEW
-        directFromOwner,    // ✅ NEW
-        bachelorFriendly,   // ✅ NEW
-        singleOwner,
-        ownerName,
-        linkedDocx,
-      } = req.body;
+app.post('/api/properties', authenticateToken, upload.array('photos', 10), (req, res) => {
+  try {
+   const {
+  title,
+  description,
+  propertyType,
+  transactionType,
+  price,
+  location,
+  area,
+  bedrooms,
+  bathrooms,
+  singleOwner,
+  ownerName,
+  linkedDocx
+} = req.body;
 
-      const photos = req.files ? req.files.map((f) => f.filename) : [];
+const photos = req.files ? req.files.map((f) => f.filename) : [];
 
-      db.run(
-        `INSERT INTO properties (
-          title,
-          description,
-          property_type,
-          transaction_type,
-          listing_sub_type,
-          category,
-          price,
-          location,
-          area,
-          bedrooms,
-          bathrooms,
-          furnishing,
-          ready_to_move,
-          direct_from_owner,
-          bachelor_friendly,
-          photos,
-          user_id,
-          single_owner,
-          owner_name,
-          linked_docx
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          title,
-          description,
-          propertyType,
-          transactionType,
-          listingSubType,
-          category,
-          price,
-          location,
-          area,
-          bedrooms,
-          bathrooms,
-          furnishing,
-          readyToMove === "true" || readyToMove === true ? 1 : 0,
-          directFromOwner === "true" || directFromOwner === true ? 1 : 0,
-          bachelorFriendly === "true" || bachelorFriendly === true ? 1 : 0,
-          JSON.stringify(photos),
-          req.user.id,
-          singleOwner,
-          ownerName,
-          linkedDocx,
-        ],
-        function (err) {
-          if (err) {
-            console.error(err);
-            return res
-              .status(500)
-              .json({ error: "Failed to create property" });
-          }
+db.run(
+  `INSERT INTO properties 
+   (title, description, property_type, transaction_type, price, location, area, bedrooms, bathrooms, photos, user_id, single_owner, owner_name, linked_docx)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [
+    title,
+    description,
+    propertyType,
+    transactionType,
+    price,
+    location,
+    area,
+    bedrooms,
+    bathrooms,
+    JSON.stringify(photos),
+    req.user.id,
+    singleOwner,
+    ownerName,
+    linkedDocx
+  ],
+  function (err) {
+    if (err) return res.status(500).json({ error: 'Failed to create property' });
 
-          // 🔔 Notify Admins
-          db.run(
-            `INSERT INTO notifications (user_id, property_id, message, type)
-             SELECT id, ?, ?, ? FROM users WHERE role = "admin"`,
-            [
-              this.lastID,
-              `New property "${title}" submitted for approval`,
-              "property_submission",
-            ]
-          );
+    db.run(
+      'INSERT INTO notifications (user_id, property_id, message, type) SELECT id, ?, ?, ? FROM users WHERE role = "admin"',
+      [this.lastID, `New property "${title}" submitted for approval`, 'property_submission']
+    );
 
-          res.json({
-            id: this.lastID,
-            message:
-              "Property submitted successfully. Waiting for admin approval.",
-          });
-        }
-      );
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Server error" });
-    }
+    res.json({
+      id: this.lastID,
+      message: 'Property submitted successfully. Waiting for admin approval.'
+    });
   }
 );
 
-app.get("/api/properties", (req, res) => {
-  console.log("🔍 QUERY PARAMS:", req.query);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+app.get('/api/properties', (req, res) => {
   try {
-    const {
-      type,
-      category,
-      subType,
-      propertyType,
-      furnishing,
-      readyToMove,
-      directFromOwner,
-      bachelorFriendly,
-      location,
-      minPrice,
-      maxPrice,
-      status = "approved",
-    } = req.query;
+    const { type, location, minPrice, maxPrice } = req.query;
 
     let query = `
-      SELECT 
-        p.*, 
-        u.username,
-        u.full_name,
-        u.profile_photo,
-        u.rating,
-        u.phone
-      FROM properties p
-      JOIN users u ON p.user_id = u.id
-      WHERE p.status = ?
+      SELECT * FROM properties
+      WHERE 1=1
     `;
-    const params = [status];
+    const params = [];
 
-    /* 🔹 Transaction Type */
-    if (type && type !== "all") {
-      query += ` AND LOWER(p.transaction_type) = ?`;
-      params.push(type.toLowerCase());
+    if (type && type !== 'all') {
+      // Normalize case
+      const normalized = type.toLowerCase();
+
+      // ✅ Match transaction_type OR category OR property_type
+      query += `
+        AND (
+          LOWER(transaction_type) = ?
+          OR LOWER(category) = ?
+          OR LOWER(property_type) LIKE ?
+        )
+      `;
+      params.push(normalized, normalized, `%${normalized}%`);
     }
 
-    /* 🔹 Category */
-    if (category && category !== "all") {
-      query += ` AND LOWER(p.category) = ?`;
-      params.push(category.toLowerCase());
-    }
-
-    /* 🔹 Listing Sub Type */
-    if (subType && subType !== "all") {
-      query += ` AND LOWER(p.listing_sub_type) = ?`;
-      params.push(subType.toLowerCase());
-    }
-
-    /* 🔹 Property Type */
-    if (propertyType && propertyType !== "all") {
-      query += ` AND LOWER(p.property_type) = ?`;
-      params.push(propertyType.toLowerCase());
-    }
-
-    /* 🔹 Furnishing */
-    if (furnishing && furnishing !== "all") {
-      query += ` AND LOWER(p.furnishing) = ?`;
-      params.push(furnishing.toLowerCase());
-    }
-
-    /* 🔹 Boolean filters (SQLite uses 0/1) */
-    if (readyToMove !== undefined) {
-      query += ` AND p.ready_to_move = 1`;
-      
-    }
-
-    if (directFromOwner !== undefined) {
-      query += ` AND p.direct_from_owner = 1`;
-      
-    }
-
-    if (bachelorFriendly !== undefined) {
-      query += ` AND p.bachelor_friendly = 1`;
-    
-    }
-
-    /* 🔹 Location */
     if (location) {
-      query += ` AND LOWER(p.location) LIKE ?`;
-      params.push(`%${location.toLowerCase()}%`);
+      query += ` AND LOWER(location) LIKE LOWER(?)`;
+      params.push(`%${location}%`);
     }
 
-    /* 🔹 Price */
     if (minPrice) {
-      query += ` AND p.price >= ?`;
-      params.push(Number(minPrice));
+      query += ` AND price >= ?`;
+      params.push(minPrice);
     }
 
     if (maxPrice) {
-      query += ` AND p.price <= ?`;
-      params.push(Number(maxPrice));
+      query += ` AND price <= ?`;
+      params.push(maxPrice);
     }
 
-    query += ` ORDER BY p.created_at DESC`;
+    query += ` ORDER BY id DESC`;
 
     db.all(query, params, (err, rows) => {
       if (err) {
-        console.error("❌ DB Error:", err);
-        return res.status(500).json({ error: "Database error" });
+        console.error('❌ DB Error:', err);
+        return res.status(500).json({ error: 'Database error' });
       }
-
-      const properties = rows.map((p) => ({
-        ...p,
-        photos: p.photos ? JSON.parse(p.photos) : [],
-      }));
-
-      res.json(properties);
+      res.json(rows);
     });
+
   } catch (error) {
-    console.error("❌ Server Error:", error);
-    res.status(500).json({ error: "Server error" });
+    console.error('❌ Server Error:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
-
-
 app.get('/api/locations', (req, res) => {
   db.all('SELECT DISTINCT location FROM properties WHERE location IS NOT NULL', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Failed to fetch locations' });
@@ -544,176 +540,6 @@ app.get('/api/locations', (req, res) => {
     res.json(locations);
   });
 });
-
-app.get("/api/debug/properties", (req, res) => {
-  db.all(
-    "SELECT id, title, status, ready_to_move, direct_from_owner, furnishing FROM properties",
-    [],
-    (err, rows) => {
-      if (err) return res.status(500).json({ error: "DB error" });
-      res.json(rows);
-    }
-  );
-});
-
-
-
-// ----------------- ADMIN POST BLOG (with file upload) -----------------
-// -------- GET BLOG BY ID (for editing) --------
-app.get("/api/admin/blog/:id", authenticateToken, requireAdmin, (req, res) => {
-  const id = req.params.id;
-
-  db.get(`SELECT * FROM blogs WHERE id = ?`, [id], (err, row) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-
-    if (!row) return res.status(404).json({ error: "Blog not found" });
-
-    res.json(row);
-  });
-});
-
-
-app.post(
-  "/api/admin/blog",
-  authenticateToken,
-  requireAdmin,
-  BlogsUpload.single("media"), 
-  (req, res) => {
-    try {
-      const { title, content } = req.body;
-
-      if (!title || !content) {
-        if (req.file && req.file.path) {
-          fs.unlink(req.file.path, () => {});
-        }
-        return res.status(400).json({ error: "Title and content are required" });
-      }
-
-      const image = req.file ? req.file.filename : null;
-
-      const slugBase = slugify(title, { lower: true, strict: true });
-      let slug = slugBase;
-
-      db.get("SELECT COUNT(*) as cnt FROM blogs WHERE slug = ?", [slug], (err, row) => {
-        if (err) {
-          console.error("DB error checking slug:", err);
-          return res.status(500).json({ error: "Database error" });
-        }
-
-        const tryInsert = (finalSlug) => {
-          db.run(
-            `INSERT INTO blogs (title, slug, content, image, user_id)
-            VALUES (?, ?, ?, ?, ?)`,
-            [title, finalSlug, content, image, req.user.id],
-            function (err) {
-              if (err) {
-                console.error("DB insert error:", err);
-                if (req.file && req.file.path) fs.unlink(req.file.path, () => {});
-                return res.status(500).json({ error: "Failed to create blog" });
-              }
-
-              res.json({
-                success: true,
-                message: "Blog posted successfully",
-                id: this.lastID,
-                slug: finalSlug,
-                image,
-              });
-            }
-          );
-        };
-
-        if (row && row.cnt > 0) {
-          slug = `${slugBase}-${Date.now()}`;
-        }
-        tryInsert(slug);
-      });
-    } catch (err) {
-      console.error("Server error posting blog:", err);
-      if (req.file && req.file.path) fs.unlink(req.file.path, () => {});
-      res.status(500).json({ error: "Server error" });
-    }
-  }
-);
-
-
-app.delete("/api/admin/blog/:id", authenticateToken, requireAdmin, (req, res) => {
-  const id = req.params.id;
-
-  db.get(`SELECT image FROM blogs WHERE id = ?`, [id], (err, blog) => {
-    if (blog && blog.image) {
-      const filePath = path.join(__dirname, "uploads", blog.image);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    }
-
-    db.run(`DELETE FROM blogs WHERE id = ?`, [id], function (err) {
-      if (err) return res.status(500).json({ error: "Delete failed" });
-
-      res.json({ success: true, message: "Blog deleted" });
-    });
-  });
-});
-
-// ----------------- GET ALL BLOGS -----------------
-app.get("/api/blog", (req, res) => {
-  db.all(`SELECT * FROM blogs ORDER BY created_at DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: "Failed to fetch blogs" });
-    res.json(rows);
-  });
-});
-// ----------------- GET SINGLE BLOG BY SLUG -----------------
-app.get("/api/blog/:slug", (req, res) => {
-  const slug = req.params.slug;
-
-  db.get(`SELECT * FROM blogs WHERE slug = ?`, [slug], (err, row) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-
-    if (!row) return res.status(404).json({ error: "Blog not found" });
-
-    res.json(row);
-  });
-});
-// -------- UPDATE BLOG --------
-app.put(
-  "/api/admin/blog/:id",
-  authenticateToken,
-  requireAdmin,
-  BlogsUpload.single("media"),
-  (req, res) => {
-    const id = req.params.id;
-    const { title, content } = req.body;
-    const newImage = req.file ? req.file.filename : null;
-
-    db.get("SELECT * FROM blogs WHERE id = ?", [id], (err, existing) => {
-      if (err) return res.status(500).json({ error: "Database error" });
-      if (!existing) return res.status(404).json({ error: "Blog not found" });
-
-      const finalImage = newImage ? newImage : existing.image;
-
-      if (newImage && existing.image) {
-        const oldPath = `uploads/${existing.image}`;
-        if (fs.existsSync(oldPath)) fs.unlink(oldPath, () => {});
-      }
-
-      db.run(
-        `UPDATE blogs 
-         SET title = ?, content = ?, image = ?
-         WHERE id = ?`,
-        [title, content, finalImage, id],
-        function (err) {
-          if (err) return res.status(500).json({ error: "Update failed" });
-
-          res.json({
-            success: true,
-            message: "Blog updated successfully",
-            image: finalImage,
-          });
-        }
-      );
-    });
-  }
-);
-
 
 
 // ---------------- Admin Routes ----------------
@@ -794,6 +620,168 @@ app.get('/api/admin/users', authenticateToken, requireAdmin, (req, res) => {
     }
   );
 });
+const articleUpload = multer({
+  storage: storage, // reuse same storage config (uploads folder)
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: articleMediaFilter,
+});
+
+// ----------------- ADMIN POST ARTICLE (with file upload) -----------------
+// -------- GET ARTICLE BY ID (for editing) --------
+app.get("/api/admin/article/:id", authenticateToken, requireAdmin, (req, res) => {
+  const id = req.params.id;
+
+  db.get(`SELECT * FROM articles WHERE id = ?`, [id], (err, row) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+
+    if (!row) return res.status(404).json({ error: "Article not found" });
+
+    res.json(row);
+  });
+});
+
+
+      
+app.post(
+  "/api/admin/article",
+  authenticateToken,
+  requireAdmin,
+  articleUpload.single("media"), // expecting field name "media"
+  (req, res) => {
+    try {
+      const { title, content } = req.body;
+
+      if (!title || !content) {
+        // if a file was uploaded but body invalid, remove file to avoid orphan files
+        if (req.file && req.file.path) {
+          fs.unlink(req.file.path, () => {});
+        }
+        return res.status(400).json({ error: "Title and content are required" });
+      }
+
+      // file saved by multer, filename accessible at req.file.filename (or undefined)
+      const image = req.file ? req.file.filename : null;
+
+      // create unique SEO slug
+      const slugBase = slugify(title, { lower: true, strict: true });
+      let slug = slugBase;
+      // ensure uniqueness: append number if same slug exists
+      db.get("SELECT COUNT(*) as cnt FROM articles WHERE slug = ?", [slug], (err, row) => {
+        if (err) {
+          console.error("DB error checking slug:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
+
+        const tryInsert = (finalSlug) => {
+          db.run(
+            `INSERT INTO articles (title, slug, content, image)
+              VALUES (?, ?, ?, ?)`,
+            [title, finalSlug, content, image],
+            function (err) {
+              if (err) {
+                console.error("DB insert error:", err);
+                // cleanup uploaded file on failure
+                if (req.file && req.file.path) fs.unlink(req.file.path, () => {});
+                return res.status(500).json({ error: "Failed to create article" });
+              }
+
+              res.json({
+                success: true,
+                message: "Article posted successfully",
+                id: this.lastID,
+                slug: finalSlug,
+                image,
+              });
+            }
+          );
+        };
+
+        if (row && row.cnt > 0) {
+          // slug exists — append timestamp
+          slug = `${slugBase}-${Date.now()}`;
+        }
+        tryInsert(slug);
+      });
+    } catch (err) {
+      console.error("Server error posting article:", err);
+      if (req.file && req.file.path) fs.unlink(req.file.path, () => {});
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+app.delete("/api/admin/article/:id", authenticateToken, requireAdmin, (req, res) => {
+  const id = req.params.id;
+
+  db.run(`DELETE FROM articles WHERE id = ?`, [id], function (err) {
+    if (err) return res.status(500).json({ error: "Delete failed" });
+
+    res.json({ success: true, message: "Article deleted" });
+  });
+}); 
+
+
+// ----------------- GET ALL ARTICLES -----------------
+app.get("/api/articles", (req, res) => {
+  db.all(`SELECT * FROM articles ORDER BY created_at DESC`, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Failed to fetch articles" });
+    res.json(rows);
+  });
+});
+// ----------------- GET SINGLE ARTICLE BY SLUG -----------------
+app.get("/api/article/:slug", (req, res) => {
+  const slug = req.params.slug;
+
+  db.get(`SELECT * FROM articles WHERE slug = ?`, [slug], (err, row) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+
+    if (!row) return res.status(404).json({ error: "Article not found" });
+
+    res.json(row);
+  });
+});
+// -------- UPDATE ARTICLE --------
+app.put(
+  "/api/admin/article/:id",
+  authenticateToken,
+  requireAdmin,
+  articleUpload.single("media"), // optional new image
+  (req, res) => {
+    const id = req.params.id;
+    const { title, content } = req.body;
+    const newImage = req.file ? req.file.filename : null;
+
+    // Get existing article
+    db.get("SELECT * FROM articles WHERE id = ?", [id], (err, existing) => {
+      if (err) return res.status(500).json({ error: "Database error" });
+      if (!existing) return res.status(404).json({ error: "Article not found" });
+
+      const finalImage = newImage ? newImage : existing.image;
+
+      // If new image uploaded → remove old image
+      if (newImage && existing.image) {
+        const oldPath = `uploads/${existing.image}`;
+        if (fs.existsSync(oldPath)) fs.unlink(oldPath, () => {});
+      }
+
+      db.run(
+        `UPDATE articles 
+         SET title = ?, content = ?, image = ?
+         WHERE id = ?`,
+        [title, content, finalImage, id],
+        function (err) {
+          if (err) return res.status(500).json({ error: "Update failed" });
+
+          res.json({
+            success: true,
+            message: "Article updated successfully",
+            image: finalImage,
+          });
+        }
+      );
+    });
+  }
+);
+
 
 // ---------------- User Dashboard ----------------
 
@@ -814,7 +802,6 @@ app.get('/api/user/properties', authenticateToken, (req, res) => {
     }
   );
 });
-
 
 // Notifications
 app.get('/api/notifications', authenticateToken, (req, res) => {
@@ -894,14 +881,68 @@ app.delete('/api/wishlist/:propertyId', authenticateToken, (req, res) => {
 });
 import nodemailer from 'nodemailer';
 
-// EMAIL CONFIGURATION
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "yourgmail@gmail.com",
-    pass: "your-app-password" // use Google App Password
-  }
+    user: process.env.MAIL_USER,      // e.g. "nikhil.fortunefloors@gmail.com"
+    pass: process.env.MAIL_PASSWORD,  // Gmail App Password
+  },
 });
+// -----------------------------
+// LOGIN OTP – Send OTP
+// -----------------------------
+app.post("/api/send-otp", (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ success: false });
+
+  const otp = Math.floor(100000 + Math.random() * 900000);
+
+  // Save to session
+  req.session.loginOtp = otp;
+  req.session.loginPhone = phone;
+
+  console.log("OTP for login:", otp);
+
+  return res.json({ success: true, message: "OTP sent!" });
+});
+
+
+// -----------------------------
+// LOGIN OTP – Verify OTP
+// -----------------------------
+app.post("/api/verify-otp", (req, res) => {
+  const { phone, otp } = req.body;
+
+  console.log("VERIFY OTP BODY:", req.body);
+  console.log("SESSION OTP:", req.session.loginOtp);
+  console.log("SESSION PHONE:", req.session.loginPhone);
+
+  if (!req.session.loginOtp || !req.session.loginPhone) {
+    return res.status(400).json({ success: false, error: "Session expired" });
+  }
+
+  if (req.session.loginPhone !== phone) {
+    return res.status(400).json({ success: false, error: "Phone mismatch" });
+  }
+
+  if (String(req.session.loginOtp) !== String(otp)) {
+    return res.status(400).json({ success: false, error: "Invalid OTP" });
+  }
+
+  // OTP matched → Clear Session
+  req.session.loginOtp = null;
+  req.session.loginPhone = null;
+
+  return res.json({
+    success: true,
+    message: "OTP verified",
+    token: "dummy-jwt-here"
+  });
+});
+
+
+
 // ---------------- FORGOT PASSWORD ----------------
 app.post('/api/forgot-password', (req, res) => {
   const { email } = req.body;
@@ -924,10 +965,21 @@ app.post('/api/forgot-password', (req, res) => {
 
         // Send OTP Email
         transporter.sendMail({
-          from: "yourgmail@gmail.com",
+          from: "nikhil.fortunefloors@gmail.com",
           to: email,
           subject: "Your Password Reset OTP",
-          text: `Your OTP is ${otp}. It will expire in 5 minutes.`
+          text: `Subject: Fortune Floors – Password Reset OTP
+
+ Dear User,
+Welcome to Fortune Floors.
+  
+You requested to reset your password, and we are here to assist you.Please use the One-Time Password (OTP) provided below:
+Your OTP: ${otp}
+This OTP is valid for the next 5 minutes.
+If you did not request a password reset, please ignore this email.
+
+Thank you,
+Fortune Floors Support Team`
         });
 
         res.json({ message: "OTP sent to email" });
@@ -963,6 +1015,7 @@ app.post('/api/reset-password', async (req, res) => {
     );
   });
 });
+
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
   res.send(`
@@ -1014,154 +1067,7 @@ app.get("/sitemap.xml", (req, res) => {
           <changefreq>daily</changefreq>
           <priority>0.8</priority>
         </url>
-        <url>
-    <loc>https://fortunefloors.com/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/admin</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/postproperty</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/properties</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://fortunefloors.com/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/register</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/post-property</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/all-properties</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/builder-property</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/featured</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/testimonials</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/wishlist</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/sell-rent</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/top-cities</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/why-choose-us</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/verify-otp</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/google-success</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/loan-details</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/loan-form</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/payment</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/subscription-plans</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/reset-password</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/dashboard</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/admin</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
+       
 
         
         ${urls}
@@ -1176,11 +1082,36 @@ app.get("/sitemap.xml", (req, res) => {
   }
 });
 
-
-
-
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// session setup
+app.get("/auth/google/callback", (req, res, next) => {
+  console.log("🔥 CALLBACK HIT!");
+  next();
 });
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
 
+
+// ---- Serve React Build ----
+const reactBuildPath = path.join(__dirname, "../frontend/build");
+
+if (fs.existsSync(reactBuildPath)) {
+  app.use(express.static(reactBuildPath));
+
+  app.get("/*", (req, res) => {
+    res.sendFile(path.join(reactBuildPath, "index.html"));
+  });
+} else {
+  console.log("⚠️ React build folder not found locally. Skipping static serve.");
+}
+
+
+
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Server running on http://127.0.0.1:${PORT}`);
+});

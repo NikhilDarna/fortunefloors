@@ -1,14 +1,13 @@
 import { useState } from "react";
-import axios from "axios";
-import "./PostArticle.css"; // we will create this
+import "./PostBlogs.css";
 
-const PostArticle = () => {
+const PostBlogs = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [media, setMedia] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token"); // admin token stored on login
+  const token = localStorage.getItem("token");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,44 +21,48 @@ const PostArticle = () => {
     formData.append("title", title);
     formData.append("content", content);
 
-    if (media) formData.append("media", media); // MATCHES backend field
+    if (media) formData.append("media", media);
 
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:5000/api/admin/article",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/admin/blog", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  body: formData,
+});
 
-      alert("Article Posted Successfully!");
-      setTitle("");
-      setContent("");
-      setMedia(null);
-      e.target.reset(); // reset file input
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Blog Posted Successfully!");
+        setTitle("");
+        setContent("");
+        setMedia(null);
+        e.target.reset();
+      } else {
+        alert(data.error || "Failed to post blog.");
+      }
+
     } catch (error) {
-      alert("Failed to post article. Check console.");
       console.error(error);
+      alert("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="article-container">
-      <h2>Post New Article</h2>
+    <div className="blog-container">
+      <h2>Post New Blog</h2>
 
-      <form className="article-form" onSubmit={handleSubmit}>
-        <label>Article Title</label>
+      <form className="blog-form" onSubmit={handleSubmit}>
+        <label>Blog Title</label>
         <input
           type="text"
-          placeholder="Enter article title"
+          placeholder="Enter blog title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
@@ -74,7 +77,7 @@ const PostArticle = () => {
 
         <label>Content</label>
         <textarea
-          placeholder="Write your article..."
+          placeholder="Write your blog..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
@@ -82,11 +85,11 @@ const PostArticle = () => {
         ></textarea>
 
         <button disabled={loading} type="submit">
-          {loading ? "Posting..." : "Post Article"}
+          {loading ? "Posting..." : "Post Blog"}
         </button>
       </form>
     </div>
   );
 };
 
-export default PostArticle;
+export default PostBlogs;

@@ -1,0 +1,13 @@
+.lf-map-wrapper { position: relative; border-radius:8px; overflow:hidden; }
+.lf-go-current {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 1000;
+  background: white;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+.lf-go-current img { width:24px; height:24px; display:block; }

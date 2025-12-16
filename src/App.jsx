@@ -16,10 +16,12 @@ import WishlistPage from "./pages/WishlistPage";
 import FeaturePlans from "./pages/FeaturePlans";
 import AllProperties from "./pages/allpropertiespage";
 import ForgotPassword from './pages/ForgotPassword';
-import PostArticle from './pages/PostArticle';
-import Articles from './pages/Articles';
-import SingleArticle from './pages/SingleArticle';
-import EditArticle from "./pages/EditArticle";
+import PostBlogs from './pages/PostBlogs';
+import Blogs from './pages/Blogs';
+import SingleBlogs from './pages/SingleBlogs';
+import EditBlogs from "./pages/EditBlogs";
+import PropertyMapPage from "./pages/PropertyMapPage";
+import PropertyExpo from "./pages/PropertyExpo";
 
 
 
@@ -68,14 +70,13 @@ function App() {
               <Route path="/all-properties" element={<AllProperties />} />
               <Route path="/ForgotPassword" element={<ForgotPassword />} />
               <Route path="/social-login-success" element={<GoogleSuccess />} />
-              <Route path="/admin/post-article" element={<PostArticle />} />
-              <Route path="/Articles" element={<Articles />} />
-              <Route path="/article/:slug" element={<SingleArticle />} />
-              <Route
-                path="/admin/edit-article/:id"
-                element={<ProtectedRoute><EditArticle /></ProtectedRoute>}
-              />
-
+              <Route path="/property-expo" element={<PropertyExpo />} />
+              <Route path="/map" element={<PropertyMapPage />} />
+              <Route path="/admin/post-blogs" element={<PostBlogs />} />
+              <Route path="/blogs" element={<Blogs />} />
+              <Route path="/blog/:slug" element={<SingleBlogs />} />
+              <Route path="/admin/edit-blog/:id" 
+              element={<ProtectedRoute><EditBlogs /></ProtectedRoute>} />
             </Routes>
 
             <Footer />
