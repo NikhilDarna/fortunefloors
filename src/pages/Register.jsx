@@ -152,9 +152,13 @@ const Register = () => {
             <div className="form-group">
               <label>Account Type</label>
               <select name="role" value={formData.role} onChange={handleChange}>
-                <option value="normal">Individual</option>
+                <option value="normal">General User</option>
                 <option value="agent">Real Estate Agent</option>
                 <option value="agency">Real Estate Agency</option>
+                <option value="builder">Builder</option>
+                <option value="furnisher">Furnisher</option>
+                <option value="pghostel">Pg/Hostel</option>
+                <option value="bankingloans">Banking Loans</option>
               </select>
             </div>
 

@@ -4,6 +4,7 @@ import navlogo from "../assets/logo.png";
 import "./Navbar.css";
 import { useAuth } from "../context/AuthContext";
 import { FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
+import PropertyFilters from '../components/PropertyFilters';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -164,77 +165,171 @@ const Navbar = () => {
       },
     },
   };
+  const handleAgentClick = (option) => {
+  switch (option) {
+    case "Agents List":
+      navigate("/agents");
+      break;
 
-  // Handle many quick navigation shortcuts
-  const handleLinkClick = (link) => {
-  let toUrl = "/properties";
+    case "Post Property":
+      navigate("/post-property");
+      break;
 
-  // 🔹 READY TO MOVE
+    case "Verified Agents":
+      navigate("/agents/verified");
+      break;
+
+    // 🔴 NOT READY YET
+    default:
+      navigate("/"); // ⬅️ HOME
+  }
+};
+
+const handleLinkClick = (link) => {
+  let toUrl = "/all-properties";
+
+  /* ================= BUY ================= */
+
   if (link === "Ready to Move") {
-    toUrl = "/all-properties?readyToMove=true";
+    toUrl += "?readyToMove=true";
   }
-   if (link === "Villas") {
-    toUrl = "/all-properties";
-  }
-  if (link === "Commercial Spaces") {
-    toUrl = "/all-properties";
-  }
-  // 🔹 OWNER PROPERTIES
+
   else if (link === "Owner Properties") {
-    toUrl = "/all-properties?directFromOwner=true";
-  }
-  
-  // 🔹 BACHELOR FRIENDLY
-  else if (link === "Bachelor Friendly") {
-    toUrl = "/all-properties?bachelorFriendly=true";
+    toUrl += "?directFromOwner=true";
   }
 
-  // 🔹 FURNISHED
-  else if (link === "Furnished") {
-    toUrl = "/all-properties?furnishing=fully-furnished";
-  }
-  // 🔹 FURNISHED
   else if (link === "Semi Furnishing") {
-    toUrl = "/all-properties?furnishing=fully-furnished";
+    toUrl += "?furnishing=semi-furnished";
   }
-  // 🔹 FURNISHED
-  else if (link ==="Furnishing") {
-    toUrl = "/all-properties?furnishing=fully-furnished";
+
+  else if (link === "Furnishing" || link === "Furnished") {
+    toUrl += "?furnishing=fully-furnished";
   }
-  // 🔹 BUDGET FILTERS
+
+  else if (link === "Villas") {
+    toUrl = "/all-properties?propertyType=villa";
+  }
+
+  else if (link === "Commercial Spaces") {
+    toUrl = "/all-properties?category=commercial";
+  }
+
+  /* ================= RENT ================= */
+
+  else if (link === "Bachelor Friendly") {
+    toUrl += "?bachelorFriendly=true";
+  }
+
+  else if (link === "Office Space") {
+  toUrl = "/all-properties?category=commercial&listingSubType=office";
+}
+else if (link === "Shops") {
+  toUrl = "/all-properties?category=commercial&listingSubType=shop";
+}
+else if (link === "Warehouses") {
+  toUrl = "/all-properties?category=commercial&listingSubType=warehouse";
+}
+else if (link === "Showrooms") {
+  toUrl = "/all-properties?category=commercial&listingSubType=showroom";
+}
+
+  else if (link === "Verified Homes") {
+  toUrl += "?status=approved";
+}
+
+  /* ================= LOCATION BASED ================= */
+
+  else if (link.toLowerCase().includes("flats in")) {
+    const city = link.split("in ")[1];
+    toUrl = `/all-properties?propertyType=flat&location=${encodeURIComponent(city)}`;
+  }
+
+  else if (link.toLowerCase().includes("houses in")) {
+    const city = link.split("in ")[1];
+    toUrl = `/all-properties?propertyType=house&location=${encodeURIComponent(city)}`;
+  }
+
+  else if (link.toLowerCase().includes("flats for rent in")) {
+    const city = link.split("in ")[1];
+    toUrl = `/all-properties?type=rent&propertyType=flat&location=${encodeURIComponent(city)}`;
+  }
+
+  else if (link.toLowerCase().includes("houses for rent in")) {
+    const city = link.split("in ")[1];
+    toUrl = `/all-properties?type=rent&propertyType=house&location=${encodeURIComponent(city)}`;
+  }
+  /* ================= SELL ================= */
+
+else if (link === "Post Property") {
+  navigate("/post-property");
+  return;
+}
+
+else if (link === "Commercial Listings") {
+  toUrl = "/all-properties?category=commercial";
+}
+
+  /* ================= PG ================= */
+
+  else if (link === "PGs / Hostels") {
+    toUrl += "?propertyType=pg";
+  }
+
+  else if (link.includes("Luxury PG")) {
+    toUrl += "?propertyType=pg&listingSubType=luxury";
+  }
+
+  else if (link.includes("Deluxe PG")) {
+    toUrl += "?propertyType=pg&listingSubType=deluxe";
+  }
+
+  else if (link.includes("Normal PG")) {
+    toUrl += "?propertyType=pg&listingSubType=normal";
+  }
+
+  else if (link.includes("Share")) {
+    const count = link.split("-")[0];
+    toUrl += `?propertyType=pg&sharing=${count}`;
+  }
+
+  /* ================= BUDGET ================= */
+
   else if (link.includes("Under 30L")) {
-    toUrl = "/all-properties?maxPrice=3000000";
-  } else if (link.includes("30L–50L")) {
-    toUrl = "/all-properties?minPrice=3000000&maxPrice=5000000";
-  } else if (link.includes("50L–1Cr")) {
-    toUrl = "/all-properties?minPrice=5000000&maxPrice=10000000";
-  } else if (link.includes("Above 1Cr")) {
-    toUrl = "/all-properties?minPrice=10000000";
+    toUrl += "?maxPrice=3000000";
   }
 
-  // 🔹 LOCATION BASED
-  else if (link.toLowerCase().includes("in ")) {
-    const city = link.split("in ")[1]?.trim();
-    if (city) {
-      toUrl = `/all-properties?location=${encodeURIComponent(city)}`;
-    }
+  else if (link.includes("30L–50L")) {
+    toUrl += "?minPrice=3000000&maxPrice=5000000";
   }
 
-  // 🔹 POST PROPERTY
-  else if (link === "Post Property") {
-    toUrl = user ? "/post-property" : "/login";
+  else if (link.includes("50L–1Cr")) {
+    toUrl += "?minPrice=5000000&maxPrice=10000000";
   }
 
-  navigate(toUrl);
+  else if (link.includes("Above 1Cr")) {
+    toUrl += "?minPrice=10000000";
+  }
+  // ⛔ Agent menu items are NOT property filters
+if (
+  link === "Top Rated Agents" ||
+  link === "Nearby Agents" ||
+  link === "Verified Partners"
+) {
+  navigate("/agents");
+  return;
+}
 
-  // 🔒 Close menus cleanly
+
+ navigate(toUrl);
+
+
+
   setMobileMenuOpen(false);
   setActiveDropdown(null);
   setActiveLeftItem(null);
   setActiveRightItem(null);
 };
-
-
+ 
   return (
     <header className="ff-navbar" ref={menuRef}>
       <div className="ff-topbar unified">
@@ -444,7 +539,6 @@ const Navbar = () => {
             >
               Property Expo
             </Link>
-
         </div>
 
         {/* Right Section (desktop) */}

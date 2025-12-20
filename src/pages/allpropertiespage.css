@@ -1,36 +1,58 @@
+/* ===============================
+   PAGE WRAPPER
+=============================== */
+
 .all-properties-page {
-  padding: 40px 80px;
   background-color: #fafafa;
   min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 60px;
 }
 
+/* ===============================
+   HEADER
+=============================== */
+
 .all-properties-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 }
 
 .all-properties-header h1 {
   font-size: 2rem;
+  font-weight: 600;
   color: #222;
 }
 
+/* ===============================
+   GRID LAYOUT (AUTO FIX)
+=============================== */
+
 .property-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 30px;
+  align-items: stretch;
 }
 
-.loading, .no-properties {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #555;
-  margin-top: 40px;
+/* ===============================
+   CARD SAFETY (IMPORTANT)
+=============================== */
+
+.property-grid > * {
+  width: 100%;
+  max-width: 100%;
 }
+
+/* ===============================
+   LOADING / EMPTY
+=============================== */
+
+.loading,
 .no-properties {
   text-align: center;
   padding: 80px 20px;
+  font-size: 1.1rem;
   color: #555;
 }
 
@@ -43,4 +65,35 @@
 .no-properties p {
   font-size: 15px;
   color: #777;
+}
+
+/* ===============================
+   RESPONSIVE FIXES
+=============================== */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .all-properties-page {
+    padding: 30px 30px;
+  }
+
+  .property-grid {
+    gap: 24px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .all-properties-page {
+    padding: 20px;
+  }
+
+  .all-properties-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .property-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }

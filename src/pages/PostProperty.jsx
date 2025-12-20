@@ -7,7 +7,11 @@ const PostProperty = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  // PG extra options
+  const pgCategoryOptions = ["Normal PG", "Deluxe PG", "Luxury PG"];
+  const pgShareOptions = ["1 Share", "2 Share", "3 Share", "4 Share", "5 Share", "8 Share"];
 
+  
   // ✅ Correct mapping (use "sale" instead of "sell")
   const typeOptions = {
     sale: {
@@ -34,7 +38,8 @@ const PostProperty = () => {
     rent: {
       residential: [
         "Flat/Apartment",
-        "Independent House / Villa",
+        "Villa",
+        "Independent House",
         "Independent / Builder Floor",
         "1 RK/ Studio Apartment",
         "Serviced Apartment",
@@ -101,6 +106,8 @@ const PostProperty = () => {
     singleOwner: "yes",
     ownerName: "",
     linkedDocx: "",
+    pgCategory: "",
+    pgSharing: "",
     postedBy: user?.fullName || user?.username || user?.email || "Unknown User",
   });
 
@@ -149,8 +156,14 @@ const PostProperty = () => {
   };
 
   const handlePropertyTypeSelect = (propertyType) => {
-    setFormData((prev) => ({ ...prev, propertyType }));
-  };
+  setFormData((prev) => ({
+    ...prev,
+    propertyType,
+    pgCategory: "",
+    pgSharing: "",
+  }));
+};
+
 
   const handlePhotoChange = (e) => {
     const files = Array.from(e.target.files);
@@ -357,6 +370,46 @@ const PostProperty = () => {
                       {opt}
                     </button>
                   ))}
+                  {formData.transactionType === "pg" &&
+  formData.propertyType.startsWith("PG") && (
+    <div style={{ marginTop: "15px" }}>
+      <p><b>Select PG Type</b></p>
+      {pgCategoryOptions.map((cat) => (
+        <button
+          key={cat}
+          type="button"
+          className={`option-btn ${formData.pgCategory === cat ? "active" : ""}`}
+          onClick={() =>
+            setFormData((prev) => ({
+              ...prev,
+              pgCategory: cat,
+              pgSharing: "",
+            }))
+          }
+        >
+          {cat}
+        </button>
+      ))}
+    </div>
+  )}
+  {formData.transactionType === "pg" && formData.pgCategory && (
+  <div style={{ marginTop: "15px" }}>
+    <p><b>Select Sharing</b></p>
+    {pgShareOptions.map((share) => (
+      <button
+        key={share}
+        type="button"
+        className={`option-btn ${formData.pgSharing === share ? "active" : ""}`}
+        onClick={() =>
+          setFormData((prev) => ({ ...prev, pgSharing: share }))
+        }
+      >
+        {share}
+      </button>
+    ))}
+  </div>
+)}
+
                 </div>
               </div>
               {/* ---- Property Preferences ---- */}

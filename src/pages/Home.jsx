@@ -235,7 +235,7 @@ const applyNavbarFilter = (filterType, value) => {
 
       <div className="container">
         {/* 🏷️ Property Type Buttons */}
-        <div className="container1">
+        <div className="container1 home-desktop-controls">
           <div className="property-types">
           {["Dream Properties", "sale", "rent", "plot",  "pg"].map((type) => (
             <button
@@ -251,12 +251,11 @@ const applyNavbarFilter = (filterType, value) => {
           </div>
           {/* 🔹 Filters */}
           <PropertyFilters onFilterChange={handleFilterChange} />
-        </div>
-        <FortuneOptions/>
-        
+        </div>        
         {/* 🏡 Featured Properties with Side Ads */}
         <Propertycards properties={filteredProperties} loading={loading} />
         
+        <FortuneOptions/>
 
         {/* 🧩 Sell or Rent Section */}
           <div

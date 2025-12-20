@@ -764,3 +764,8 @@
     white-space: nowrap !important;
   }
 }
+@media (max-width: 900px) {
+  .home-desktop-controls {
+    
+  }
+}

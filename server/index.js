@@ -181,6 +181,27 @@ db.run(`CREATE TABLE IF NOT EXISTS blogs (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users (id)
 )`);
+function ensureColumn(columnName, type = "TEXT") {
+  db.all("PRAGMA table_info(properties)", [], (err, columns) => {
+    if (err) return console.error(err);
+
+    const exists = columns.some(col => col.name === columnName);
+
+    if (!exists) {
+      db.run(
+        `ALTER TABLE properties ADD COLUMN ${columnName} ${type}`,
+        [],
+        (err) => {
+          if (err) {
+            console.error(`❌ Failed to add column ${columnName}`, err);
+          } else {
+            console.log(`✅ Column added: ${columnName}`);
+          }
+        }
+      );
+    }
+  });
+}
 
 }
 function addColumnIfNotExists(column, definition) {
@@ -482,21 +503,21 @@ app.get("/api/properties", (req, res) => {
       params.push(furnishing.toLowerCase());
     }
 
-    /* 🔹 Boolean filters (SQLite uses 0/1) */
-    if (readyToMove !== undefined) {
+        /* 🔹 Boolean filters (SQLite uses 0/1) */
+    if (readyToMove === "true") {
       query += ` AND p.ready_to_move = 1`;
-      
     }
 
-    if (directFromOwner !== undefined) {
+    if (directFromOwner === "true") {
       query += ` AND p.direct_from_owner = 1`;
-      
+    }
+    if (req.query.verified === "true") {
+      query += " AND verified = 1";
+    }
+    if (bachelorFriendly === "true") {
+      query += ` AND p.bachelor_friendly = 1`;
     }
 
-    if (bachelorFriendly !== undefined) {
-      query += ` AND p.bachelor_friendly = 1`;
-    
-    }
 
     /* 🔹 Location */
     if (location) {
@@ -514,7 +535,18 @@ app.get("/api/properties", (req, res) => {
       query += ` AND p.price <= ?`;
       params.push(Number(maxPrice));
     }
-
+    if (req.query.category) {
+    query += " AND category = ?";
+    params.push(req.query.category);
+  }
+  if (req.query.listingSubType) {
+  query += " AND listing_sub_type = ?";
+  params.push(req.query.listingSubType);
+}
+  if (req.query.propertyType) {
+    query += " AND propertyType = ?";
+    params.push(req.query.propertyType);
+  }
     query += ` ORDER BY p.created_at DESC`;
 
     db.all(query, params, (err, rows) => {

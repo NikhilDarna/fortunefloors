@@ -1,3 +1,19 @@
+/* ===============================
+   SAFE CARD HEIGHT FIX (GLOBAL)
+   DOES NOT BREAK OTHER PAGES
+=============================== */
+
+.property-card {
+  display: flex;
+  flex-direction: column;
+}
+.property-content {
+  flex: 1;
+}
+.view-details-btn {
+  margin-top: auto;
+}
+
 .property-card {
   background: #fff;
   border-radius: 12px;
