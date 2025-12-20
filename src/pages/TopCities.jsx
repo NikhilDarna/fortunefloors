@@ -10,9 +10,6 @@ import kolkatha from "../assets/cities/kolkatha.jpg";
 import Ahmedabad from "../assets/cities/ahmedhabad.jpg";
 
 
-
-
-
 const cities = [
    {
     name: "Hyderabad",

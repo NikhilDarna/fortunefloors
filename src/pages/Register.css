@@ -1,0 +1,187 @@
+/* src/pages/Register.css
+   Styles for the Register page — improved alignment & spacing
+*/
+:root{
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --accent: #0066cc;
+  --muted: #6b7280;
+  --error-bg: #fff0f0;
+  --error-border: #ffb3b3;
+}
+
+/* Hide site chrome when on register page */
+body.page-register .navbar,
+body.page-register .footer{
+  display: none !important;
+}
+
+.auth-page{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  background: linear-gradient(180deg, var(--bg) 0%, #eef3fb 100%);
+}
+
+/* Make outer container neutral so only the inner card (auth-form) appears */
+body.page-register .auth-container{
+  width: 100%;
+  max-width: 760px; /* keep the form compact */
+  padding: 0; /* remove outer padding so inner card defines spacing */
+  display: flex;
+  justify-content: center;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Keep a small top spacing so the card isn't flush to the viewport */
+body.page-register .auth-page{ padding-top: 3rem; padding-bottom: 3rem; }
+
+.auth-form{
+  background: var(--card);
+  padding: 2rem 2.25rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(29, 31, 35, 0.06);
+  border: 1px solid rgba(10, 10, 10, 0.03);
+  width: 100%;
+  max-width: 520px; /* readable column width */
+  box-sizing: border-box;
+}
+
+.auth-form h2{
+  margin: 0 0 1.25rem 0;
+  font-size: 1.5rem;
+  color: #111827;
+  text-align: center; /* centered heading for balance */
+}
+
+.error-message{
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: #9b1c1c;
+  padding: 0.65rem 0.9rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.form-row{
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: nowrap;
+  align-items: flex-end; /* baseline alignment for labels/inputs */
+}
+
+/* allow wrapping on smaller widths */
+@media (max-width: 640px){
+  .form-row{ flex-wrap: wrap; gap: 0.75rem; }
+}
+
+.form-group{
+  flex: 1 1 0;
+  min-width: 0; /* prevents overflow with long inputs */
+}
+
+.form-group label{
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+select{
+  width: 100%;
+  padding: 0.65rem 0.95rem;
+  border-radius: 10px;
+  font-size: 0.96rem;
+  background: linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+  border: 1px solid #e6e9ef;
+  box-shadow: inset 0 1px 0 rgba(16,24,40,0.02);
+  box-sizing: border-box;
+  height: 48px;
+  transition: border-color .14s ease, box-shadow .14s ease, transform .06s ease;
+}
+
+
+
+
+/* polished placeholder styling */
+input::placeholder,
+textarea::placeholder{
+  color: #9aa6b3;
+  opacity: 1;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  transition: color .12s ease, opacity .12s ease, transform .12s ease;
+}
+
+input:focus::placeholder{
+  color: rgba(0,0,0,0.18);
+  opacity: 0.6;
+  transform: translateY(-2px);
+}
+
+input[type="password"]{
+  letter-spacing: 0.02em;
+}
+
+input:focus, select:focus{
+  outline: none;
+  border-color: rgba(0,102,204,0.95);
+  box-shadow: 0 8px 24px rgba(0,102,204,0.08);
+  transform: translateY(-1px);
+}
+
+/* local small error text used by the form */
+.auth-form small,
+.auth-form .input-error{
+  display: block;
+  color: #b91c1c;
+  margin-top: 0.45rem;
+  font-size: 0.85rem;
+}
+
+.auth-btn{
+  display: inline-block;
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+
+.auth-btn:hover:not(:disabled){
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,102,204,0.12);
+}
+
+.auth-btn:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-link{
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--muted);
+}
+
+@media (max-width: 480px){
+  .auth-form{ padding: 1.25rem; }
+  .auth-form h2{ font-size: 1.25rem; }
+  .form-row{ gap: 0.5rem; }
+}
