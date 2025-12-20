@@ -94,7 +94,7 @@ const NotificationPanel = () => {
                 {getNotificationIcon(notification.type)}
               </div>
               <div className="notification-content">
-                <p>{notification.message}dfgh</p>
+                <p>{notification.message}</p>
                 <span className="notification-date">{formatDate(notification.created_at)}</span>
               </div>
               {!notification.is_read && (
