@@ -77,12 +77,14 @@ const PropertyCard = ({ property }) => {
           View Details
         </Link>
 
-        <div className="property-price">{formatPrice(property.price)}</div>
+        <div className="property-footer">
+          <div className="property-price">{formatPrice(property.price)}</div>
 
-        <div className="property-features">
-          <span>📏 {property.area} sq ft</span>
-          <span>🛏 {property.bedrooms}</span>
-          <span>🚿 {property.bathrooms}</span>
+          <div className="property-features">
+            <span className="feature-pill">📏 {property.area} sq ft</span>
+            <span className="feature-pill">🛏 {property.bedrooms}</span>
+            <span className="feature-pill">🚿 {property.bathrooms}</span>
+          </div>
         </div>
       </div>
 

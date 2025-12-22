@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import './Register.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,12 @@ const Register = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Add a body class while on the register page so we can hide site sections
+  useEffect(() => {
+    document.body.classList.add('page-register');
+    return () => document.body.classList.remove('page-register');
+  }, []);
 
   // Password strength regex
   const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;

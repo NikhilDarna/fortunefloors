@@ -437,36 +437,36 @@ const PostProperty = () => {
                   </div>
                 </div>
 
-                {/* Checkboxes */}
+                {/* Preferences (multi-select pills) */}
                 <div className="checkbox-group">
-                  <label>
+                  <label className="checkbox-pill-wrapper">
                     <input
                       type="checkbox"
                       name="readyToMove"
                       checked={formData.readyToMove}
                       onChange={handleCheckboxChange}
                     />
-                    Ready to Move
+                    <span className="checkbox-pill">Ready to Move</span>
                   </label>
 
-                  <label>
+                  <label className="checkbox-pill-wrapper">
                     <input
                       type="checkbox"
                       name="directFromOwner"
                       checked={formData.directFromOwner}
                       onChange={handleCheckboxChange}
                     />
-                    Direct From Owner
+                    <span className="checkbox-pill">Direct From Owner</span>
                   </label>
 
-                  <label>
+                  <label className="checkbox-pill-wrapper">
                     <input
                       type="checkbox"
                       name="bachelorFriendly"
                       checked={formData.bachelorFriendly}
                       onChange={handleCheckboxChange}
                     />
-                    Bachelor Friendly
+                    <span className="checkbox-pill">Bachelor Friendly</span>
                   </label>
                 </div>
               </div>

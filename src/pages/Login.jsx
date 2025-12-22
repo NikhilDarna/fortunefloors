@@ -1,10 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import './Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Add a body class while on the login page so we can hide site chrome
+  useEffect(() => {
+    document.body.classList.add('page-login');
+    return () => document.body.classList.remove('page-login');
+  }, []);
 
   const [tab, setTab] = useState("password"); // password | otp | google
 
@@ -109,11 +116,14 @@ const Login = () => {
     window.location.href = "http://localhost:5000/auth/google";
   };
 
+
+
   // -------------------------------
   return (
     <div className="auth-page">
       <div className="auth-container">
 
+      <div className="auth-form">
         <h2>Login to Fortune Real Estate</h2>
 
         {err && <p className="error-message">{err}</p>}
@@ -121,91 +131,89 @@ const Login = () => {
         {/* ----------- TABS ----------- */}
         <div className="login-tabs">
           <button className={tab === "password" ? "active" : ""} onClick={() => setTab("password")}>
-            Password Login
+            Password
           </button>
 
           <button className={tab === "otp" ? "active" : ""} onClick={() => setTab("otp")}>
-            OTP Login
+            OTP
           </button>
 
           <button className={tab === "google" ? "active" : ""} onClick={() => setTab("google")}>
-            Google Login
+            Google
           </button>
         </div>
 
-        {/* ----------------------------------------- */}
-        {/* 1️⃣ PASSWORD LOGIN FORM */}
-        {/* ----------------------------------------- */}
-        {tab === "password" && (
-          <form onSubmit={handlePasswordLogin} className="auth-form">
-            <input
-              type="text"
-              placeholder="Username or Email"
-              value={userData.username}
-              onChange={(e) => setUserData({ ...userData, username: e.target.value })}
-              required
-            />
+        {/* Tab contents */}
+        <div className="tab-content">
+          {tab === "password" && (
+            <form onSubmit={handlePasswordLogin}>
+              <input
+                type="text"
+                placeholder="Username or Email"
+                value={userData.username}
+                onChange={(e) => setUserData({ ...userData, username: e.target.value })}
+                required
+              />
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={userData.password}
-              onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-              required
-            />
+              <input
+                type="password"
+                placeholder="Password"
+                value={userData.password}
+                onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+                required
+              />
 
-            <Link to="/ForgotPassword">Forgot Password?</Link>
+              <Link to="/ForgotPassword">Forgot Password?</Link>
 
-            <button type="submit">{loading ? "Logging in..." : "Login"}</button>
-          </form>
-        )}
+              <button type="submit">{loading ? "Logging in..." : "Login"}</button>
+            </form>
+          )}
 
-        {/* ----------------------------------------- */}
-        {/* 2️⃣ OTP LOGIN FORM */}
-        {/* ----------------------------------------- */}
-        {tab === "otp" && (
-          <div className="auth-form">
-            {!otpSent ? (
-              <>
-                <input
-                  type="text"
-                  placeholder="Enter Mobile Number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-                <button onClick={sendOTP}>{loading ? "Sending OTP..." : "Send OTP"}</button>
-              </>
-            ) : (
-              <>
-                <input
-                  type="text"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
+          {tab === "otp" && (
+            <div>
+              {!otpSent ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Enter Mobile Number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                  <button onClick={sendOTP}>{loading ? "Sending OTP..." : "Send OTP"}</button>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
 
-                <button onClick={verifyOTP}>{loading ? "Verifying..." : "Verify OTP"}</button>
+                  <button onClick={verifyOTP}>{loading ? "Verifying..." : "Verify OTP"}</button>
 
-                <p onClick={sendOTP} style={{ cursor: "pointer", marginTop: "10px" }}>
-                  Resend OTP
-                </p>
-              </>
-            )}
-          </div>
-        )}
-        {/* ----------------------------------------- */}
-        {/* 3️⃣ GOOGLE LOGIN */}
-        {/* ----------------------------------------- */}
-        {tab === "google" && (
-          <div className="auth-form">
-            <button onClick={googleLogin} className="google-btn">
-              Continue with Google
-            </button>
-          </div>
-        )}
+                  <p onClick={sendOTP} style={{ cursor: "pointer", marginTop: "10px" }}>
+                    Resend OTP
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
+          {tab === "google" && (
+            <div>
+              <button onClick={googleLogin} className="google-btn">
+                Continue with Google
+              </button>
+            </div>
+          )}
+        </div>
+
         <p className="auth-link">
           Don’t have an account? <Link to="/register">Register here</Link>
         </p>
+      </div>
+
       </div>
     </div>
   );
