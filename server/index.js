@@ -13,7 +13,6 @@ import slugify from "slugify";
 
 
 
-
 // Fix __dirname and __filename in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +22,19 @@ const PORT = 5000;
 const JWT_SECRET = 'fortune-realestate-secret-key';
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://fortunefloors.com",
+      "https://www.fortunefloors.com",
+      "http://localhost:5173"
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
+  })
+);
+
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -41,9 +52,9 @@ if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, 'uploads/'));
-  },
+  }, 
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const uniqueSuffix = Date.now() + '-' 4+ Math.round(Math.random() * 1e9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
