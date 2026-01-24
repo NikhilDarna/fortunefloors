@@ -1,5 +1,5 @@
+import { Link } from "react-router-dom";
 import "./Testimonials.css";
-import { useRef } from "react";
 
 const testimonials = [
   {
@@ -35,14 +35,6 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
-  const scrollRef = useRef(null);
-
-  const scroll = (direction) => {
-    const { current } = scrollRef;
-    if (direction === "left") current.scrollBy({ left: -400, behavior: "smooth" });
-    else current.scrollBy({ left: 400, behavior: "smooth" });
-  };
-
   return (
     <section className="testimonials-section">
       <p className="testimonials-small-heading">TESTIMONIALS</p>
@@ -53,27 +45,44 @@ const Testimonials = () => {
         Hear from our satisfied buyers, tenants, owners and dealers.
       </p>
 
-      <button className="carousel-btn left" onClick={() => scroll("left")}>‹</button>
+      <div className="testimonial-marquee">
+        <div className="scroll-frame">
+          <div className="marquee-track">
 
-      <div className="testimonials-carousel" ref={scrollRef}>
-        {testimonials.map((t, i) => (
-          <div key={i} className="testimonial-card">
-            <div className="testimonial-header">
-              <img src={t.image} alt={t.name} />
-              <div>
-                <p className="testimonial-name">{t.name}</p>
-                <p className="testimonial-role">{t.role}</p>
+            {/* ORIGINAL */}
+            {testimonials.map((t, i) => (
+              <div className="testimonial-card" key={i}>
+                <div className="testimonial-header">
+                  <img src={t.image} alt={t.name} />
+                  <div>
+                    <p className="testimonial-name">{t.name}</p>
+                    <p className="testimonial-role">{t.role}</p>
+                  </div>
+                </div>
+                <p className="testimonial-text">{t.text}</p>
               </div>
-            </div>
-            <p className="testimonial-text">{t.text}</p>
+            ))}
+
+            {/* DUPLICATE FOR LOOP */}
+            {testimonials.map((t, i) => (
+              <div className="testimonial-card" key={`dup-${i}`}>
+                <div className="testimonial-header">
+                  <img src={t.image} alt={t.name} />
+                  <div>
+                    <p className="testimonial-name">{t.name}</p>
+                    <p className="testimonial-role">{t.role}</p>
+                  </div>
+                </div>
+                <p className="testimonial-text">{t.text}</p>
+              </div>
+            ))}
+
           </div>
-        ))}
+        </div>
       </div>
 
-      <button className="carousel-btn right" onClick={() => scroll("right")}>›</button>
-
       <div className="view-all">
-        <a href="#">View all testimonials →</a>
+        <Link to="/testimonials">View all testimonials →</Link>
       </div>
     </section>
   );

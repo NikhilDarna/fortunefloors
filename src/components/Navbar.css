@@ -1,4 +1,19 @@
-/* ===== Base Navbar ===== */
+/* =========================================================
+   BASE RESET
+========================================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.menu-open {
+  overflow: hidden;
+}
+
+/* =========================================================
+   NAVBAR BASE
+========================================================= */
 .ff-navbar {
   width: 100%;
   background: #ffffff;
@@ -6,9 +21,12 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
+/* =========================================================
+   TOP BAR
+========================================================= */
 .ff-topbar.unified {
   display: flex;
   justify-content: space-between;
@@ -17,91 +35,192 @@
   gap: 20px;
 }
 
-/* ===== Left Section ===== */
+/* =========================================================
+   LEFT SECTION
+========================================================= */
 .ff-left {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.ff-location {
-  font-size: 14px;
-  color: #555;
-  white-space: nowrap;
-}
-
 .ff-logo-wrapper {
-  display: inline-flex;
-  align-items: center;
+  text-decoration: none;
+  color: inherit;
 }
 
-.ff-logo {
-  height: 55px;
-  width: auto;
-  object-fit: contain;
+.ff-left h1 {
+  font-size: 26px;
+  font-weight: 600;
 }
 
-/* ===== Hamburger ===== */
-.hamburger {
-  display: none;
-  cursor: pointer;
-  font-size: 24px;
+.red {
+  color: red;
 }
 
-/* ===== Center Menu ===== */
-.ff-menu {
+/* =========================================================
+   LOCATION
+========================================================= */
+.ff-location {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #555;
 }
 
-.ff-dropdown {
+.location-icon {
+  color: #d21515;
+}
+
+/* =========================================================
+   RIGHT SECTION
+========================================================= */
+.ff-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ff-post-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #688be5;
+  background: transparent;
+  color: #000;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ff-post-btn:hover {
+  background: #2b9b09;
+  color: #fff;
+  border-color: transparent;
+}
+
+.ff-post-btn.active-post {
+  background: #2b9b09;
+  color: #fff;
+  border-color: #2b9b09;
+}
+
+/* =========================================================
+   PROFILE
+========================================================= */
+.profile-wrapper {
   position: relative;
   cursor: pointer;
 }
 
-.ff-menu-name {
-  font-size: 15px;
-  font-weight: 500;
-  color: #333;
-  padding: 6px 10px;
-  border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
+.profile-icon {
+  font-size: 28px;
+  color: #1a4fd9;
 }
 
-.ff-menu-name:hover {
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  padding: 10px;
+  min-width: 160px;
+  z-index: 2000;
+}
+
+.profile-menu a,
+.profile-menu button {
+  display: block;
+  padding: 6px 4px;
+  font-size: 14px;
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  color: #333;
+  cursor: pointer;
+}
+
+.profile-menu a:hover,
+.profile-menu button:hover {
   background: #f5f5f5;
 }
 
-/* ===== Dropdown Panel (Desktop) ===== */
-.ff-dropdown-panel.center-popup {
+/* =========================================================
+   HAMBURGER
+========================================================= */
+.hamburger {
+  display: none;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 3000;
+}
+
+/* =========================================================
+   MENU ROW (DESKTOP)
+========================================================= */
+.ff-menu-row {
+  background: #1a4fd9;
+}
+
+.ff-menu {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.ff-menu-name {
+  font-size: 16px;
+  padding: 6px 10px;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.ff-menu-name:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.active-route {
+  background: #fff;
+  color: #000;
+}
+
+/* =========================================================
+   DESKTOP DROPDOWN
+========================================================= */
+.ff-dropdown {
+  position: relative;
+}
+
+.ff-dropdown-panel {
   position: absolute;
+  top: 120%;
   left: 50%;
-  top: 110%;
   transform: translateX(-50%);
   background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.12);
-  padding: 16px 18px;
+  border-radius: 12px;
+  box-shadow: 0 15px 30px rgba(0,0,0,.15);
   display: flex;
-  gap: 18px;
+  gap: 20px;
+  padding: 16px;
   min-width: 520px;
-  z-index: 1001;
+  z-index: 3000;
 }
 
 .panel-left {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 140px;
+  min-width: 160px;
 }
 
 .left-item {
-  font-size: 14px;
   padding: 6px 10px;
-  border-radius: 6px;
   cursor: pointer;
-  color: #555;
+  font-size: 14px;
+  border-radius: 6px;
 }
 
 .left-item.active,
@@ -111,17 +230,13 @@
 }
 
 .panel-middle {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 180px;
+  min-width: 200px;
 }
 
 .dropdown-link {
-  font-size: 14px;
   padding: 4px 0;
+  font-size: 14px;
   cursor: pointer;
-  color: #333;
 }
 
 .dropdown-link:hover {
@@ -141,329 +256,465 @@
   object-fit: cover;
 }
 
-/* ===== Right Section (Desktop Only) ===== */
- .ff-logo {
-    width: 100% !important;
-    max-width: 260px !important;   /* 👈 bigger logo, takes full width block */
-    height: auto;
-    
-  }
-.ff-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.ff-post-btn {
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid #1a4fd9;
-  background: #1a4fd9;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.1s;
-}
-
-.ff-post-btn:hover {
-  color: #ffffff;
-  background: #2b9b09;
-  border-style: none;
-  box-shadow: 0 4px 10px rgba(32, 217, 26, 0.3);
-  transform: translateY(-1px);
-}
-
-.profile-wrapper {
-  position: relative;
-  cursor: pointer;
-}
-
-.profile-icon {
-  font-size: 30px;
-  color: blue;
-}
-
-.profile-menu {
-  position: absolute;
-  right: 0;
-  top: 105%;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 160px;
-  z-index: 1001;
-}
-.profile-icon:hover{
-  color: #2b9b09;
-  border-color: black;
-}
-.profile-menu a,
-.profile-menu button {
-  font-size: 14px;
-  color: #333;
-  text-decoration: none;
-  border: none;
-  background: transparent;
-  text-align: left;
-  padding: 6px 4px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.profile-menu a:hover,
-.profile-menu button:hover {
-  background: #f5f5f5;
-  color: black;
-}
-
 /* =========================================================
-   🔹 MOBILE STYLES
-   ========================================================= */
+   MOBILE STYLES
+========================================================= */
 @media (max-width: 900px) {
+
+  /* TOP BAR */
   .ff-topbar.unified {
-    flex-direction: column;
-    align-items: stretch;
     padding: 10px 16px;
-    gap: 10px;
-  }
-
-  /* Left section as column: location, logo, hamburger */
-  .ff-left {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    text-align: center;
-  }
-
-  .ff-location {
-    font-size: 15px;
-  }
-
-  .ff-logo {
-    width: 100%;
-    max-width: 300px;   /* 👈 bigger logo, takes full width block */
-    height: auto;
-    
   }
 
   .hamburger {
     display: block;
-    font-size: 28px;
   }
 
-  /* Center menu as vertical collapsible */
+  /* SLIDE MENU */
+  .ff-menu-row {
+    position: fixed;
+    
+    width: 260px;
+    height: calc(100vh - 64px);
+    background: #fff;
+    transform: translateX(-100%);
+    transition: transform .3s ease;
+    box-shadow: 2px 0 12px rgba(0,0,0,.2);
+    z-index: 2500;
+  }
+
+  .ff-menu-row.active {
+    transform: translateX(0);
+  }
+
   .ff-menu {
-    display: none;
     flex-direction: column;
-    gap: 8px;
-    width: 100%;
-    padding: 8px 0;
-    border-top: 1px solid #eee;
-  }
-
-  .ff-menu.active {
-    display: flex;
-  }
-
-  .ff-dropdown {
-    width: 100%;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 10px;
   }
 
   .ff-menu-name {
-    display: block;
+    color: #000;
     width: 100%;
-    text-align: left;
-    padding: 10px 4px;
+    padding: 10px 6px;
+    font-size: 16px;
+    border-bottom: 1px solid #eee;
   }
 
+  .active-route {
+    color: #1a4fd9;
+    background: none;
+  }
+
+  /* DISABLE DESKTOP DROPDOWN */
+  .ff-dropdown-panel {
+    display: none !important;
+  }
+
+  /* MOBILE SUBMENU */
   .mobile-submenu {
     padding-left: 10px;
-    padding-bottom: 8px;
+    width: 100%;
   }
 
   .mobile-left-item {
     font-size: 14px;
     font-weight: 600;
-    margin-top: 6px;
+    margin-top: 8px;
+    color: #1a4fd9;
+  }
+
+  .mobile-link {
+    padding: 6px 0 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+  }
+
+  .mobile-link:hover {
+    color: #1a4fd9;
+    text-decoration: underline;
+  }
+}
+@media (max-width: 900px) {
+
+  /* HAMBURGER ICON */
+  .hamburger {
+    display: block !important;
+    font-size: 26px !important;
+    cursor: pointer !important;
+    z-index: 100001 !important;
+  }
+
+  /* SLIDE-IN MENU */
+  .ff-menu-row {
+    position: fixed !important;
+   
+    width: 260px !important;
+    height: 92vh !important;           /* ✅ LIMIT HEIGHT */
+    max-height: 90vh !important;
+    background: #ffffff !important;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.2) !important;
+
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 100000 !important;
+
+    /* ✅ SCROLL ONLY HAMBURGER */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .ff-menu-row.active {
+    transform: translateX(0) !important;
+  }
+
+  /* MENU CONTENT */
+  .ff-menu {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 16px !important;
+    gap: 14px !important;
+  }
+
+  /* MENU ITEMS */
+  .ff-menu-name {
+    color: #000 !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    padding: 12px 8px !important;
+    border-bottom: 1px solid #eee !important;
+  }
+
+  .ff-menu-name.active-route {
+    color: #1a4fd9 !important;
+    font-weight: 600 !important;
+  }
+
+  /* DISABLE DESKTOP DROPDOWNS */
+  .ff-dropdown-panel {
+    display: none !important;
+  }
+}
+/* ================= MOBILE HEADER LAYOUT FIX ================= */
+@media (max-width: 900px) {
+
+  /* Top row wrapper */
+  .ff-top-row {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    
+  }
+
+  /* ───── Row 1: Logo + Location ───── */
+  .ff-left {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 10px;
+  }
+
+  .ff-left h1 {
+    font-size: 20px;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .ff-location {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* ───── Row 2: Post | Profile | Hamburger ───── */
+  .ff-right {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    gap: 10px;
+  }
+
+  /* Post Property button (mobile) */
+  .ff-post-btn {
+    display: inline-flex;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 16px;
+    white-space: nowrap;
+  }
+
+  /* Profile icon */
+  .profile-icon {
+    font-size: 26px;
+  }
+
+  /* Hamburger icon */
+  .hamburger {
+    display: block;
+    font-size: 26px;
+    cursor: pointer;
+  }
+}
+/* ================= DESKTOP HEADER FIX ================= */
+@media (min-width: 901px) {
+
+  .ff-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: nowrap;          /* 🔥 CRITICAL */
+    padding: 10px 40px;
+  }
+
+  .ff-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: auto;
+  }
+
+  .ff-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: auto;
+  }
+
+  .hamburger {
+    display: none !important;  /* desktop = no hamburger */
+  }
+}
+
+@media (max-width: 900px) {
+
+  .ff-menu-row {
+    position: fixed !important;
+
+    /* 🔥 CRITICAL */
+    top: var(--ff-header-height) !important;
+    left: 0 !important;
+
+    width: 260px !important;
+
+    /* 🔥 height calculated ONLY from viewport */
+    height: calc(
+      100dvh - var(--ff-header-height) - var(--ff-bottom-nav-height, 0px)
+    ) !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #fff !important;
+
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease !important;
+
+    z-index: 99999 !important;
+  }
+
+  .ff-menu-row.active {
+    transform: translateX(0) !important;
+  }
+}
+@media (max-width: 900px) {
+  .mobile-submenu {
+    margin-left: 8px;
+    padding-left: 8px;
+    border-left: 2px solid #e5e5e5;
+  }
+
+  .mobile-left-block {
+    margin-top: 10px;
+  }
+
+  .mobile-left-title {
+    font-size: 15px;
+    font-weight: 600;
+    padding: 6px 0;
+    cursor: pointer;
+    color: #1a4fd9;
+  }
+
+  .mobile-right-links {
+    padding-left: 12px;
   }
 
   .mobile-link {
     font-size: 14px;
-    padding: 4px 0 4px 10px;
-    cursor: pointer;
+    padding: 6px 0;
+    color: #333;
   }
 
   .mobile-link:hover {
     text-decoration: underline;
   }
-
-  /* Hide desktop dropdown panel on mobile */
-  .ff-dropdown-panel.center-popup {
-    display: none !important;
-  }  
 }
-@media (max-width: 900px) {
+/* ================= DESKTOP MENU FIX ================= */
+@media (min-width: 901px) {
 
-  /* Show right section on mobile */
-  .ff-right {
+  .ff-menu-row {
+    width: 100%;
+    background: #1f4fd8; /* keep your blue */
+  }
+
+  .ff-menu {
     display: flex !important;
-    width: 100%;
-    justify-content: center !important;
-    gap: 20px;
-    margin-top: 10px;
-  }
-
-  /* Make Post Property button smaller for mobile */
-  .ff-post-btn {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-  .ff-location{
-    display: block !important;
-  }
-  /* Center profile icon */
-  .profile-icon {
-    font-size: 28px;
-  }
-
-  /* Adjust profile dropdown on mobile */
-  .profile-menu {
-    right: 50%;
-    transform: translateX(50%);
-    top: 140%;
-    min-width: 150px;
-  }
-}
-
-/* Optional: medium screens fine-tuning */
-@media (min-width: 901px) and (max-width: 1200px) {
-  .ff-topbar.unified {
-    padding: 12px 24px;
-  }
-
-  .ff-menu {
-    gap: 14px;
-  }
-  .ff-location{
-    display: block !important;
-  }
-}
-@media (max-width: 900px) {
-
-  /* MAIN FIX — put these 4 (location, post property, profile, hamburger) in one line */
-  .mobile-row {
-    display: flex;
+    flex-direction: row !important;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 10px;
-    margin-top: 8px;
+    justify-content: center;
+    flex-wrap: nowrap !important; /* ⛔ prevent wrapping */
+    gap: 28px; /* spacing between menu items */
+    padding: 10px 20px;
+    white-space: nowrap; /* ⛔ text wrap */
   }
 
-  /* Logo full width */
-  .ff-logo {
-    width: 100%;
-    max-width: 300px;
-    height: auto;
-    margin: 0 auto;
-  }
-
-
-  /* Show mobile profile icon */
-  .mobile-profile {
-    display: block;
-    font-size: 26px;
-  }
-
-  /* Post property button — small mobile size */
-  .mobile-post-btn {
-    display: block;
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 8px;
-    background: #1a4fd9;
-    color: #fff;
+  .ff-menu-name,
+  .ff-dropdown {
+    display: inline-flex !important;
+    align-items: center;
     white-space: nowrap;
   }
 
-  /* Location */
-  .mobile-location {
-    font-size: 14px;
-    white-space: nowrap;
-  }
-  .ff-location{
-    display: block !important;
-  }
-  /* Hamburger */
-  .hamburger {
-    font-size: 26px;
-    display: block;
-  }
-}
-/* ============================
-    MOBILE SLIDE-IN MENU (LEFT SIDE)
-============================ */
-@media (max-width: 900px) {
-  .ff-menu {
-    position: fixed;
-    left: 0;
-    top: 14.5%;
-    height: 100vh;
-    width: 180px;
-    background: linear-gradient(145deg,#ebe8e8,#027ee4);;
-    box-shadow: 2px 0 12px rgba(0,0,0,0.15);
-    transform: translateX(-100%);
-    transition: transform 0.35s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;   /* <-- scrollable */
-    padding: 20px 12px;
-    z-index: 2000;
-  }
-
-  .ff-menu.active {
-    transform: translateX(0); /* slide in from left */
-  }
-
-  /* prevent content going under navbar */
-  body.menu-open {
-    overflow: hidden;
-  }
-}
-/* ===========================
-   MOBILE MENU ITEM SEPARATOR
-=========================== */
-
-@media (max-width: 900px) {
-
-  /* Main menu item */
-  .ff-menu-name {
+  /* dropdown container must not break row */
+  .ff-dropdown {
     position: relative;
-    padding: 2px 10px;
-    font-size: 16px;
-    font-weight: 500;
   }
+}
+.dropdown-link-wrapper {
+  margin-bottom: 8px;
+}
 
-  /* Line below each menu item */
-  .ff-menu-name::after {
-    content: "";
-    display: block;
-    width: 40%;              /* 👈 50% width */
-    height: 2px;
-    background-color: #ddd;  /* line color */
-    margin-top: 10px;
-  }
+.dropdown-sub-links {
+  margin-left: 16px;
+  margin-top: 4px;
+}
 
-  /* Remove line for last item (optional) */
-  .ff-dropdown:last-child .ff-menu-name::after {
-    display: none;
-  }
+.dropdown-sub-link {
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  padding: 3px 0;
+}
+
+.dropdown-sub-link:hover {
+  color: #1f4fd8;
+  text-decoration: underline;
+}
+.dropdown-link-wrapper {
+  position: relative;
+}
+
+.dropdown-sub-right {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 12px;
+  background: #fff;
+  min-width: 160px;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  z-index: 999;
+}
+
+.dropdown-sub-link {
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dropdown-sub-link:hover {
+  background: #f2f6ff;
+  border-radius: 6px;
+}
+.dropdown-sub-right {
+  position: absolute;
+  top: 0;
+  left: 100%;
+}
+.dropdown-link-wrapper {
+  position: relative;
+}
+/* EACH ROW */
+.grid-row {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  align-items: center;
+  gap: 12px;
+}
+
+/* LEFT COLUMN */
+.dropdown-link {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.dropdown-link:hover {
+  background: #f4f7ff;
+  border-radius: 6px;
+}
+
+/* RIGHT COLUMN */
+.dropdown-sub-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-sub-link {
+  padding: 4px 6px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dropdown-sub-link:hover {
+  color: #1e4fd8;
+}
+/* each middle row */
+.dropdown-link-wrapper {
+  position: relative;
+  padding: 6px 0;
+}
+
+/* main links */
+.dropdown-link {
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dropdown-link:hover {
+  background: #f4f7ff;
+  border-radius: 6px;
+}
+
+/* RIGHT EXTENDED SUBMENU */
+.dropdown-sub-right {
+  position: absolute;
+  top: 0;                  /* 🔑 align with Sharing */
+  left: 160px;             /* distance from middle column */
+  background: #fff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  min-width: 120px;
+}
+
+/* sub items */
+.dropdown-sub-link {
+  padding: 4px 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dropdown-sub-link:hover {
+  color: #1e4fd8;
 }

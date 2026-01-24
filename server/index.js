@@ -8,7 +8,16 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import slugify from "slugify";
+import webpush from 'web-push';
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+import micrositeRoute from "./routes/microsite.js";
+import twilio from "twilio";
 
+
+
+
+dotenv.config();
 
 
 
@@ -27,7 +36,9 @@ app.use(
     origin: [
       "https://fortunefloors.com",
       "https://www.fortunefloors.com",
-      "http://localhost:5173"
+      "http://localhost:5173",
+      "http://localhost:5000"
+
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -36,7 +47,19 @@ app.use(
 );
 
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/api", micrositeRoute);
+app.use(
+  "/microsites",
+  express.static(path.join(__dirname, "microsites"))
+);
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
+  next();
+});
+
 
 app.get('/api/test', (req, res) => {
   res.json({ message: "API working fine!" });
@@ -47,6 +70,14 @@ if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
   fs.mkdirSync(path.join(__dirname, 'uploads'));
 }
 
+const safeText = (v) => {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") {
+    return v.value || v.label || null;
+  }
+  return String(v);
+};
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -95,6 +126,45 @@ const upload = multer({
     }
   }
 });
+// ================= INTERIOR UPLOAD =================
+const uploadInterior = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+const client = twilio(
+process.env.TWILIO_ACCOUNT_SID,
+process.env.TWILIO_AUTH_TOKEN
+);
+
+
+// VAPID setup
+webpush.setVapidDetails(
+  'mailto:nikhil.fortunefloors@gmail.com',  // Replace with your email
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
+
+
+
+const authenticateOptional = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      req.user = null;
+      return next();
+    }
+    req.user = user;
+    next();
+  });
+};
+
 
 // Database initialization
 const db = new sqlite3.Database('fortune_realestate.db', (err) => {
@@ -106,50 +176,126 @@ const db = new sqlite3.Database('fortune_realestate.db', (err) => {
   }
 });
 
+
 function initializeDatabase() {
   // Create users table
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'normal',
-    full_name TEXT,
-    phone TEXT,
-    profile_photo TEXT,
-    rating REAL DEFAULT 0,
-    total_ratings INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN DEFAULT 1
-  )`, (err) => {
+  db.run(`
+CREATE TABLE IF NOT EXISTS properties (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+
+  title TEXT NOT NULL,
+  description TEXT,
+
+  property_type TEXT,
+  transaction_type TEXT,
+  listing_sub_type TEXT,
+  category TEXT,
+  pgCategory TEXT,
+
+  price REAL NOT NULL,
+  location TEXT NOT NULL,
+  city TEXT,
+  state TEXT,
+  pincode TEXT,
+  locality TEXT,
+
+  area REAL,
+  bedrooms INTEGER,
+  bathrooms INTEGER,
+  furnishing TEXT,
+
+  ready_to_move INTEGER DEFAULT 0,
+  direct_from_owner INTEGER DEFAULT 0,
+  bachelor_friendly INTEGER DEFAULT 0,
+
+  single_owner TEXT,
+  owner_name TEXT,
+  linked_docx TEXT,
+
+  floor_number INTEGER,
+  total_floors INTEGER,
+  age_of_construction TEXT,
+  facing TEXT,
+
+  photos TEXT,
+  slug TEXT,
+
+  status TEXT DEFAULT 'pending',
+  rejection_message TEXT,
+  is_deleted INTEGER DEFAULT 0,
+
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (user_id) REFERENCES users(id)
+)`, (err) => {
     if (err) console.log("Users table error:", err);
   });
   db.run(`ALTER TABLE users ADD COLUMN otp TEXT`, () => {});
   db.run(`ALTER TABLE users ADD COLUMN otp_expiry INTEGER`, () => {});
+  db.run(`ALTER TABLE interiors ADD COLUMN photos TEXT`, () => {});
+    cleanupInvalidAddressData();
 
 
-  // ✅ Fixed properties table (added missing columns)
-  db.run(`CREATE TABLE IF NOT EXISTS properties (
+  // ===== PROPERTY ADDRESS NORMALIZATION =====
+  db.run(`ALTER TABLE properties ADD COLUMN city TEXT`, () => {});
+  db.run(`ALTER TABLE properties ADD COLUMN state TEXT`, () => {});
+  db.run(`ALTER TABLE properties ADD COLUMN pincode TEXT`, () => {});
+  db.run(`ALTER TABLE properties ADD COLUMN rejection_message TEXT`, () => {});
+  db.run(`ALTER TABLE properties ADD COLUMN is_deleted INTEGER DEFAULT 0`, () => {});
+  
+  db.all("PRAGMA table_info(blogs)", (err, columns) => {
+  if (err) return;
+
+  const hasCategory = columns.some(col => col.name === "category");
+
+  if (!hasCategory) {
+    db.run("ALTER TABLE blogs ADD COLUMN category TEXT");
+  }
+  // ================= LEADS TABLE =================
+db.run(`
+  CREATE TABLE IF NOT EXISTS leads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    property_type TEXT NOT NULL,
-    transaction_type TEXT NOT NULL,
-    price REAL NOT NULL,
-    location TEXT NOT NULL,
-    area REAL,
-    bedrooms INTEGER,
-    bathrooms INTEGER,
-    photos TEXT,
-    single_owner TEXT,   -- ✅ Added
-    owner_name TEXT,     -- ✅ Added
-    linked_docx TEXT,    -- ✅ Added
-    user_id INTEGER NOT NULL,
-    status TEXT DEFAULT 'pending',
+    property_id INTEGER NOT NULL,
+    owner_id INTEGER NOT NULL,
+    lead_user_id INTEGER,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id)
-  )`);
+    FOREIGN KEY (property_id) REFERENCES properties (id),
+    FOREIGN KEY (owner_id) REFERENCES users (id),
+    FOREIGN KEY (lead_user_id) REFERENCES users (id)
+  )
+`, (err) => {
+  if (err) {
+    console.error("", err);
+  } else {
+    console.log("");
+  }
+});
+// ================= REGISTER_OTP TABLE =================
+db.run(`
+  CREATE TABLE IF NOT EXISTS register_otp (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    phone TEXT NOT NULL,
+    otp TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    verified INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`, (err) => {
+  if (err) {
+    console.error("❌ register_otp table error:", err);
+  } else {
+    console.log("✅ register_otp table ready");
+  }
+});
+setInterval(() => {
+  db.run(`DELETE FROM register_otp WHERE expires_at < ?`, [Date.now()]);
+}, 10 * 60 * 1000); // every 10 minutes
+});
 
   // Create notifications table
   db.run(`CREATE TABLE IF NOT EXISTS notifications (
@@ -173,6 +319,51 @@ function initializeDatabase() {
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (property_id) REFERENCES properties (id)
   )`);
+  // ================= INTERIORS TABLE =================
+db.run(`
+  CREATE TABLE IF NOT EXISTS interiors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+
+    title TEXT NOT NULL,
+    experience INTEGER,
+    starting_price INTEGER,
+    service_area TEXT,
+
+    profession TEXT,        -- JSON
+    property_served TEXT,   -- JSON
+    project_type TEXT,      -- JSON
+    
+
+    photos TEXT,            -- JSON
+    status TEXT DEFAULT 'pending',
+    rejection_message TEXT,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  )
+`);
+
+  // ✅ AUTO-CREATE society_reviews TABLE (SAFE)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS society_reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        property_slug TEXT NOT NULL,
+        rating INTEGER DEFAULT 0,
+        review TEXT,
+        reviewer_name TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `, (err) => {
+      if (err) {
+        console.error("", err);
+      } else {
+        console.log("");
+      }
+    });
+
 
   // Create admin user
   const adminPassword = bcrypt.hashSync('admin123', 10);
@@ -181,6 +372,18 @@ function initializeDatabase() {
      VALUES ('admin', 'admin@fortune.com', ?, 'admin', 'Fortune Admin')`,
     [adminPassword]
   );
+  let subscriptions = []; // Replace with your DB later
+  // Add this INSIDE initializeDatabase() function
+db.run(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  endpoint TEXT UNIQUE NOT NULL,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users (id)
+)`);
+
   // Create Blogs table
 db.run(`CREATE TABLE IF NOT EXISTS blogs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -192,6 +395,7 @@ db.run(`CREATE TABLE IF NOT EXISTS blogs (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users (id)
 )`);
+
 function ensureColumn(columnName, type = "TEXT") {
   db.all("PRAGMA table_info(properties)", [], (err, columns) => {
     if (err) return console.error(err);
@@ -225,6 +429,25 @@ function addColumnIfNotExists(column, definition) {
     }
   });
 }
+function cleanupInvalidAddressData() {
+  const queries = [
+    `UPDATE properties SET city = NULL WHERE city = '[object Object]'`,
+    `UPDATE properties SET state = NULL WHERE state = '[object Object]'`,
+    `UPDATE properties SET locality = NULL WHERE locality = '[object Object]'`,
+    `UPDATE properties SET pincode = NULL WHERE pincode = '[object Object]'`
+  ];
+
+  queries.forEach((q) => {
+    db.run(q, function (err) {
+      if (err) {
+        console.error("❌ Cleanup error:", err.message);
+      } else if (this.changes > 0) {
+        console.log(`🧹 Cleaned ${this.changes} rows`);
+      }
+    });
+  });
+}
+
 
 // Call once on server start
 addColumnIfNotExists("listing_sub_type", "TEXT");
@@ -233,6 +456,35 @@ addColumnIfNotExists("furnishing", "TEXT");
 addColumnIfNotExists("ready_to_move", "INTEGER DEFAULT 0");
 addColumnIfNotExists("direct_from_owner", "INTEGER DEFAULT 0");
 addColumnIfNotExists("bachelor_friendly", "INTEGER DEFAULT 0");
+addColumnIfNotExists("city", "TEXT");
+addColumnIfNotExists("state", "TEXT");
+addColumnIfNotExists("pincode", "TEXT");
+addColumnIfNotExists("locality", "TEXT");
+addColumnIfNotExists("slug", "TEXT");
+addColumnIfNotExists("pgCategory", "TEXT");
+
+db.all(
+  "SELECT id, title, location FROM properties WHERE slug IS NULL OR slug = ''",
+  [],
+  (err, rows) => {
+    if (err) return console.error(err);
+
+    rows.forEach((p) => {
+      const baseSlug = slugify(`${p.title}-${p.location}`, {
+        lower: true,
+        strict: true,
+      });
+
+      const uniqueSlug = `${baseSlug}-${p.id}`;
+
+      db.run(
+        "UPDATE properties SET slug = ? WHERE id = ?",
+        [uniqueSlug, p.id]
+      );
+    });
+  }
+);
+
 
 
 // Authentication middleware
@@ -263,39 +515,115 @@ const requireAdmin = (req, res, next) => {
 
 // ----------------- Routes -----------------
 
-// Register
-app.post('/api/register', async (req, res) => {
+// Register (WITH OTP CHECK)
+app.post("/api/register", async (req, res) => {
   try {
-    const { username, email, password, role = 'normal', fullName, phone } = req.body;
+    let {
+      username,
+      email,
+      password,
+      role = "normal",
+      fullName,
+      phone
+    } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (!phone) {
+      return res.status(400).json({ error: "Phone number is required" });
+    }
 
-    db.run(
-      `INSERT INTO users (username, email, password, role, full_name, phone) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [username, email, hashedPassword, role, fullName, phone],
-      function (err) {
+    // ✅ STEP 1: CHECK OTP VERIFIED
+    db.get(
+      `SELECT id FROM register_otp WHERE phone = ? AND verified = 1`,
+      [phone],
+      async (err, otpRow) => {
         if (err) {
-          if (err.message.includes('UNIQUE constraint failed')) {
-            return res.status(400).json({ error: 'Username or email already exists' });
-          }
-          return res.status(500).json({ error: 'Registration failed' });
+          return res.status(500).json({ error: "OTP check failed" });
         }
 
-        const token = jwt.sign(
-          { id: this.lastID, username, role },
-          JWT_SECRET,
-          { expiresIn: '24h' }
-        );
+        if (!otpRow) {
+          return res.status(403).json({
+            error: "Please verify OTP before registration"
+          });
+        }
 
-        res.json({
-          token,
-          user: { id: this.lastID, username, email, role, fullName, phone }
-        });
+        // ✅ ROLE WHITELIST
+        const allowedRoles = [
+          "normal",
+          "agent",
+          "builder",
+          "agency",
+          "interiors",
+          "furnisher",
+          "pghostel",
+          "bankingloans"
+        ];
+
+        if (!allowedRoles.includes(role)) {
+          role = "normal";
+        }
+
+        // ✅ STEP 2: CHECK PHONE EXISTS
+        db.get(
+          "SELECT id FROM users WHERE phone = ?",
+          [phone],
+          async (err, existingUser) => {
+            if (err) {
+              return res.status(500).json({ error: "Database error" });
+            }
+
+            if (existingUser) {
+              return res.status(409).json({
+                error: "Account already exists with this phone number. Please login."
+              });
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // ✅ STEP 3: CREATE USER
+            db.run(
+              `INSERT INTO users (username, email, password, role, full_name, phone)
+               VALUES (?, ?, ?, ?, ?, ?)`,
+              [username, email, hashedPassword, role, fullName, phone],
+              function (err) {
+                if (err) {
+                  if (err.message.includes("UNIQUE constraint failed")) {
+                    return res.status(400).json({
+                      error: "Username or email already exists"
+                    });
+                  }
+                  return res.status(500).json({ error: "Registration failed" });
+                }
+
+                // 🧹 CLEAN USED OTP
+                db.run(`DELETE FROM register_otp WHERE phone = ?`, [phone]);
+
+                const token = jwt.sign(
+                  { id: this.lastID, role },
+                  JWT_SECRET,
+                  { expiresIn: "24h" }
+                );
+
+                res.json({
+                  success: true,
+                  token,
+                  user: {
+                    id: this.lastID,
+                    username,
+                    email,
+                    role,
+                    fullName,
+                    phone
+                  }
+                });
+              }
+            );
+          }
+        );
       }
     );
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error("REGISTER ERROR:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -345,6 +673,7 @@ app.post('/api/login', (req, res) => {
 
 
 // Add new property
+// ================= ADD NEW PROPERTY (FIXED WITH SLUG) =================
 app.post(
   "/api/properties",
   authenticateToken,
@@ -356,23 +685,75 @@ app.post(
         description,
         propertyType,
         transactionType,
-        listingSubType,     // ✅ NEW
-        category,           // ✅ NEW
+        listingSubType,
+        category,
         price,
+        pgCategory,
         location,
+        city,
+        state,
+        pincode,
+        locality,
         area,
         bedrooms,
         bathrooms,
-        furnishing,         // ✅ NEW
-        readyToMove,        // ✅ NEW
-        directFromOwner,    // ✅ NEW
-        bachelorFriendly,   // ✅ NEW
+        furnishing,
+        readyToMove,
+        directFromOwner,
+        bachelorFriendly,
         singleOwner,
         ownerName,
         linkedDocx,
+        floorNumber,
+        totalFloors,
+        ageOfConstruction,
+        facing
       } = req.body;
 
+      if (!title || !price || !location) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
       const photos = req.files ? req.files.map((f) => f.filename) : [];
+
+      // ✅ CREATE SLUG ONCE (SOURCE OF TRUTH)
+      const slug = slugify(`${title}-${location}`, {
+        lower: true,
+        strict: true,
+      });
+
+      const values = [
+        title,
+        description,
+        propertyType,
+        transactionType,
+        listingSubType,
+        category,
+        price,
+        pgCategory,
+        location,
+        city,
+        state,
+        pincode,
+        locality,
+        area,
+        bedrooms,
+        bathrooms,
+        furnishing,
+        readyToMove === "true" || readyToMove === true ? 1 : 0,
+        directFromOwner === "true" || directFromOwner === true ? 1 : 0,
+        bachelorFriendly === "true" || bachelorFriendly === true ? 1 : 0,
+        JSON.stringify(photos),
+        req.user.id,
+        singleOwner,
+        ownerName,
+        linkedDocx,
+        floorNumber,
+        totalFloors,
+        ageOfConstruction,
+        facing,
+        slug // ✅ IMPORTANT
+      ];
 
       db.run(
         `INSERT INTO properties (
@@ -383,7 +764,12 @@ app.post(
           listing_sub_type,
           category,
           price,
+          pgCategory,
           location,
+          city,
+          state,
+          pincode,
+          locality,
           area,
           bedrooms,
           bathrooms,
@@ -395,42 +781,24 @@ app.post(
           user_id,
           single_owner,
           owner_name,
-          linked_docx
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          title,
-          description,
-          propertyType,
-          transactionType,
-          listingSubType,
-          category,
-          price,
-          location,
-          area,
-          bedrooms,
-          bathrooms,
-          furnishing,
-          readyToMove === "true" || readyToMove === true ? 1 : 0,
-          directFromOwner === "true" || directFromOwner === true ? 1 : 0,
-          bachelorFriendly === "true" || bachelorFriendly === true ? 1 : 0,
-          JSON.stringify(photos),
-          req.user.id,
-          singleOwner,
-          ownerName,
-          linkedDocx,
-        ],
+          linked_docx,
+          floor_number,
+          total_floors,
+          age_of_construction,
+          facing,
+          slug
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
+        values,
         function (err) {
           if (err) {
-            console.error(err);
-            return res
-              .status(500)
-              .json({ error: "Failed to create property" });
+            console.error("❌ INSERT ERROR:", err);
+            return res.status(500).json({ error: "Failed to create property" });
           }
 
           // 🔔 Notify Admins
           db.run(
             `INSERT INTO notifications (user_id, property_id, message, type)
-             SELECT id, ?, ?, ? FROM users WHERE role = "admin"`,
+             SELECT id, ?, ?, ? FROM users WHERE role = 'admin'`,
             [
               this.lastID,
               `New property "${title}" submitted for approval`,
@@ -440,26 +808,23 @@ app.post(
 
           res.json({
             id: this.lastID,
-            message:
-              "Property submitted successfully. Waiting for admin approval.",
+            slug,
+            message: "Property submitted successfully. Waiting for admin approval.",
           });
         }
       );
     } catch (error) {
-      console.error(error);
+      console.error("❌ Server Error:", error);
       res.status(500).json({ error: "Server error" });
     }
   }
 );
-
 app.get("/api/properties", (req, res) => {
-  console.log("🔍 QUERY PARAMS:", req.query);
   try {
     const {
       type,
       category,
       subType,
-      propertyType,
       furnishing,
       readyToMove,
       directFromOwner,
@@ -467,7 +832,13 @@ app.get("/api/properties", (req, res) => {
       location,
       minPrice,
       maxPrice,
-      status = "approved",
+      floorNumber,
+      totalFloors,
+      ageOfConstruction,
+      facing,
+      status,
+      propertyType,
+      pgCategory
     } = req.query;
 
     let query = `
@@ -480,87 +851,203 @@ app.get("/api/properties", (req, res) => {
         u.phone
       FROM properties p
       JOIN users u ON p.user_id = u.id
-      WHERE p.status = ?
+      WHERE p.status = 'approved'
     `;
-    const params = [status];
 
-    /* 🔹 Transaction Type */
+    const params = [];
+    
+    
+    // 🔥 NO DEFAULT STATUS FILTER
+
+    /* ================= TRANSACTION ================= */
     if (type && type !== "all") {
-      query += ` AND LOWER(p.transaction_type) = ?`;
-      params.push(type.toLowerCase());
+      const t = type.toLowerCase();
+      if (t === "rent") {
+        query += ` AND p.transaction_type = 'rent'`;
+      }
+      if (["buy", "sale", "sell"].includes(t)) {
+        query += ` AND p.transaction_type = 'sale'`;
+      }
     }
 
-    /* 🔹 Category */
-    if (category && category !== "all") {
-      query += ` AND LOWER(p.category) = ?`;
-      params.push(category.toLowerCase());
+    /* ================= PROPERTY TYPE ================= */
+
+    // ✅ PG
+    if (propertyType === "pg") {
+      query += ` AND LOWER(p.property_type) LIKE '%pg%'`;
+
+      if (pgCategory) {
+        const cat = pgCategory.toLowerCase();
+        if (cat === "men" || cat === "male") {
+          query += ` AND LOWER(p.property_type) LIKE '%male%'`;
+        } else if (cat === "girls" || cat === "female") {
+          query += ` AND LOWER(p.property_type) LIKE '%female%'`;
+        } else if (cat === "coliving") {
+          query += ` AND LOWER(p.property_type) LIKE '%co-living%'`;
+        }
+      }
     }
 
-    /* 🔹 Listing Sub Type */
-    if (subType && subType !== "all") {
-      query += ` AND LOWER(p.listing_sub_type) = ?`;
-      params.push(subType.toLowerCase());
+    // ✅ PLOTS (FIXED)
+    else if (propertyType === "plot") {
+      query += `
+        AND (
+          LOWER(p.property_type) LIKE '%plot%'
+          OR LOWER(p.property_type) LIKE '%land%'
+        )
+      `;
     }
 
-    /* 🔹 Property Type */
-    if (propertyType && propertyType !== "all") {
-      query += ` AND LOWER(p.property_type) = ?`;
-      params.push(propertyType.toLowerCase());
+    // ✅ OTHER PROPERTY TYPES
+    else if (propertyType && propertyType !== "all") {
+      query += ` AND LOWER(p.property_type) LIKE ?`;
+      params.push(`%${propertyType.toLowerCase()}%`);
     }
 
-    /* 🔹 Furnishing */
-    if (furnishing && furnishing !== "all") {
-      query += ` AND LOWER(p.furnishing) = ?`;
-      params.push(furnishing.toLowerCase());
+    /* ================= CATEGORY ================= */
+    if (category) {
+      query += ` AND LOWER(p.category) LIKE ?`;
+      params.push(`%${category.toLowerCase()}%`);
     }
 
-        /* 🔹 Boolean filters (SQLite uses 0/1) */
-    if (readyToMove === "true") {
-      query += ` AND p.ready_to_move = 1`;
+    /* ================= SUB TYPE ================= */
+    if (subType) {
+      query += ` AND LOWER(p.listing_sub_type) LIKE ?`;
+      params.push(`%${subType.toLowerCase()}%`);
     }
 
-    if (directFromOwner === "true") {
-      query += ` AND p.direct_from_owner = 1`;
-    }
-    if (req.query.verified === "true") {
-      query += " AND verified = 1";
-    }
-    if (bachelorFriendly === "true") {
-      query += ` AND p.bachelor_friendly = 1`;
+    /* ================= FURNISHING ================= */
+    if (furnishing) {
+      query += ` AND LOWER(p.furnishing) LIKE ?`;
+      params.push(`%${furnishing.toLowerCase()}%`);
     }
 
+    /* ================= FLAGS ================= */
+    if (readyToMove === "true") query += ` AND p.ready_to_move = 1`;
+    if (directFromOwner === "true") query += ` AND p.direct_from_owner = 1`;
+    if (bachelorFriendly === "true") query += ` AND p.bachelor_friendly = 1`;
 
-    /* 🔹 Location */
+    /* ================= LOCATION ================= */
     if (location) {
-      query += ` AND LOWER(p.location) LIKE ?`;
-      params.push(`%${location.toLowerCase()}%`);
+      const key = `%${location.toLowerCase()}%`;
+      query += `
+        AND (
+          LOWER(p.location) LIKE ?
+          OR LOWER(p.city) LIKE ?
+          OR LOWER(p.locality) LIKE ?
+          OR LOWER(p.state) LIKE ?
+          OR p.pincode LIKE ?
+        )
+      `;
+      params.push(key, key, key, key, key);
     }
 
-    /* 🔹 Price */
+    /* ================= PRICE ================= */
     if (minPrice) {
       query += ` AND p.price >= ?`;
       params.push(Number(minPrice));
     }
-
     if (maxPrice) {
       query += ` AND p.price <= ?`;
       params.push(Number(maxPrice));
     }
-    if (req.query.category) {
-    query += " AND category = ?";
-    params.push(req.query.category);
-  }
-  if (req.query.listingSubType) {
-  query += " AND listing_sub_type = ?";
-  params.push(req.query.listingSubType);
-}
-  if (req.query.propertyType) {
-    query += " AND propertyType = ?";
-    params.push(req.query.propertyType);
-  }
+
+    /* ================= FLOOR / FACING ================= */
+    if (facing) {
+      query += ` AND LOWER(p.facing) LIKE ?`;
+      params.push(`%${facing.toLowerCase()}%`);
+    }
+    if (floorNumber) {
+      query += ` AND p.floor_number = ?`;
+      params.push(Number(floorNumber));
+    }
+    if (totalFloors) {
+      query += ` AND p.total_floors = ?`;
+      params.push(Number(totalFloors));
+    }
+    if (ageOfConstruction) {
+      query += ` AND LOWER(p.age_of_construction) LIKE ?`;
+      params.push(`%${ageOfConstruction.toLowerCase()}%`);
+    }
+
     query += ` ORDER BY p.created_at DESC`;
 
     db.all(query, params, (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      res.json(
+        rows.map(p => ({
+          ...p,
+          photos: p.photos ? JSON.parse(p.photos) : []
+        }))
+      );
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+// ================= GET SINGLE PROPERTY BY SLUG =================
+app.get("/api/properties/slug/:slug", (req, res) => {
+  const { slug } = req.params;
+
+  db.get(
+    `
+    SELECT 
+      p.*, 
+      u.username,+
+      u.full_name,
+      u.profile_photo,
+      u.rating,
+      u.phone
+    FROM properties p
+    JOIN users u ON p.user_id = u.id
+    WHERE p.slug = ?
+    - AND p.status = 'approved'
+    + AND p.status = 'approved'
+    + AND COALESCE(p.is_deleted, 0) = 0
+
+    `,
+    [slug],
+    (err, property) => {
+      if (err) {
+        console.error("❌ DB ERROR:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (!property) {
+        return res.status(404).json({ error: "Property not found" });
+      }
+
+      property.photos = property.photos ? JSON.parse(property.photos) : [];
+      res.json(property);
+    }
+  );
+});
+// Get builder properties specifically
+app.get("/api/builder-properties", (req, res) => {
+ 
+  try {
+    const query = `
+      SELECT 
+        p.*, 
+        u.username,
+        u.full_name,
+        u.profile_photo,
+        u.rating,
+        u.phone,
+        u.role
+      FROM properties p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.status = 'approved' AND u.role = 'builder'
+      ORDER BY p.created_at DESC
+    `;
+
+    db.all(query, [], (err, rows) => {
       if (err) {
         console.error("❌ DB Error:", err);
         return res.status(500).json({ error: "Database error" });
@@ -578,6 +1065,201 @@ app.get("/api/properties", (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+// ================= POST INTERIOR SERVICE =================
+app.post(
+  "/api/interiors",
+  authenticateToken,
+  uploadInterior.array("photos", 10),
+  (req, res) => {
+    try {
+      const {
+        title,
+        experience,
+        startingPrice,
+        serviceArea,
+        profession,
+        propertyServed,
+        projectType
+      } = req.body;
+
+// 🔥 SAFE FIELD NORMALIZATION
+const property_served = propertyServed || "[]";
+const project_type = projectType || "[]";
+const profession_safe = profession || "[]";
+
+
+      if (!title) {
+        return res.status(400).json({ error: "Title is required" });
+      }
+
+      const photos = req.files ? req.files.map(f => f.filename) : [];
+
+      db.run(
+        `INSERT INTO interiors (
+          user_id,
+          title,
+          experience,
+          starting_price,
+          service_area,
+          profession,
+          property_served,
+          project_type,
+          photos
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          req.user.id,
+          title,
+          experience || null,
+          startingPrice || null,
+          serviceArea || "",
+          profession_safe,
+          property_served,
+          project_type,
+          JSON.stringify(photos)
+        ],
+        function (err) {
+          if (err) {
+            console.error("❌ Interior insert error:", err);
+            return res.status(500).json({ error: err.message });
+          }
+
+          res.json({
+            success: true,
+            message: "Interior service submitted for review",
+            id: this.lastID
+          });
+        }
+      );
+
+    } catch (err) {
+      console.error("❌ Interior server error:", err);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+// ================= GET ALL INTERIORS =================
+app.get("/api/interiors", (req, res) => {
+  db.all(
+    `
+    SELECT 
+      i.*,
+      u.full_name,
+      u.phone,
+      u.profile_photo,
+      u.rating
+    FROM interiors i
+    JOIN users u ON i.user_id = u.id
+    WHERE i.status = 'approved'
+    ORDER BY i.created_at DESC
+    `,
+    [],
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "DB error" });
+      }
+
+      res.json(
+        rows.map(i => ({
+          ...i,
+          profession: JSON.parse(i.profession || "[]"),
+          property_served: JSON.parse(i.property_served || "[]"),
+          project_type: JSON.parse(i.project_type || "[]"),
+          photos: JSON.parse(i.photos || "[]")
+        }))
+      );
+    }
+  );
+});
+// ================= USER INTERIORS =================
+app.get("/api/user/interiors", authenticateToken, (req, res) => {
+  db.all(
+    `SELECT * FROM interiors WHERE user_id = ? ORDER BY created_at DESC`,
+    [req.user.id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+
+      res.json(
+        rows.map(i => ({
+          ...i,
+          profession: JSON.parse(i.profession || "[]"),
+          property_served: JSON.parse(i.property_served || "[]"),
+          project_type: JSON.parse(i.project_type || "[]"),
+          photos: JSON.parse(i.photos || "[]")
+        }))
+      );
+    }
+  );
+});
+// ================= ADMIN INTERIORS =================
+app.get("/api/admin/interiors", authenticateToken, requireAdmin, (req, res) => {
+  db.all(
+    `
+    SELECT i.*, u.full_name, u.phone
+    FROM interiors i
+    JOIN users u ON i.user_id = u.id
+    ORDER BY i.created_at DESC
+    `,
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      res.json(rows);
+    }
+  );
+});
+
+app.patch(
+  "/api/admin/interiors/:id/status",
+  authenticateToken,
+  requireAdmin,
+  (req, res) => {
+    const { status } = req.body;
+
+    db.run(
+      `UPDATE interiors SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [status, req.params.id],
+      function (err) {
+        if (err) return res.status(500).json({ error: "Update failed" });
+
+        res.json({ success: true });
+      }
+    );
+  }
+);
+// ================= INTERIOR DASHBOARD COUNTS =================
+app.get("/api/dashboard/interiors", authenticateToken, (req, res) => {
+  const userId = req.user.id;
+
+  const sql = `
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS approved,
+      SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending,
+      SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS rejected
+    FROM interiors
+    WHERE user_id = ?
+  `;
+
+  db.get(sql, [userId], (err, row) => {
+    if (err) {
+      console.error("❌ Dashboard interiors error:", err);
+      return res.status(500).json({ error: "DB error" });
+    }
+
+    res.json({
+      total: row?.total || 0,
+      approved: row?.approved || 0,
+      pending: row?.pending || 0,
+      rejected: row?.rejected || 0,
+    });
+  });
+});
+
+
+
+
+
 
 
 app.get('/api/locations', (req, res) => {
@@ -623,7 +1305,8 @@ app.post(
   BlogsUpload.single("media"), 
   (req, res) => {
     try {
-      const { title, content } = req.body;
+      const { title, content, category } = req.body;
+
 
       if (!title || !content) {
         if (req.file && req.file.path) {
@@ -645,9 +1328,9 @@ app.post(
 
         const tryInsert = (finalSlug) => {
           db.run(
-            `INSERT INTO blogs (title, slug, content, image, user_id)
-            VALUES (?, ?, ?, ?, ?)`,
-            [title, finalSlug, content, image, req.user.id],
+             `INSERT INTO blogs (category, title, slug, content, image, user_id)
+   VALUES (?, ?, ?, ?, ?, ?)`,
+  [category, title, finalSlug, content, image, req.user.id],
             function (err) {
               if (err) {
                 console.error("DB insert error:", err);
@@ -756,7 +1439,144 @@ app.put(
     });
   }
 );
+// ================= CREATE LEAD =================
+app.post("/api/leads", authenticateToken, (req, res) => {
+  const { propertyId, ownerId } = req.body;
+  const leadUserId = req.user.id;
 
+  if (!propertyId || !ownerId) {
+    return res.status(400).json({ error: "Missing propertyId or ownerId" });
+  }
+
+  db.get(
+    `SELECT full_name, phone, email FROM users WHERE id = ?`,
+    [leadUserId],
+    (err, user) => {
+      if (err || !user) {
+        return res.status(500).json({ error: "User not found" });
+      }
+
+      db.run(
+        `INSERT INTO leads
+         (property_id, owner_id, lead_user_id, name, phone, email)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          propertyId,
+          ownerId,
+          leadUserId,
+          user.full_name,
+          user.phone,
+          user.email
+        ],
+        () => res.json({ success: true })
+      );
+    }
+  );
+});
+
+app.get(
+  "/api/admin/leads/users",
+  authenticateToken,
+  requireAdmin,
+  (req, res) => {
+    db.all(
+      `
+      SELECT
+        u.id AS user_id,
+        u.full_name,
+        u.email,
+        u.phone,
+        COUNT(l.id) AS total_leads
+      FROM leads l
+      JOIN users u ON u.id = l.lead_user_id
+      GROUP BY u.id
+      ORDER BY total_leads DESC
+      `,
+      [],
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: "DB error" });
+        res.json(rows);
+      }
+    );
+  }
+);
+
+
+
+// ================= ADMIN ALL LEADS =================
+// ================= ADMIN LEADS DETAILS =================
+app.get(
+  "/api/admin/leads",
+  authenticateToken,
+  requireAdmin,
+  (req, res) => {
+    const sql = `
+      SELECT
+        l.id,
+        l.created_at,
+
+        COALESCE(leadUser.full_name, l.name, 'NA') AS lead_name,
+        COALESCE(leadUser.phone, l.phone, 'NA') AS lead_phone,
+        COALESCE(leadUser.email, l.email, '-') AS lead_email,
+
+        p.title AS property_title,
+        p.location,
+
+        COALESCE(owner.full_name, 'NA') AS owner_name,
+        COALESCE(owner.phone, 'NA') AS owner_phone,
+        COALESCE(owner.email, '-') AS owner_email
+
+      FROM leads l
+      LEFT JOIN users leadUser ON leadUser.id = l.lead_user_id
+      LEFT JOIN properties p ON p.id = l.property_id
+      LEFT JOIN users owner ON owner.id = p.user_id
+      ORDER BY l.created_at DESC
+    `;
+
+    db.all(sql, [], (err, rows) => {
+      if (err) {
+        console.error("❌ Admin leads error:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      res.json(rows);
+    });
+  }
+);
+
+
+
+
+
+// ================= ADMIN LEADS SUMMARY =================
+app.get(
+  "/api/admin/leads/summary",
+  authenticateToken,
+  requireAdmin,
+  (req, res) => {
+    db.all(
+      `
+      SELECT 
+        u.id,
+        u.full_name,
+        u.email,
+        COUNT(l.id) AS total_leads
+      FROM leads l
+      LEFT JOIN users u ON u.id = l.lead_user_id
+      GROUP BY u.id
+      ORDER BY total_leads DESC
+      `,
+      [],
+      (err, rows) => {
+        if (err) {
+          console.error("❌ Lead summary error:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
+        res.json(rows);
+      }
+    );
+  }
+);
 
 
 // ---------------- Admin Routes ----------------
@@ -776,7 +1596,9 @@ app.get('/api/admin/properties', authenticateToken, requireAdmin, (req, res) => 
 
       const processed = properties.map((p) => ({
         ...p,
-        photos: p.photos ? JSON.parse(p.photos) : []
+        photos: p.photos ? JSON.parse(p.photos) : [],
+        // ✅ Ensure rejection_message is always included
+        rejection_message: p.rejection_message || ''
       }));
 
       res.json(processed);
@@ -784,39 +1606,306 @@ app.get('/api/admin/properties', authenticateToken, requireAdmin, (req, res) => 
   );
 });
 
-// Update property status
+// Update property details
+app.put('/api/admin/properties/:id', authenticateToken, requireAdmin, (req, res) => {
+  const propertyId = req.params.id;
+  const updates = req.body;
+  
+  console.log('📝 UPDATE DEBUG - Updating property:', propertyId, updates);
+
+  // Build dynamic update query
+  const allowedFields = ['title', 'description', 'price', 'location', 'transaction_type', 'property_type', 'area', 'bedrooms', 'bathrooms', 'rejection_message', 'status'];
+  const updateFields = [];
+  const updateValues = [];
+
+  Object.keys(updates).forEach(key => {
+    if (allowedFields.includes(key) && updates[key] !== undefined) {
+      updateFields.push(`${key} = ?`);
+      updateValues.push(updates[key]);
+    }
+  });
+
+  if (updateFields.length === 0) {
+    return res.status(400).json({ error: 'No valid fields to update' });
+  }
+
+  updateValues.push(propertyId);
+
+  const updateQuery = `UPDATE properties SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+
+  db.run(updateQuery, updateValues, function(err) {
+    if (err) {
+      console.error('❌ UPDATE DEBUG - Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    console.log('✅ UPDATE DEBUG - Property updated successfully:', this.changes);
+    
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Property updated successfully',
+      changes: this.changes
+    });
+  });
+});
+
 app.patch('/api/admin/properties/:id/status', authenticateToken, requireAdmin, (req, res) => {
-  const { status } = req.body;
+  const { status, reason, title, price, location, transaction_type } = req.body;
   const propertyId = req.params.id;
 
-  db.run(
-    'UPDATE properties SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-    [status, propertyId],
-    function (err) {
-      if (err) return res.status(500).json({ error: 'Database error' });
+  console.log('🔄 STATUS DEBUG - Updating property:', propertyId, 'payload:', req.body);
 
-      db.get(
-        'SELECT title, user_id FROM properties WHERE id = ?',
-        [propertyId],
-        (err, property) => {
-          if (property) {
-            const message =
-              status === 'approved'
-                ? `Your property "${property.title}" has been approved and is now live`
-                : `Your property "${property.title}" has been rejected`;
+  // Build dynamic update query based on what's provided
+  let updateQuery = 'UPDATE properties SET updated_at = CURRENT_TIMESTAMP';
+  let updateValues = [];
 
-            db.run(
-              'INSERT INTO notifications (user_id, property_id, message, type) VALUES (?, ?, ?, ?)',
-              [property.user_id, propertyId, message, 'property_status']
-            );
-          }
-        }
+  // Always include status if provided
+  if (status) {
+    updateQuery += ', status = ?';
+    updateValues.push(status);
+  }
+  // If rejected → move to trash
+    if (status === 'rejected') {
+      updateQuery += ', is_deleted = 1';
+    }
+    
+  // ✅ CRITICAL: Always save rejection_message when provided
+  if (reason !== undefined) {
+    updateQuery += ', rejection_message = ?';
+    updateValues.push(reason);
+  }
+
+  // Include other fields if provided
+  if (title) {
+    updateQuery += ', title = ?';
+    updateValues.push(title);
+  }
+  if (price) {
+    updateQuery += ', price = ?';
+    updateValues.push(price);
+  }
+  if (location) {
+    updateQuery += ', location = ?';
+    updateValues.push(location);
+  }
+  if (transaction_type) {
+    updateQuery += ', transaction_type = ?';
+    updateValues.push(transaction_type);
+  }
+
+  updateQuery += ' WHERE id = ?';
+  updateValues.push(propertyId);
+
+  console.log('🔄 STATUS DEBUG - Final query:', updateQuery);
+  console.log('🔄 STATUS DEBUG - Values:', updateValues);
+
+  db.run(updateQuery, updateValues, function (err) {
+    if (err) {
+      console.error('❌ STATUS DEBUG - Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    console.log('✅ STATUS DEBUG - Property updated successfully:', this.changes);
+
+    // Send notification to property owner
+    db.get('SELECT title, user_id FROM properties WHERE id = ?', [propertyId], (err, property) => {
+      if (!property) return;
+
+      const message =
+        status === 'approved'
+          ? `Your property "${property.title}" has been approved and is now live`
+          : status === 'rejected'
+          ? `Your property "${property.title}" has been rejected. Reason: ${reason || 'No reason provided'}`
+          : `Your property "${property.title}" has been updated`;
+
+      // 🔔 Save notification in DB
+      db.run(
+        'INSERT INTO notifications (user_id, property_id, message, type) VALUES (?, ?, ?, ?)',
+        [property.user_id, propertyId, message, 'property_status']
       );
 
-      res.json({ message: `Property ${status} successfully` });
+      // 🔔 PUSH NOTIFICATION (CORRECT PLACE)
+      // 🔔 PUSH NOTIFICATION + GOOGLE SITEMAP PING
+if (status === 'approved') {
+
+  // ✅ GOOGLE SITEMAP AUTO-PING
+  fetch(
+    "https://www.google.com/ping?sitemap=https://www.fortunefloors.com/sitemap.xml"
+  ).catch(err => {
+    console.error("❌ Google sitemap ping failed:", err);
+  });
+
+  // 🔔 PUSH NOTIFICATION
+  db.all(
+    'SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ?',
+    [property.user_id],
+    async (err, subs) => {
+      if (err || !subs) return;
+
+      for (const s of subs) {
+        const subscription = {
+          endpoint: s.endpoint,
+          keys: {
+            p256dh: s.p256dh,
+            auth: s.auth
+          }
+        };
+
+        try {
+          await webpush.sendNotification(
+            subscription,
+            JSON.stringify({
+              title: 'Property Approved 🎉',
+              body: `Your property "${property.title}" is now live`,
+              url: `/property/${propertyId}`
+            })
+          );
+        } catch (e) {
+          console.error('❌ Push failed:', e);
+        }
+      }
+    }
+  );
+}
+
+    });
+
+    res.json({ message: `Property updated successfully` });
+  });
+});
+
+// Update user role
+app.patch('/api/admin/users/:id/role', authenticateToken, requireAdmin, (req, res) => {
+  const userId = req.params.id;
+  const { role } = req.body;
+  
+  console.log('🔑 ROLE DEBUG - Updating user role:', userId, 'to:', role);
+
+  // Validate role
+  const validRoles = ['normal', 'premium', 'agent', 'builder', 'admin'];
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ error: 'Invalid role' });
+  }
+
+  db.run(
+    'UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [role, userId],
+    function(err) {
+      if (err) {
+        console.error('❌ ROLE DEBUG - Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      console.log('✅ ROLE DEBUG - User role updated successfully:', this.changes);
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json({ 
+        success: true, 
+        message: `User role updated to ${role} successfully`,
+        changes: this.changes
+      });
     }
   );
 });
+// 🔥 PERMANENT DELETE PROPERTY
+app.delete(
+  "/api/admin/properties/:id",
+  authenticateToken,
+  requireAdmin,
+  (req, res) => {
+    const propertyId = req.params.id;
+
+    // Delete wishlists
+    db.run("DELETE FROM wishlists WHERE property_id = ?", [propertyId]);
+
+    // Delete leads
+    db.run("DELETE FROM leads WHERE property_id = ?", [propertyId]);
+
+    // Delete property
+    db.run(
+      "DELETE FROM properties WHERE id = ?",
+      [propertyId],
+      function (err) {
+        if (err) {
+          console.error("❌ Delete failed:", err);
+          return res.status(500).json({ error: "Delete failed" });
+        }
+
+        if (this.changes === 0) {
+          return res.status(404).json({ error: "Property not found" });
+        }
+
+        res.json({
+          success: true,
+          message: "Property permanently deleted"
+        });
+      }
+    );
+  }
+);
+
+
+
+// ADD THESE ROUTES to your existing app
+app.post('/api/subscribe', authenticateToken, (req, res) => {  // ← Add auth
+  const { endpoint, keys } = req.body;
+  
+  db.run(
+    `INSERT OR REPLACE INTO push_subscriptions (user_id, endpoint, p256dh, auth)
+     VALUES (?, ?, ?, ?)`,
+    [req.user.id, endpoint, keys.p256dh, keys.auth],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save subscription' });
+      
+      res.json({ success: true });
+    }
+  );
+});
+
+
+
+app.post('/api/send-test-push', authenticateToken, (req, res) => {
+  const payload = JSON.stringify({
+    title: '🧪 Test Push!',
+    body: 'Property notification system working!',
+    url: '/properties'
+  });
+
+  db.all(
+    'SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ?',
+    [req.user.id],
+    async (err, subs) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+
+      for (const s of subs) {
+        const subscription = {
+          endpoint: s.endpoint,
+          keys: {
+            p256dh: s.p256dh,
+            auth: s.auth
+          }
+        };
+
+        try {
+          await webpush.sendNotification(subscription, payload);
+        } catch (e) {
+          console.error('Push failed:', e);
+        }
+      }
+
+      res.json({ success: true });
+    }
+  );
+});
+
+
 
 // Get all users
 app.get('/api/admin/users', authenticateToken, requireAdmin, (req, res) => {
@@ -856,6 +1945,72 @@ app.get('/api/user/properties', authenticateToken, (req, res) => {
       res.json(processed);
     }
   );
+});
+
+// ----------------- UPDATE USER PROFILE -----------------
+app.put('/api/user/profile', authenticateToken, upload.single('avatar'), (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { full_name, username, phone } = req.body;
+
+    db.get('SELECT * FROM users WHERE id = ?', [userId], (err, existing) => {
+      if (err) return res.status(500).json({ error: 'Database error' });
+      if (!existing) return res.status(404).json({ error: 'User not found' });
+
+      let newProfilePhoto = existing.profile_photo;
+
+      // If a new file was uploaded, replace old file
+      if (req.file) {
+        try {
+          if (existing.profile_photo) {
+            const oldPath = path.join(__dirname, 'uploads', existing.profile_photo);
+            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+          }
+        } catch (e) {
+          console.warn('Failed to remove old profile photo', e);
+        }
+        newProfilePhoto = req.file.filename;
+      }
+
+      const finalFullName = full_name !== undefined ? full_name : existing.full_name;
+      const finalUsername = username !== undefined ? username : existing.username;
+      const finalPhone = phone !== undefined ? phone : existing.phone;
+
+      db.run(
+        `UPDATE users SET full_name = ?, username = ?, phone = ?, profile_photo = ? WHERE id = ?`,
+        [finalFullName, finalUsername, finalPhone, newProfilePhoto, userId],
+        function (updateErr) {
+          if (updateErr) {
+            if (updateErr.message && updateErr.message.includes('UNIQUE constraint failed')) {
+              return res.status(400).json({ error: 'Username or email already exists' });
+            }
+            console.error('User update error:', updateErr);
+            return res.status(500).json({ error: 'Update failed' });
+          }
+
+          db.get(
+            `SELECT id, username, email, role, full_name, phone, profile_photo, rating FROM users WHERE id = ?`,
+            [userId],
+            (getErr, userRow) => {
+              if (getErr) return res.status(500).json({ error: 'Database error' });
+
+              const respUser = {
+                ...userRow,
+                // provide both formats for frontend compatibility
+                profilePhoto: userRow.profile_photo,
+                profile_photo: userRow.profile_photo,
+              };
+
+              res.json({ user: respUser });
+            }
+          );
+        }
+      );
+    });
+  } catch (e) {
+    console.error('Profile update exception:', e);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 
@@ -935,15 +2090,81 @@ app.delete('/api/wishlist/:propertyId', authenticateToken, (req, res) => {
     }
   );
 });
-import nodemailer from 'nodemailer';
+
+app.get("/api/society-reviews/:slug", (req, res) => {
+  const { slug } = req.params;
+
+  db.all(
+    "SELECT * FROM society_reviews WHERE property_slug = ?",
+    [slug],
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.json([]);
+      }
+      res.json(rows || []);
+    }
+  );
+});
+
+app.post("/api/society-reviews", (req, res) => {
+  const { property_slug, rating, review, reviewer_name } = req.body;
+
+  db.run(
+    `INSERT INTO society_reviews (property_slug, rating, review, reviewer_name)
+     VALUES (?, ?, ?, ?)`,
+    [property_slug, rating, review, reviewer_name],
+    function (err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ success: false });
+      }
+      res.json({ success: true, id: this.lastID });
+    }
+  );
+});
+app.get("/api/locality-reviews/:slug", (req, res) => {
+  const { slug } = req.params;
+
+  // TEMP dummy response (you can replace with DB later)
+  res.json({
+    locality: slug,
+    averageRating: 4.2,
+    totalReviews: 18,
+    pros: [
+      "Good connectivity",
+      "Near IT parks",
+      "Schools and hospitals nearby",
+    ],
+    cons: [
+      "Traffic during peak hours",
+      "Limited parking in some areas",
+    ],
+    reviews: [
+      {
+        user: "Ramesh",
+        rating: 4,
+        comment: "Nice area, peaceful and well connected",
+      },
+      {
+        user: "Suman",
+        rating: 5,
+        comment: "Best place to live near Gachibowli",
+      },
+    ],
+  });
+});
+
 
 // EMAIL CONFIGURATION
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: "yourgmail@gmail.com",
-    pass: "your-app-password" // use Google App Password
-  }
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 // ---------------- FORGOT PASSWORD ----------------
 app.post('/api/forgot-password', (req, res) => {
@@ -967,7 +2188,7 @@ app.post('/api/forgot-password', (req, res) => {
 
         // Send OTP Email
         transporter.sendMail({
-          from: "yourgmail@gmail.com",
+          from: process.env.EMAIL_USER,
           to: email,
           subject: "Your Password Reset OTP",
           text: `Your OTP is ${otp}. It will expire in 5 minutes.`
@@ -1006,224 +2227,378 @@ app.post('/api/reset-password', async (req, res) => {
     );
   });
 });
+db.all(
+  "SELECT id, title, location FROM properties WHERE slug IS NULL OR slug = ''",
+  [],
+  (err, rows) => {
+    rows.forEach(p => {
+      const slug = slugify(`${p.title}-${p.location}-${p.id}`, {
+        lower: true,
+        strict: true
+      });
+      db.run("UPDATE properties SET slug = ? WHERE id = ?", [slug, p.id]);
+    });
+  }
+);
+// SEND OTP
+// SEND LOGIN OTP
+app.post("/api/send-otp", async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required",
+      });
+    }
+
+    // 🧪 DEV / TRIAL MODE → SKIP REAL OTP
+    if (process.env.OTP_ENABLED !== "true") {
+      console.log("⚠️ LOGIN OTP send skipped (DEV MODE) for:", phone);
+      return res.json({ success: true, dev: true });
+    }
+
+    // 🔐 PRODUCTION MODE → REAL TWILIO VERIFY
+    console.log("📤 Login OTP request for:", phone);
+
+    const verification = await client.verify.v2
+      .services(process.env.TWILIO_VERIFY_SID)
+      .verifications.create({
+        to: phone,
+        channel: "sms",
+      });
+
+    console.log("✅ Login OTP SMS triggered");
+    console.log("📨 To:", verification.to);
+    console.log("🆔 SID:", verification.sid);
+    console.log("📌 Status:", verification.status);
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("❌ Login OTP send failed:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "OTP send failed",
+    });
+  }
+});
+
+// VERIFY LOGIN OTP
+app.post("/api/verify-otp", async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+
+    if (!phone || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone and OTP are required",
+      });
+    }
+
+    // 🧪 DEV / TRIAL MODE → AUTO VERIFY
+    if (process.env.OTP_ENABLED !== "true") {
+      console.log("⚠️ LOGIN OTP auto-verified (DEV MODE) for:", phone);
+      return res.json({
+        success: true,
+        token: "DEV_JWT_TOKEN",
+        user: {
+          phone,
+          name: "Dev User",
+        },
+      });
+    }
+
+    // 🔐 PRODUCTION MODE → REAL TWILIO VERIFY
+    const check = await client.verify.v2
+      .services(process.env.TWILIO_VERIFY_SID)
+      .verificationChecks.create({
+        to: phone,
+        code: otp,
+      });
+
+    if (check.status === "approved") {
+      console.log("✅ Login OTP verified for:", phone);
+      return res.json({
+        success: true,
+        token: "JWT_TOKEN",
+        user: {
+          phone,
+          name: "User",
+        },
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: "Invalid OTP",
+    });
+  } catch (err) {
+    console.error("❌ Login OTP verify failed:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "OTP verification failed",
+    });
+  }
+});
+// ================= REGISTER SEND OTP =================
+app.post("/api/register/send-otp", async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required",
+      });
+    }
+
+    // 🧪 DEV / TRIAL MODE → SKIP REAL OTP
+    if (process.env.OTP_ENABLED !== "true") {
+      console.log("⚠️ OTP send skipped (DEV MODE) for:", phone);
+      return res.json({ success: true, dev: true });
+    }
+
+    // 🔐 PRODUCTION MODE → REAL TWILIO VERIFY
+    console.log("📤 Register OTP request received for:", phone);
+
+    const verification = await client.verify.v2
+      .services(process.env.TWILIO_VERIFY_SID)
+      .verifications.create({
+        to: phone,
+        channel: "sms",
+      });
+
+    // ✅ SAFE LOGS (OTP VALUE IS NEVER EXPOSED)
+    console.log("✅ OTP SMS triggered");
+    console.log("📨 To:", verification.to);
+    console.log("🆔 Verification SID:", verification.sid);
+    console.log("📌 Status:", verification.status); // pending
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("❌ OTP send failed:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "OTP send failed",
+    });
+  }
+});
+
+
+// ================= REGISTER VERIFY OTP =================
+app.post("/api/register/verify-otp", async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+
+    // 🧪 DEV / TRIAL MODE → AUTO VERIFY
+    if (process.env.OTP_ENABLED !== "true") {
+      console.log("⚠️ OTP verification skipped (DEV MODE) for:", phone);
+      return res.json({ success: true, dev: true });
+    }
+
+    // 🔐 PRODUCTION MODE → REAL TWILIO VERIFY
+    const check = await client.verify.v2
+      .services(process.env.TWILIO_VERIFY_SID)
+      .verificationChecks.create({
+        to: phone,
+        code: otp,
+      });
+
+    if (check.status === "approved") {
+      console.log("✅ OTP verified for:", phone);
+      return res.json({ success: true });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: "Invalid OTP",
+    });
+  } catch (err) {
+    console.error("❌ OTP verify error:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "OTP verification failed",
+    });
+  }
+});
+app.delete("/api/dev/delete-user-by-phone", (req, res) => {
+  const { phone } = req.body;
+
+  db.run("DELETE FROM users WHERE phone = ?", [phone], function (err) {
+    if (err) return res.status(500).json({ error: "DB error" });
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      message: `User with phone ${phone} deleted`
+    });
+  });
+});
+// CHECK PHONE EXISTS
+app.post("/api/check-phone", (req, res) => {
+  const { phone } = req.body;
+
+  if (!phone) {
+    return res.status(400).json({ exists: false });
+  }
+
+  db.get(
+    "SELECT id FROM users WHERE phone = ?",
+    [phone],
+    (err, user) => {
+      if (err) {
+        return res.status(500).json({ exists: false });
+      }
+
+      if (user) {
+        return res.json({ exists: true });
+      }
+
+      res.json({ exists: false });
+    }
+  );
+});
+
+// robots.txt
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
   res.send(`
 User-agent: *
 Allow: /
 
-Sitemap: https://fortunefloors.com/sitemap.xml
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /wishlist
+
+Sitemap: https://www.fortunefloors.com/sitemap.xml
   `);
 });
 
-// ---------- DYNAMIC SITEMAP ---------- //
+
+
+// =====================
+// DYNAMIC SITEMAP.XML 
+// =====================
+
+
+
+const staticPages = [
+  { path: "/", priority: "1.0", changefreq: "daily" },
+
+  { path: "/buy", priority: "0.9", changefreq: "weekly" },
+  { path: "/rent", priority: "0.9", changefreq: "weekly" },
+  { path: "/sell", priority: "0.8", changefreq: "weekly" },
+  { path: "/commercial", priority: "0.8", changefreq: "weekly" },
+  { path: "/pg", priority: "0.8", changefreq: "weekly" },
+  { path: "/plots", priority: "0.8", changefreq: "weekly" },
+  { path: "/properties", priority: "0.8", changefreq: "weekly" },
+
+  { path: "/blogs", priority: "0.7", changefreq: "weekly" },
+
+  { path: "/about", priority: "0.6", changefreq: "monthly" },
+  { path: "/services", priority: "0.6", changefreq: "monthly" },
+  { path: "/contact", priority: "0.6", changefreq: "monthly" },
+  { path: "/faq", priority: "0.6", changefreq: "monthly" },
+  { path: "/pricing-guide", priority: "0.6", changefreq: "monthly" },
+  { path: "/documents-needed", priority: "0.6", changefreq: "monthly" },
+  { path: "/testimonials", priority: "0.6", changefreq: "monthly" },
+  { path: "/partners", priority: "0.6", changefreq: "monthly" },
+  { path: "/how-it-works", priority: "0.6", changefreq: "monthly" },
+
+  { path: "/privacy-policy", priority: "0.4", changefreq: "yearly" },
+  { path: "/terms-and-conditions", priority: "0.4", changefreq: "yearly" }
+];
+
 app.get("/sitemap.xml", (req, res) => {
-  try {
-    db.all("SELECT title, location FROM properties WHERE status = 'approved'", [], (err, rows) => {
-      if (err) {
-        console.error("Sitemap DB error:", err);
-        return res.status(500).send("Error generating sitemap");
+  const BASE_URL = "https://www.fortunefloors.com";
+
+  const safeUrl = (url) => {
+    if (!url) return "";
+    return encodeURI(url)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+  };
+
+  res.setHeader("Content-Type", "application/xml");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+  xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+
+  /* ===== STATIC ===== */
+  staticPages.forEach(p => {
+    xml += `
+  <url>
+    <loc>${safeUrl(BASE_URL + p.path)}</loc>
+    <changefreq>${p.changefreq}</changefreq>
+    <priority>${p.priority}</priority>
+  </url>`;
+  });
+
+  /* ===== PROPERTIES ===== */
+  db.all(
+    `
+    SELECT slug, updated_at
+    FROM properties
+    WHERE status = 'approved'
+      AND COALESCE(is_deleted, 0) = 0
+      AND slug IS NOT NULL
+    `,
+    [],
+    (err, properties) => {
+      if (!err && properties.length) {
+        properties.forEach(p => {
+          xml += `
+  <url>
+    <loc>${safeUrl(`${BASE_URL}/property/${p.slug}`)}</loc>
+    <lastmod>${new Date(p.updated_at).toISOString()}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>`;
+        });
       }
 
-      const createSlug = (title, location) =>
-        `${title}-${location}`
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-
-      const urls = rows
-        .map(
-          (p) => `
-        <url>
-          <loc>https://fortunefloors.com/property/${createSlug(
-            p.title,
-            p.location
-          )}</loc>
-          <changefreq>weekly</changefreq>
-          <priority>0.9</priority>
-        </url>`
-        )
-        .join("");
-
-      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-        <url>
-          <loc>https://fortunefloors.com/</loc>
-          <changefreq>daily</changefreq>
-          <priority>1.0</priority>
-        </url>
-        <url>
-          <loc>https://fortunefloors.com/all-properties</loc>
-          <changefreq>daily</changefreq>
-          <priority>0.8</priority>
-        </url>
-        <url>
-    <loc>https://fortunefloors.com/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
+      /* ===== BLOGS ===== */
+      db.all(
+        `SELECT slug, created_at FROM blogs WHERE slug IS NOT NULL`,
+        [],
+        (err, blogs) => {
+          if (!err && blogs.length) {
+            blogs.forEach(b => {
+              xml += `
   <url>
-    <loc>https://fortunefloors.com/admin</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/postproperty</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/properties</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://fortunefloors.com/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/register</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/post-property</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/all-properties</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/builder-property</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/featured</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/testimonials</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/wishlist</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/sell-rent</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/top-cities</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/why-choose-us</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/verify-otp</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/google-success</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/loan-details</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/loan-form</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/payment</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/subscription-plans</loc>
+    <loc>${safeUrl(`${BASE_URL}/blog/${b.slug}`)}</loc>
+    <lastmod>${new Date(b.created_at).toISOString()}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>
+  </url>`;
+            });
+          }
 
-  <url>
-    <loc>https://fortunefloors.com/reset-password</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/dashboard</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://fortunefloors.com/admin</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-        
-        ${urls}
-      </urlset>`;
-
-      res.header("Content-Type", "application/xml");
-      res.send(sitemap);
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Sitemap generation error");
-  }
+          xml += `\n</urlset>`;
+          res.send(xml);
+        }
+      );
+    }
+  );
 });
 
+    
 
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
-
-

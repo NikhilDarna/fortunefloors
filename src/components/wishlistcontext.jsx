@@ -9,10 +9,10 @@ export const WishlistProvider = ({ children }) => {
   const [wishlist, setWishlist] = useState([]);
 
   // ✅ Base API URL (fallback to localhost)
-  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const baseUrl = import.meta.env.VITE_API_URL || "https://fortunefloors.com";
 
   // ✅ Load wishlist for the logged-in user
-  useEffect(() => {
+  useEffect(() => { 
     if (token) {
       axios
         .get(`${baseUrl}/api/wishlist`, {
@@ -69,3 +69,4 @@ export const WishlistProvider = ({ children }) => {
 };
 
 export const useWishlist = () => useContext(WishlistContext);
+ 

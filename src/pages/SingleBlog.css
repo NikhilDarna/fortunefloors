@@ -1,72 +1,224 @@
-.single-blog-wrapper{
-  padding-top: 100px;
-  padding-bottom: 80px;
-  width: 100%;
-}
-
-.single-blog-container{
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.single-blog-container{
+/* ======================
+   MAIN CONTAINER
+====================== */
+.single-blog-container {
   max-width: 900px;
-  width: 100%;
-  padding: 20px;
+  margin: auto;
+  padding: 16px;
 }
 
-/* title */
-.single-blog-title{
-  font-size: 36px;
+/* ======================
+   TITLE
+====================== */
+.single-blog-title {
+  font-size: 28px;
   margin-bottom: 20px;
-  color:#111;
+}
+.single-blog-text p {
+  margin-bottom: 16px;
+}
+.single-blog-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
 }
 
-/* image */
-.single-blog-img{
-  width:100%;
-  border-radius: 12px;
-  margin-bottom: 25px;
+.single-admin-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.single-admin-actions .edit-btn,
+.single-admin-actions .delete-btn {
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.single-admin-actions .edit-btn {
+  background: #007bff;
+  color: #fff;
+  text-decoration: none;
+}
+
+.single-admin-actions .delete-btn {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+/* ======================
+   IMAGE + AD LAYOUT
+====================== */
+.image-ad-wrapper {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.image-ad-wrapper .single-blog-img {
+  width: 100%;
+  max-height: 420px;
   object-fit: cover;
-}
-
-/* text */
-.single-blog-text{
-  font-size: 18px;
-  color:#424242;
-  line-height: 1.7;
-}
-
-
-/* ======================
-   TABLET
-====================== */
-@media(max-width:900px){
-  .single-blog-title{
-    font-size: 30px;
-  }
+  border-radius: 6px;
 }
 
 /* ======================
-   MOBILE
+   BLOG CONTENT (QUILL)
 ====================== */
-@media(max-width:600px){
-  .single-blog-wrapper{
-    padding-top: 80px;
-    padding-bottom: 60px;
+.single-blog-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #333;
+}
+
+/* paragraphs */
+.single-blog-text p {
+  margin-bottom: 16px;
+}
+
+/* headings */
+.single-blog-text h1,
+.single-blog-text h2,
+.single-blog-text h3 {
+  margin: 24px 0 12px;
+  font-weight: 600;
+}
+
+/* lists */
+.single-blog-text ul,
+.single-blog-text ol {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+/* ✅ FIXED IMAGE HANDLING */
+.single-blog-text img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 20px auto;
+  border-radius: 6px;
+}
+
+/* ======================
+   ACTIONS
+====================== */
+.blog-actions {
+  margin-top: 30px;
+}
+
+.share-btn {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+/* =====================================================
+   🔥 AD LAYOUT (ADDED – DOES NOT BREAK EXISTING CSS)
+===================================================== */
+
+/* Wrapper for left + blog + right */
+.single-blog-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  padding-top: 40px;
+}
+
+/* Common ad container */
+.blog-ads {
+  width: 260px;
+  position: sticky;
+  top: 120px;
+  height: fit-content;
+
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 12px;
+}
+
+/* Ad images */
+.blog-ads img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* ======================
+   MOBILE & TABLET
+====================== */
+@media (max-width: 900px) {
+  .image-ad-wrapper {
+    flex-direction: column;
   }
 
-  .single-blog-container{
-    padding: 15px;
+  .single-blog-title {
+    font-size: 22px;
   }
 
-  .single-blog-title{
-    font-size: 26px;
-    margin-bottom: 15px;
+  .single-blog-text {
+    font-size: 15px;
+  }
+}
+
+/* ======================
+   MOBILE & TABLET ADS
+====================== */
+@media (max-width: 1024px) {
+
+  .single-blog-wrapper {
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .single-blog-text{
-    font-size: 16px;
-    line-height: 1.65;
+  .blog-ads {
+    width: 100%;
+    position: relative;
+    top: 0;
+
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding: 8px 6px;
+
+    scrollbar-width: none;
   }
+
+  .blog-ads::-webkit-scrollbar {
+    display: none;
+  }
+
+  .blog-ads img {
+    min-width: 240px;
+    height: 140px;
+    flex-shrink: 0;
+  }
+}
+/* ======================
+   RESPONSIVE VIDEO EMBEDS
+====================== */
+.single-blog-text iframe {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  display: block;
+  margin: 20px 0;
+  border-radius: 10px;
+}
+@media (max-width: 768px) {
+  .single-blog-img {
+    max-height: 240px;      /* prevents giant images */
+    object-fit: cover;
+  }
+}
+/* Prevent overflow on mobile */
+.single-blog-text {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }

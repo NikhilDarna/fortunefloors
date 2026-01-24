@@ -80,7 +80,6 @@ const SellRent = () => {
               fontWeight: "600",
             }}
             onClick={() => {
-              alert("Post Property clicked!");
               window.location.href = "/post-property";
             }}
           >

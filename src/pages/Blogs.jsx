@@ -4,12 +4,37 @@ import axios from "axios";
 import "./Blogs.css";
 import { useAuth } from "../context/AuthContext";
 
+
+
+const decodeHtml = (html) => {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+};
+
+const getBlogPreview = (html, limit = 200) => {
+  if (!html) return "";
+
+  // 1️⃣ Decode &lt;iframe&gt; → <iframe>
+  const decoded = decodeHtml(html);
+
+  // 2️⃣ Remove iframe + all HTML tags
+  const textOnly = decoded
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
+
+  return textOnly.length > limit
+    ? textOnly.slice(0, limit) + "..."
+    : textOnly;
+};
+
 const Blogs = () => {
   const [blogs, setBlogs] = useState([]);
   const { user } = useAuth();
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/blog").then((res) => {
+    axios.get(`${import.meta.env.VITE_API_URL}/api/blog`).then((res) => {
       setBlogs(res.data);
     });
   }, []);
@@ -18,7 +43,7 @@ const Blogs = () => {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/admin/blog/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/blog/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -31,20 +56,38 @@ const Blogs = () => {
       alert("Delete failed");
     }
   };
+  const blogsByCategory = blogs.reduce((acc, blog) => {
+  const category = blog.category || "Others";
+  if (!acc[category]) acc[category] = [];
+  acc[category].push(blog);
+  return acc;
+}, {});
+
 
   return (
-    <div className="blogs-container">
-      <h1 className="blogs-heading">Latest Blogs</h1>
+  
+      <div className="blogs-container">
+  <h1 className="blogs-heading">Latest Blogs</h1>
 
+  {Object.keys(blogsByCategory).length === 0 && (
+    <p>No blogs found</p>
+  )}
+
+  {Object.entries(blogsByCategory).map(([category, blogs]) => (
+    <div key={category} className="category-section">
+
+      {/* CATEGORY HEADING */}
+      <h2 className="category-heading">{category}</h2>
+
+      {/* BLOGS GRID */}
       <div className="blogs-grid">
-
         {blogs.map((blog) => (
           <div className="blog-card" key={blog.id}>
             {blog.image && (
               <img
-                src={`http://localhost:5000/uploads/${blog.image}`}
-                style={{ width: "100%", borderRadius: "10px" }}
+                src={`${import.meta.env.VITE_API_URL}/uploads/${blog.image}`}
                 className="blog-card-img"
+                alt={blog.title}
               />
             )}
 
@@ -52,9 +95,8 @@ const Blogs = () => {
               <h2 className="blog-title">
                 <Link to={`/blog/${blog.slug}`}>{blog.title}</Link>
               </h2>
-
               <p className="blog-snippet">
-                {blog.content.substring(0, 100)}...
+                {getBlogPreview(blog.content)}
               </p>
 
               <Link to={`/blog/${blog.slug}`} className="read-more">
@@ -81,9 +123,13 @@ const Blogs = () => {
             </div>
           </div>
         ))}
-
       </div>
+
     </div>
+  ))}
+      </div>
+
+    
   );
 };
 

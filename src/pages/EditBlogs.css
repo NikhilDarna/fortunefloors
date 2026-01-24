@@ -1,9 +1,22 @@
+/* =========================
+   MAIN CONTAINER
+========================= */
+/* 🔥 CRITICAL: prevent editor clipping on desktop */
+.editblogs-container,
+.editblogs-form,
+.edit-wrapper {
+  overflow: visible !important;
+}
+
 .editblogs-container {
   max-width: 650px;
-  margin: 40px auto;
+  margin: 90px auto 40px; /* 🔥 pushes content below navbar */
   padding: 20px;
 }
 
+/* =========================
+   FORM
+========================= */
 .editblogs-form {
   background: white;
   border-radius: 12px;
@@ -11,6 +24,7 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
+/* Labels */
 .editblogs-form label {
   display: block;
   margin: 14px 0 6px;
@@ -18,20 +32,77 @@
   color: #1a237e;
 }
 
+/* Inputs */
 .editblogs-form input[type="text"],
-.editblogs-form textarea {
+.editblogs-form textarea,
+.editblogs-form input[type="file"] {
   width: 100%;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #ccc;
 }
 
+/* =========================
+   REACT QUILL – FINAL FIX
+========================= */
+
+/* Wrapper */
+.edit-wrapper {
+  position: relative;
+}
+
+/* Sticky toolbar (NO overlap) */
+.edit-wrapper .ql-toolbar {
+  position: sticky;
+  z-index: 20;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Editor container */
+.edit-wrapper .ql-container {
+  min-height: 420px;
+  border-radius: 0 0 8px 8px;
+  width:100%;
+}
+
+/* Editor text */
+.edit-wrapper .ql-editor {
+  min-height: 380px;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* Header dropdown sizes (toolbar) */
+.edit-wrapper .ql-toolbar .ql-picker.ql-header .ql-picker-item[data-value="1"] { font-size: 32px; }
+.edit-wrapper .ql-toolbar .ql-picker.ql-header .ql-picker-item[data-value="2"] { font-size: 26px; }
+.edit-wrapper .ql-toolbar .ql-picker.ql-header .ql-picker-item[data-value="3"] { font-size: 20px; }
+.edit-wrapper .ql-toolbar .ql-picker.ql-header .ql-picker-item[data-value="4"] { font-size: 18px; }
+.edit-wrapper .ql-toolbar .ql-picker.ql-header .ql-picker-item[data-value="5"] { font-size: 16px; }
+.edit-wrapper .ql-toolbar .ql-picker.ql-header .ql-picker-item[data-value="6"] { font-size: 14px; }
+
+/* Editor heading styles for H4-H6 preview */
+.edit-wrapper .ql-editor h1 { font-size: 32px; margin: 18px 0 10px; }
+.edit-wrapper .ql-editor h2 { font-size: 26px; margin: 18px 0 10px; }
+.edit-wrapper .ql-editor h3 { font-size: 20px; margin: 18px 0 10px; }
+.edit-wrapper .ql-editor h4 { font-size: 18px; margin: 16px 0 8px; }
+.edit-wrapper .ql-editor h5 { font-size: 16px; margin: 14px 0 6px; }
+.edit-wrapper .ql-editor h6 { font-size: 14px; margin: 12px 0 6px; color: #333; }
+
+/* =========================
+   OLD IMAGE
+========================= */
 .editblogs-old-image {
   width: 100%;
+  max-height: 280px;
+  object-fit: cover;
   border-radius: 10px;
   margin-bottom: 10px;
 }
 
+/* =========================
+   SAVE BUTTON
+========================= */
 .saveblogs-btn {
   width: 100%;
   padding: 12px;
@@ -46,4 +117,18 @@
 
 .saveblogs-btn:hover {
   background: #062d6e;
+}
+
+/* =========================
+   MOBILE FIX
+========================= */
+@media (max-width: 768px) {
+  .editblogs-container {
+    margin-top: 10px;
+    
+  }
+
+  .edit-wrapper .ql-toolbar {
+    top: 140px;          /* ✅ mobile navbar */
+  }
 }

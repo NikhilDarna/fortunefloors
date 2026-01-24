@@ -1,0 +1,58 @@
+.mb-filter-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 10000;
+}
+
+.mb-filter-modal {
+  position: fixed;
+  bottom: var(--bottom-nav-height, 60px);
+  left: 0;
+  right: 0;
+  height: calc(100vh - var(--bottom-nav-height, 60px));
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mb-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.mb-filter-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.mb-filter-tabs {
+  display: flex;
+  gap: 12px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  border-bottom: 1px solid #eee;
+}
+
+.mb-filter-tabs button {
+  background: none;
+  border: none;
+  font-size: 14px;
+  padding-bottom: 6px;
+  white-space: nowrap;
+}
+
+.mb-filter-tabs button.active {
+  border-bottom: 2px solid #e53935;
+  color: #e53935;
+}
+
+.mb-filter-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}

@@ -4,10 +4,10 @@
 
 .all-properties-page {
   background-color: #fafafa;
-  min-height: 100vh;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px 60px;
+  min-height: 100px;
+  max-width: 100%;
+  margin: 1px 10px !important;
+  padding: 20px 30px !important;
 }
 
 /* ===============================
@@ -33,6 +33,7 @@
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: 30px;
   align-items: stretch;
+  
 }
 
 /* ===============================
@@ -68,6 +69,81 @@
 }
 
 /* ===============================
+   PAGINATION
+=============================== */
+
+.pagination-container {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.pagination-info {
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pagination-button {
+  min-width: 40px;
+  height: 40px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.pagination-button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.pagination-button:disabled {
+  background: #f8f9fa;
+  color: #ccc;
+  border-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.pagination-button.prev,
+.pagination-button.next {
+  font-size: 18px;
+  padding: 0 12px;
+}
+
+.pagination-ellipsis {
+  padding: 0 8px;
+  color: #666;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+/* ===============================
    RESPONSIVE FIXES
 =============================== */
 
@@ -86,14 +162,52 @@
 @media (max-width: 768px) {
   .all-properties-page {
     padding: 20px;
+    margin: 1px 30px;
   }
 
   .all-properties-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
   }
 
   .property-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 10px;
   }
+  
+  .pagination-container {
+    margin-top: 30px;
+  }
+  
+  .pagination-button {
+    min-width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+  
+  .pagination-button.prev,
+  .pagination-button.next {
+    font-size: 16px;
+    padding: 0 10px;
+  }
+  
+  .pagination-info {
+    font-size: 0.85rem;
+  }
+}
+
+.all-properties-page {
+  padding: 20px;
+}
+
+/* 🔥 AUTO GRID */
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* Optional – card consistency */
+.property-card {
+  height: 100%;
 }

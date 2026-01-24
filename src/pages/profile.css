@@ -1,0 +1,443 @@
+.profile-page {
+  max-width: 920px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+.profile-card {
+  display: flex;
+  gap: 24px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.avatar-column {
+  width: 220px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  justify-content:flex-start;
+}
+/* Avatar size and circular styling */
+.avatar-preview{ width:160px; height:160px; display:inline-block; position:relative }
+.avatar-preview img{ width:160px; height:160px; object-fit:cover; border-radius:50%; display:block; box-shadow: 0 6px 18px rgba(0,0,0,0.08); border: 3px solid #fff }
+.avatar-placeholder{ width:160px; height:160px; display:flex; align-items:center; justify-content:center; background:#f0f2f5; border-radius:50%; color:#666; font-weight:600 }
+.default-avatar {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e3e8ef;
+  border-radius: 50%;
+  color: #6b7280;
+}
+
+.default-avatar svg {
+  width: 48px;
+  height: 48px;
+}
+/* Edit overlay */
+.avatar-preview{ position: relative }
+.avatar-edit{
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  background: #1f6feb;
+  color: #fff;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  font-size: 16px;
+  transform: translate(10%, 10%);
+}
+.avatar-edit:focus{ outline: 2px solid rgba(31,111,235,0.25) }
+.avatar-edit-container {
+  position: relative;
+}
+.photo-options-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  min-width: 160px;
+  overflow: hidden;
+}
+.photo-option-btn {
+  width: 100%;
+  padding: 10px 12px;
+  background: white;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.photo-option-btn:hover {
+  background: #f8f9fa;
+}
+.photo-option-btn.upload:hover {
+  background: #e3f2fd;
+  color: #1f6feb;
+}
+.photo-option-btn.delete:hover {
+  background: #ffebee;
+  color: #dc3545;
+}
+.photo-option-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.photo-option-btn:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+.avatar-column .manage {
+  width: 100%;
+  padding: 10px 14px;
+  background: #1f6feb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 8px;
+}
+.avatar-column .manage:hover {
+  background: #165bb3;
+}
+.manage-options {
+  width: 100%;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 8px;
+}
+.manage-options p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+.manage-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.manage-buttons button {
+  padding: 8px 12px;
+  background: white;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+  transition: all 0.2s;
+}
+.manage-buttons button:hover {
+  background: #1f6feb;
+  color: white;
+  border-color: #1f6feb;
+}
+.profile-form{ flex:1; display:flex; flex-direction:column; gap:12px }
+.profile-form label{ display:flex; flex-direction:column; font-size:14px; color:#333 }
+.profile-form input{ padding:8px 10px; border:1px solid #ddd; border-radius:6px; margin-top:6px }
+.form-actions{ display:flex; gap:12px; margin-top:8px }
+.form-actions button{ padding:8px 14px; background:#1f6feb; color:white; border:none; border-radius:6px }
+.form-actions .cancel{ background:#eee; color:#333 }
+.message{ margin-top:12px; color:green }
+
+/* Crop Modal Styles */
+.crop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+
+.crop-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  max-height: 90vh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.crop-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+  background: #f8f9fa;
+}
+
+.crop-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.close-btn:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.crop-modal-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Responsive Design for Crop Modal */
+@media (max-width: 768px) {
+  .crop-modal-overlay {
+    padding: 12px;
+  }
+  
+  .crop-modal {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .crop-modal-header {
+    padding: 16px 20px;
+  }
+  
+  .crop-modal-header h3 {
+    font-size: 16px;
+  }
+  
+  .crop-modal-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .crop-modal-header {
+    padding: 12px 16px;
+  }
+  
+  .crop-modal-content {
+    padding: 12px;
+  }
+}
+
+/* Animation for modal */
+.crop-modal-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.crop-modal {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width:768px){
+  .profile-page {
+    margin: 20px auto;
+    padding: 0 12px;
+  }
+  
+  .profile-card {
+    flex-direction: column;
+    gap: 20px;
+    padding: 16px;
+  }
+  
+  .avatar-column {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+  }
+  
+  .avatar-preview {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .avatar-preview img {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .avatar-placeholder {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .default-avatar {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .default-avatar svg {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .profile-form {
+    gap: 16px;
+  }
+  
+  .profile-form label {
+    font-size: 15px;
+  }
+  
+  .profile-form input {
+    padding: 10px 12px;
+    font-size: 15px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .form-actions button {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width:480px){
+  .profile-page {
+    margin: 16px auto;
+    padding: 0 8px;
+  }
+  
+  .profile-card {
+    padding: 12px;
+    gap: 16px;
+  }
+  
+  .avatar-column {
+    gap: 12px;
+  }
+  
+  .avatar-preview {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .avatar-preview img {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .avatar-placeholder {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .default-avatar {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .default-avatar svg {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .avatar-edit {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    bottom: 8px;
+    right: -4px;
+  }
+  
+  .manage-btn, .photo-option-btn {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  .profile-form {
+    gap: 14px;
+  }
+  
+  .profile-form label {
+    font-size: 14px;
+  }
+  
+  .profile-form input {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+  
+  .form-actions button {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+}

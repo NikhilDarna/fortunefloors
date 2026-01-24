@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import "./EditBlogs.css"; 
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import "./EditBlogs.css";
 
 const EditBlogs = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(""); // HTML content
   const [oldImage, setOldImage] = useState("");
   const [file, setFile] = useState(null);
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/admin/blog/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      .get(`${import.meta.env.VITE_API_URL}/api/admin/blog/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
       .then((res) => {
         setTitle(res.data.title);
@@ -35,7 +37,7 @@ const EditBlogs = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/blog/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/admin/blog/${id}`,
         formData,
         {
           headers: {
@@ -48,7 +50,7 @@ const EditBlogs = () => {
       alert("Blog updated!");
       navigate("/blogs");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       alert("Update failed");
     }
   };
@@ -58,40 +60,68 @@ const EditBlogs = () => {
       <h1>Edit Blog</h1>
 
       <form className="editblogs-form" onSubmit={handleUpdate}>
-        
+        {/* TITLE */}
         <label>Title</label>
-        <input 
+        <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
 
+        {/* CONTENT */}
         <label>Content</label>
-        <textarea
-          rows="6"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-        ></textarea>
+        <div className="edit-wrapper">
+          <ReactQuill
+            value={content}
+            onChange={setContent}
+            placeholder="Edit your blog..."
+            modules={{
+              toolbar: [
+                [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                ["bold", "italic", "underline"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["image", "video"],   // ✅ VIDEO ICON ADDED
+                ["clean"],
+              ],
+              clipboard: {
+                matchVisual: false, // ✅ iframe paste support
+              },
+            }}
+            formats={[
+              "header",
+              "bold",
+              "italic",
+              "underline",
+              "list",
+              "bullet",
+              "image",
+              "video",               // ✅ ENABLE VIDEO FORMAT
+            ]}
+          />
+        </div>
 
+        {/* CURRENT IMAGE */}
         <label>Current Image:</label>
         {oldImage && (
           <img
-            src={`http://localhost:5000/uploads/${oldImage}`}
+            src={`${import.meta.env.VITE_API_URL}/uploads/${oldImage}`}
             className="editblogs-old-image"
             alt="Old"
           />
         )}
 
+        {/* NEW IMAGE */}
         <label>Upload New Image (optional)</label>
-        <input 
+        <input
           type="file"
           accept="image/*"
           onChange={(e) => setFile(e.target.files[0])}
         />
 
-        <button type="submit" className="saveblogs-btn">Save Changes</button>
+        <button type="submit" className="saveblogs-btn">
+          Save Changes
+        </button>
       </form>
     </div>
   );

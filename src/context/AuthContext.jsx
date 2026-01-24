@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   // 1️⃣ CHECK GOOGLE SESSION
   // ---------------------------------------------------
   useEffect(() => {
-    fetch("http://localhost:5000/auth/user", {
+    fetch("/auth/user", {
       credentials: "include", // IMPORTANT
     })
       .then((res) => res.json())
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
 
     // clear google session in backend
-    fetch("http://localhost:5000/auth/logout", {
+    fetch("/auth/logout", {
       method: "POST",
       credentials: "include",
     });

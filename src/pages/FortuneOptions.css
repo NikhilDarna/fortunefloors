@@ -80,9 +80,7 @@
 }
 
 @media (max-width: 768px) {
-  .desktop-only {
-    display: none !important;
-  }
+  
 
   .fortune-options-title {
     font-size: 20px;

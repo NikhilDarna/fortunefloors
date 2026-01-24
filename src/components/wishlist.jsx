@@ -5,47 +5,66 @@ import { useAuth } from "../context/AuthContext";
 const WishlistContext = createContext();
 
 export const WishlistProvider = ({ children }) => {
-  const { currentUser } = useAuth(); // Get current user from AuthContext
+  const { currentUser } = useAuth();
   const [wishlist, setWishlist] = useState([]);
 
-  // 🔹 Load wishlist when user logs in
+  // Load wishlist on login
   useEffect(() => {
     if (currentUser) {
       const stored = localStorage.getItem(`wishlist_${currentUser.uid}`);
       setWishlist(stored ? JSON.parse(stored) : []);
     } else {
-      setWishlist([]); // Clear wishlist when user logs out
+      setWishlist([]);
     }
   }, [currentUser]);
 
-  // 🔹 Save wishlist whenever it changes
+  // Save wishlist on change
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem(`wishlist_${currentUser.uid}`, JSON.stringify(wishlist));
+      localStorage.setItem(
+        `wishlist_${currentUser.uid}`,
+        JSON.stringify(wishlist)
+      );
     }
   }, [wishlist, currentUser]);
 
-  // 🔹 Add a property to wishlist
+  // Add
   const addToWishlist = (property) => {
     setWishlist((prev) => {
-      if (prev.some((item) => item.id === property.id)) return prev; // Avoid duplicates
+      if (prev.some((item) => item.id === property.id)) return prev;
       return [...prev, property];
     });
   };
 
-  // 🔹 Remove a property from wishlist
+  // Remove
   const removeFromWishlist = (id) => {
     setWishlist((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // 🔹 Check if item is in wishlist (optional helper)
+  // Check
   const isInWishlist = (id) => {
     return wishlist.some((item) => item.id === id);
   };
 
+  // ⭐ TOGGLE (IMPORTANT)
+  const toggleWishlist = (property) => {
+    setWishlist((prev) => {
+      const exists = prev.some((item) => item.id === property.id);
+      return exists
+        ? prev.filter((item) => item.id !== property.id)
+        : [...prev, property];
+    });
+  };
+
   return (
     <WishlistContext.Provider
-      value={{ wishlist, addToWishlist, removeFromWishlist, isInWishlist }}
+      value={{
+        wishlist,
+        addToWishlist,
+        removeFromWishlist,
+        toggleWishlist,
+        isInWishlist,
+      }}
     >
       {children}
     </WishlistContext.Provider>

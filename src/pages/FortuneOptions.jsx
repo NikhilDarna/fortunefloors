@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./FortuneOptions.css";
 
 import Delhi from "../assets/brochers/pg/pg2.webp";
@@ -10,16 +11,17 @@ import Buysell from "../assets/brochers/buysell/buysell.avif";
 import Kolkata from "../assets/cities/kolkatha.jpg";
 
 const cities = [
-  { name: "Buying A Home", image: Buysell },
-  { name: "Renting a Home", image: Delhi },
-  { name: "Sell/Rent your property", image: SellRent },
-  { name: "Plots/Land", image: acers },
-  { name: "PG and co-living", image: Pg },
-  { name: "Buying commercial spaces", image: Mumbai },
-  { name: "Lease commercial spaces", image: Kolkata },
+  { name: "Buying A Home", image: Buysell, route: "/all-properties?purpose=buy" },
+  { name: "Renting a Home", image: Delhi, route: "/all-properties?purpose=rent" },
+  { name: "Sell/Rent your property", image: SellRent, route: "/post-property" },
+  { name: "Plots/Land", image: acers, route: "/all-properties?propertyType=plot" },
+  { name: "PG and co-living", image: Pg, route: "/all-properties?propertyType=pg" },
+  { name: "Buying commercial spaces", image: Mumbai, route: "/all-properties?propertyType=commercial&purpose=buy" },
+  { name: "Lease commercial spaces", image: Kolkata, route: "/all-properties?propertyType=commercial&purpose=rent" },
 ];
 
 const FortuneOptions = () => {
+  const navigate = useNavigate();
   const scrollRef = useRef(null);
 
   // Mobile Auto Infinite Scroll
@@ -71,7 +73,12 @@ const FortuneOptions = () => {
       <div className="fortune-carousel" ref={scrollRef}>
         {/* ⭐ Duplicate cards for infinite scroll */}
         {[...cities, ...cities].map((city, index) => (
-          <div className="fortune-card" key={index}>
+          <div 
+            className="fortune-card" 
+            key={index}
+            onClick={() => navigate(city.route)}
+            style={{ cursor: 'pointer' }}
+          >
             <img src={city.image} alt={city.name} className="fortune-image" />
             <p className="fortune-text">{city.name}</p>
           </div>

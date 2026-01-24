@@ -135,14 +135,36 @@ body {
   transition: 0.3s;
 }
 
-/* Home Page Styles */
 .hero-section {
-  background: url(./assets/image.jpg);
-  color: white;
-  padding: 4rem 0;
-  text-align: left;
-  padding-left: 20%;
+  width: 100%;
+  height: 320px;
+
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;   /* ✅ Correct for desktop */
+
+  display: flex;
+  align-items: center;
+  padding: 0 6%;
+  color: #fff;
+  position: relative;
+
+  animation: heroBgDesktop 13s infinite ease-in-out;
 }
+
+@keyframes heroBgDesktop {
+  0% {
+    background-image: url("./assets/main.jpeg");
+  }
+  50% {
+    background-image: url("./assets/image1.jpeg");
+  }
+  100% {
+    background-image: url("./assets/main.jpeg");
+  }
+}
+
+
 
 .hero-section img{
   height: 100%;
@@ -162,36 +184,44 @@ body {
   opacity: 0.9;
 }
 
-/* Mobile fix (remove large left padding on small screens) */
-@media (max-width: 430px) {
-    .hero-section {
-    background: url(./assets/project-img.jpg) center center / contain no-repeat;
-    padding: 4rem 0;
-    text-align: left;
-    padding-left: 3%;
-    width: 100%;
-    height: auto;
-    display: flex;
-    align-items: center;
-    color:#10b981  !important;
-  }
+/* ===============================
+   MOBILE HERO – iPHONE SAFE FIX
+================================ */
+
+/* Covers iPhone 14 Pro Max & all large phones */
+/* Mobile only */
+@media (max-width: 480px) {
   .hero-section {
-    padding-left: 1%;
-    padding-right: 35%;
-    padding-top: 3rem;
-    padding-bottom: 3rem;
-    text-align: center;
-    background-position: center;
+    background-position: center center !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+
+    width: 100% !important;
+    min-height: 320px !important;
+
+    padding: 1.5rem 1rem !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+    color: #10b981 !important;
+
+    animation: heroBg 15s infinite ease-in-out;
   }
-  .hero-content h1{
-     font-weight: 300;
-     font-size: 25px !important;
-     font-weight: bold;
+}
+
+/* Background image loop */
+@keyframes heroBg {
+  0% {
+    background-image: url("./assets/project-img.png");
   }
-  .hero-content p{
-     font-weight: 300;
-     font-size: 18px !important;
-     padding-left:28%
+  50% {
+    background-image: url("./assets/project-img1.jpg");
+  }
+  100% {
+    background-image: url("./assets/project-img.png");
   }
 }
 
@@ -323,6 +353,7 @@ body {
   left: 1rem;
   display: flex;
   gap: 0.5rem;
+  padding: 100px;
 }
 
 .badge {
@@ -1511,31 +1542,36 @@ body {
 /* ===== Tabs ===== */
 .login-tabs {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-  background: #f3f4f6;
-  padding: 0.4rem;
-  border-radius: 0.75rem;
+  gap: 5px;
+  padding: 6px;
+  background: none;
+  border-radius: 12px;
+  margin-bottom: 16px; /* IMPORTANT */
 }
+
 
 .login-tabs button {
   flex: 1;
-  padding: 0.7rem 0;
+  padding: 1px 0;
   border: none;
+  border-radius: 8px;
+  font-size: 14px;
   background: transparent;
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #374151;
-  border-radius: 0.5rem;
-  transition: 0.3s ease;
 }
+
 
 .login-tabs button.active {
   background: #2563EB;
   color: white;
   box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
 }
+@media (max-width: 480px) {
+  .login-tabs {
+    margin-bottom: 20px; /* prevents overlap */
+  }
+}
+
 
 /* ===== Form Inputs ===== */
 .auth-form input {
@@ -1664,3 +1700,38 @@ body {
 .p-2 { padding: 0.5rem; }
 .p-3 { padding: 0.75rem; }
 .p-4 { padding: 1rem; }
+/* =========================================
+   GLOBAL FIX FOR MOBILE TOUCH DEVICES
+   ========================================= */
+
+@media (hover: none) and (pointer: coarse) {
+
+  *:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+/* Mobile tap feedback */
+button:active,
+a:active,
+.card:active {
+  transform: scale(0.98);
+}
+@media (hover: none) and (pointer: coarse) {
+
+  *:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+/* Mobile tap feedback */
+button:active,
+a:active,
+.card:active {
+  transform: scale(0.98);
+}
+@media (max-width: 900px) {
+  body {
+    padding-bottom: 60px;
+  }
+}

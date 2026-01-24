@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import pg1 from "../assets/brochers/pg/pg1.jpg";
 import pg2 from "../assets/brochers/pg/pg2.webp";
 import pg3 from "../assets/brochers/pg/pg3.jpeg";
@@ -7,6 +8,7 @@ import pg4 from "../assets/brochers/pg/pg4.png";
 import image1 from "../assets/1.jpg";
 
 const PG = () => {
+  const navigate = useNavigate();
   const articles = [
     {
       title: "How to convert your home into a PG?",
@@ -67,7 +69,9 @@ const PG = () => {
           <p style={{ fontSize: "16px", marginBottom: "20px" }}>
             Explore shared and private rooms in all top cities of India
           </p>
+          
           <button
+            onClick={() => navigate("/all-properties?propertyType=pg")}
             style={{
               backgroundColor: "#007bff",
               color: "#fff",
@@ -78,10 +82,11 @@ const PG = () => {
               cursor: "pointer",
               fontWeight: "600",
             }}
-            onClick={() => alert("Explore PG/Co-Living clicked!")}
+            
           >
             Explore PG/Co-Living
           </button>
+
         </div>
       </div>
 

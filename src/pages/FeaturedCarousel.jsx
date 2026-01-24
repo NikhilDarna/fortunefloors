@@ -1,41 +1,72 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./FeaturedCarousel.css";
 import PropertyCard from "../components/PropertyCard";
+import ad1 from "../assets/ad2.png";
 
-import ad1 from "../assets/ad1.png"; // RIGHT AD
-
-const FeaturedSection = ({ properties = [], loading }) => {
+const FeaturedSection = ({ properties = [] }) => {
   const sliderRef = useRef(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const animationRef = useRef(null);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  // Resize detection
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Auto Scroll
+  // Smooth auto-scroll
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
 
-    const interval = setInterval(() => {
-      slider.scrollBy({
-        left: isMobile ? 240 : 320,
-        behavior: "smooth",
-      });
+    const autoScroll = () => {
+      if (!isPaused && !isDragging) {
+        slider.scrollLeft += 0.6;
 
-      if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 5) {
-        slider.scrollTo({ left: 0 });
+        if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth) {
+          slider.scrollLeft = 0;
+        }
       }
-    }, 2500);
+      animationRef.current = requestAnimationFrame(autoScroll);
+    };
 
-    return () => clearInterval(interval);
-  }, [isMobile]);
+    animationRef.current = requestAnimationFrame(autoScroll);
+    return () => cancelAnimationFrame(animationRef.current);
+  }, [isPaused, isDragging]);
+useEffect(() => {
+  if (sliderRef.current) {
+    sliderRef.current.scrollLeft = 0;
+  }
+}, [properties]);
+
+  // Drag logic
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    startX.current = e.pageX - sliderRef.current.offsetLeft;
+    scrollLeft.current = sliderRef.current.scrollLeft;
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - sliderRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    sliderRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
 
   const scroll = (direction) => {
-    const slider = sliderRef.current;
-    slider.scrollBy({
+    sliderRef.current.scrollBy({
       left: direction === "left" ? -320 : 320,
       behavior: "smooth",
     });
@@ -43,22 +74,31 @@ const FeaturedSection = ({ properties = [], loading }) => {
 
   return (
     <div className="popular-main-container">
-
-      {/* LEFT AREA */}
+      {/* LEFT */}
       <div className="popular-left">
         <div className="popular-header">
           <h2>Popular Properties</h2>
-          <a href="/all-properties" className="see-all">See All</a>
+          <a href="/all-properties" className="see-all">
+            See All
+          </a>
         </div>
 
         <div className="scroll-wrapper">
-          {!isMobile && (
-            <button className="arrow-btn left" onClick={() => scroll("left")}>
-              ‹
-            </button>
-          )}
+          
 
-          <div className="popular-scroller" ref={sliderRef}>
+          <div
+              className="popular-scroller"
+              ref={sliderRef}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => {
+                setIsPaused(false);
+                handleMouseUp();
+              }}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+            >
+
             {properties.map((property, index) => (
               <div className="popular-card" key={index}>
                 <PropertyCard property={property} />
@@ -66,21 +106,19 @@ const FeaturedSection = ({ properties = [], loading }) => {
             ))}
           </div>
 
-          {!isMobile && (
-            <button className="arrow-btn right" onClick={() => scroll("right")}>
-              ›
-            </button>
-          )}
+          
         </div>
       </div>
 
-      {/* RIGHT AD (Desktops Only) */}
+      {/* RIGHT AD */}
       {!isMobile && (
         <div className="popular-right-ad">
-          <img src={ad1} alt="Ad Banner" />
+          <div className="ad-wrapper">
+            <img src={ad1} alt="Property Expo" />
+          </div>
         </div>
-      )}
 
+      )}
     </div>
   );
 };

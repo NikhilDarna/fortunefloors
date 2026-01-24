@@ -1,0 +1,389 @@
+/* =============================
+   BASE
+============================= */
+.mf-container {
+  padding: 12px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #ffffff;
+}
+
+/* =============================
+   TABS
+============================= */
+.mf-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 12px;
+}
+
+.mf-tab {
+  flex: 1;
+  padding: 10px 4px;
+  font-size: 13px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #555;
+  font-weight: 500;
+}
+
+.mf-tab.active {
+  color: #e53935;
+  border-bottom-color: #e53935;
+  font-weight: 600;
+}
+
+/* =============================
+   SECTION
+============================= */
+.mf-section {
+  margin-bottom: 16px;
+}
+
+.mf-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+/* =============================
+   LOCATION CHIPS
+============================= */
+.mf-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mf-chip {
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 16px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.mf-chip.active {
+  background: #e6f4f1;
+  border-color: #14b8a6;
+  color: #047857;
+}
+
+.mf-chip.add {
+  color: #6b7280;
+}
+
+/* =============================
+   BUDGET
+============================= */
+.mf-budget-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mf-budget-row select {
+  flex: 1;
+  padding: 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+}
+
+.mf-budget-row span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mf-range {
+  width: 100%;
+  margin-top: 10px;
+  accent-color: #14b8a6;
+}
+
+/* =============================
+   PROPERTY TYPE GRID
+============================= */
+.mf-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.mf-type-card {
+  position: relative;
+  padding: 14px 8px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 12px;
+  text-align: center;
+  color: #374151;
+}
+
+.mf-type-card.active {
+  background: #e6f4f1;
+  border-color: #14b8a6;
+}
+
+.mf-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 12px;
+  color: #14b8a6;
+  font-weight: 700;
+}
+
+/* =============================
+   BHK PILLS
+============================= */
+.mf-chip-row .mf-chip {
+  cursor: pointer;
+}
+
+.mf-chip-row .mf-chip.active {
+  font-weight: 600;
+}
+
+/* =============================
+   INPUT
+============================= */
+.mf-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+/* =============================
+   ADVANCE FILTER
+============================= */
+.mf-advance {
+  margin: 18px 0;
+  padding: 12px;
+  text-align: center;
+  background: #f3f4f6;
+  color: #e53935;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* =============================
+   ACTION BUTTONS
+============================= */
+.mf-actions {
+  display: flex;
+  gap: 10px;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 12px 0;
+}
+
+.mf-clear {
+  flex: 1;
+  background: #1e40af;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mf-apply {
+  flex: 1;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+/* BASE */
+.mf-container {
+  padding: 12px;
+  background: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+/* TABS */
+.mf-tabs {
+  display: flex;
+  border-bottom: 1px solid #b9b9b9;
+  margin-bottom: 12px;
+}
+.mf-tab {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #555;
+}
+.mf-tab.active {
+  color: #e53935;
+  border-bottom: 2px solid #e53935;
+  font-weight: 600;
+}
+
+/* SECTION */
+.mf-section {
+  margin-bottom: 16px;
+}
+.mf-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* CHIPS */
+.mf-chip-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mf-chip {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
+}
+.mf-chip.active {
+  background: #e6f4f1;
+  border-color: #14b8a6;
+}
+
+/* BUDGET */
+.mf-budget-row {
+  display: flex;
+  gap: 8px;
+}
+.mf-budget-row select {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
+}
+
+/* RANGE */
+.mf-range-wrapper {
+  position: relative;
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+.mf-range-wrapper input[type="range"] {
+  position: absolute;
+  width: 100%;
+  accent-color: #14b8a6;
+}
+
+/* PROPERTY TYPE SCROLL */
+.mf-type-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.mf-type-card {
+  min-width: 110px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  position: relative;
+}
+.mf-type-card.active {
+  background: #e6f4f1;
+  border-color: #14b8a6;
+}
+.mf-type-icon {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+.mf-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: #14b8a6;
+  font-weight: 700;
+}
+
+/* ADVANCE */
+.mf-advance {
+  background: #f3f4f6;
+  padding: 12px;
+  text-align: center;
+  border-radius: 8px;
+  color: #e53935;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* ACTIONS */
+.mf-actions {
+  display: flex;
+  gap: 10px;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 12px 0;
+}
+.mf-clear {
+  flex: 1;
+  background: #1e40af;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+}
+.mf-apply {
+  flex: 1;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.mf-sub-tab {
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 16px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  white-space: nowrap;
+  width: 100px;
+  gap: 5px;
+}
+
+.mf-sub-tab:active {
+  background: #e6f4f1;
+  border-color: #14b8a6;
+  color: #047857;
+}
+.mf-sub-tabs {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+ 
+}
+
+/* =============================
+   RESPONSIVE - HIDE ON DESKTOP
+============================= */
+@media (min-width: 901px) {
+  .mf-container {
+    display: none !important;
+  }
+}

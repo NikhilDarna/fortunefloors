@@ -26,7 +26,7 @@ function Footer({ user }) {
             <li><Link to="/">Home</Link></li>
             <li><Link to="/about">About Us</Link></li>
             <li><Link to="/services">Services</Link></li>
-            <li><Link to="/properties">Properties</Link></li>
+            <li><Link to="/all-properties">Properties</Link></li>
             <li><Link to="/contact">Contact</Link></li>
           </ul>
         </div>
@@ -38,7 +38,7 @@ function Footer({ user }) {
             <li><Link to="/profile">My Profile</Link></li>
             <li><Link to="/add-property">Add Property</Link></li>
             <li><Link to="/my-listing">My Listing</Link></li>
-            <li><Link to="/favorites">Favorites</Link></li>
+            <li><Link to="/wishlist">Favorites</Link></li>
           </ul>
         </div>
 
@@ -65,7 +65,7 @@ function Footer({ user }) {
         </div>
       </div>
       <div className="footer-bottom">
-        &copy; 2025 Fortune Realistate | All Rights Reserved
+        &copy; 2025 Fortune Real Estate | All Rights Reserved
       </div>
     </footer>
   );

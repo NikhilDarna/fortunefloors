@@ -12,31 +12,39 @@ const FilteredProperties = () => {
     fetchFiltered();
   }, [filterType, value]);
 
-  const fetchFiltered = async () => {
-    try {
-      let url = "";
+const fetchFiltered = async () => {
+  try {
+    let params = new URLSearchParams();
 
-      if (filterType === "ready") {
-        url = "http://localhost:5000/api/properties/ready-to-move";
-      }
+    const path = window.location.pathname.toLowerCase();
 
-      if (filterType === "owner") {
-        url = "http://localhost:5000/api/properties/owner";
-      }
+    // 1. Always keep transaction context
+    if (path.includes("/buy")) params.set("type", "buy");
+    else if (path.includes("/rent")) params.set("type", "rent");
+    else if (path.includes("/sell")) params.set("type", "sale");
 
-      if (filterType === "furnishing") {
-        url = `http://localhost:5000/api/properties/furnishing/${value}`;
-      }
+    // 2. Property type overrides transaction
+    if (filterType === "plots") params.set("type", "plot");
+    if (filterType === "pg") params.set("type", "pg");
 
-      const res = await fetch(url);
-      const data = await res.json();
-      setProperties(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // 3. Feature filters (combine with transaction)
+    if (filterType === "ready") params.set("readyToMove", "true");
+    if (filterType === "owner") params.set("directFromOwner", "true");
+    if (filterType === "furnishing") params.set("furnishing", value);
+
+    const url = `${import.meta.env.VITE_API_URL}/api/properties?${params.toString()}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    setProperties(data);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   return (
     <div className="all-properties-page">
@@ -46,6 +54,8 @@ const FilteredProperties = () => {
           {filterType === "owner" && "Owner Properties"}
           {filterType === "furnishing" &&
             value.replace("-", " ").toUpperCase() + " Properties"}
+          {filterType === "plots" && "Plot Properties"}
+
         </h1>
       </div>
 

@@ -1,4 +1,6 @@
-/* Dashboard Overview */
+/* ============================
+   DASHBOARD OVERVIEW
+============================ */
 .dashboard-overview {
   display: grid;
   grid-template-columns: 2fr 1fr; /* Charts take more space */
@@ -6,44 +8,50 @@
   margin-bottom: 30px;
 }
 
-/* Charts Section */
+/* ============================
+   CHARTS SECTION
+============================ */
 .charts-section {
-  background: var(--highlight); /* Cream White */
+  background: var(--highlight);
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   color: var(--text);
 }
 
-/* Dashboard Stats Grid */
+/* ============================
+   STATS GRID
+============================ */
 .admin-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
 }
 
-/* Individual Stat Cards */
+/* ============================
+   STAT CARDS
+============================ */
 .stat-card {
-  background: var(--highlight);   /* Cream White */
+  background: var(--highlight);
   border-radius: 12px;
   padding: 20px;
   text-align: center;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  border-left: 4px solid var(--primary); /* Moss Green */
+  border-left: 4px solid var(--primary);
   color: var(--text);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .stat-card.approved {
-  border-left-color: #10b981; /* Optional: keep green for success */
+  border-left-color: #10b981;
 }
 
 .stat-card.pending {
-  border-left-color: #f59e0b; /* Optional: amber for pending */
+  border-left-color: #f59e0b;
 }
 
 .stat-card.rejected {
-  border-left-color: #ef4444; /* Optional: red for rejected */
+  border-left-color: #ef4444;
 }
 
 .stat-card h3 {
@@ -57,8 +65,279 @@
   font-weight: 600;
 }
 
-/* Hover Effect for Stat Cards */
 .stat-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* ============================================
+   RESPONSIVE FIXES
+============================================ */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .dashboard-overview {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================
+   MOBILE VIEW
+============================ */
+@media (max-width: 768px) {
+
+  /* Prevent horizontal scroll */
+  .admin-dashboard,
+  .container {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Stack dashboard sections */
+  .dashboard-overview {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  /* Chart container FIX */
+  .charts-section {
+    padding: 14px;
+    height: auto !important;
+    min-height: unset !important;
+    overflow: visible !important;
+    position: relative;
+    z-index: 0;
+  }
+
+  /* Chart canvas FIX (VERY IMPORTANT) */
+  .charts-section canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 260px;
+  }
+
+  /* 2x2 stats grid */
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .stat-card {
+    padding: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .stat-card h3 {
+    font-size: 1.4rem;
+  }
+
+  .stat-card p {
+    font-size: 0.9rem;
+  }
+
+  /* Tabs stack */
+  .admin-tabs {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tab-btn {
+    width: 100%;
+  }
+
+  /* Tables scroll instead of breaking layout */
+  .properties-table,
+  .users-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 900px;
+  }
+}
+
+/* ============================
+   VERY SMALL PHONES
+============================ */
+@media (max-width: 360px) {
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+}
+/* ===== LEADS MANAGEMENT ===== */
+
+.lead-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.lead-summary-card {
+  background: #fff;
+  padding: 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.lead-summary-card h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.lead-summary-card p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.leads-table-wrapper {
+  overflow-x: auto;
+}
+
+.leads-table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+}
+
+.leads-table th,
+.leads-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.leads-table th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+/* ===== DELETE BUTTON STYLING ===== */
+.delete-btn {
+  margin-left: 8px !important;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0) !important;
+  border: 1px solid #d0d0d0 !important;
+  color: #333333 !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.delete-btn::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.05), transparent) !important;
+  transition: left 0.4s ease !important;
+}
+
+.delete-btn:hover::before {
+  left: 100% !important;
+}
+
+.delete-btn:hover {
+  background: linear-gradient(145deg, #2c3e50, #34495e) !important;
+  border-color: #2c3e50 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+.delete-btn:active {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ===== ACTION BUTTONS CONTAINER ===== */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-buttons .view-btn {
+  text-decoration: none;
+  color: #007bff !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  border: 1px solid #007bff !important;
+  border-radius: 6px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background: white !important;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1) !important;
+}
+
+.action-buttons .view-btn:hover {
+  background: #007bff !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3) !important;
+}
+
+.action-buttons .btn {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  border: none !important;
+}
+
+.action-buttons .btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+.action-buttons .btn-success {
+  background: linear-gradient(135deg, #00b894, #00a085) !important;
+}
+
+.action-buttons .btn-success:hover {
+  background: linear-gradient(135deg, #00a085, #00897b) !important;
+  box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3) !important;
+}
+
+.action-buttons .btn-danger {
+  background: #ffffff !important;
+  border: 2px solid #333333 !important;
+  color: #333333 !important;
+}
+
+.action-buttons .btn-danger:hover {
+  background: #333333 !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.action-buttons .btn-secondary {
+  background: linear-gradient(135deg, #636e72, #2d3436) !important;
+}
+
+.action-buttons .btn-secondary:hover {
+  background: linear-gradient(135deg, #2d3436, #000000) !important;
+  box-shadow: 0 4px 12px rgba(99, 110, 114, 0.3) !important;
 }

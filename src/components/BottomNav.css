@@ -1,0 +1,51 @@
+.ff-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: #fff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #eee;
+  z-index: 9999;
+}
+
+/* Links */
+.ff-bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+  color: #666;
+  text-decoration: none;
+}
+
+/* Icons */
+.ff-bottom-nav svg {
+  font-size: 20px;
+  margin-bottom: 3px;
+}
+
+/* Active */
+.ff-bottom-nav a.active {
+  color: #e53935;
+}
+
+/* Center Post Button */
+.ff-bottom-nav .post-btn {
+  color: #e53935;
+  font-weight: 600;
+}
+
+.ff-bottom-nav .post-btn svg {
+  font-size: 26px;
+}
+
+/* Desktop hidden */
+@media (min-width: 900px) {
+  .ff-bottom-nav {
+    display: none;
+  }
+}

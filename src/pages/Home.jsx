@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Link } from 'react-router-dom';
 import Slider from "react-slick";
 import PropertyCard from '../components/PropertyCard';
 import PropertyFilters from '../components/PropertyFilters';
+import MobileFilters from '../components/MobileFilters';
 import TopCities from "./TopCities";
 import WhyChooseUs from "./WhyChooseUs";
 import Testimonials from "./Testimonials";
@@ -11,6 +13,9 @@ import FortuneOptions  from "./FortuneOptions.jsx";
 import { useLocation } from "react-router-dom";
 import Propertycards from "./FeaturedCarousel";
 import BuilderProperties from "./BuilderProperty";
+import InteriorsProperties from "./Interiors.jsx";
+import "./AreaConverter.css";
+
 
 
 import './home.css';
@@ -37,8 +42,9 @@ import buysell3 from "../assets/brochers/buysell/buysell3.jpg";
 import buysell4 from "../assets/brochers/buysell/buysell4.webp";
 
 const Home = () => {
+  const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
-  const [filteredProperties, setFilteredProperties] = useState([]);
+ 
   const [loading, setLoading] = useState(true);
   const [activeType, setActiveType] = useState('all');
   const [filters, setFilters] = useState({ location: '', minPrice: '', maxPrice: '' });
@@ -66,26 +72,75 @@ const Home = () => {
     sq_inch: 0.00064516,
     hectare: 10000,
   };
+    // 🔧 Advice & Tools carousel ref
+  const toolsRef = useRef(null);
+
+  const scrollTools = (direction) => {
+    if (!toolsRef.current) return;
+
+    const scrollAmount = 320;
+
+    toolsRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
 
   // 🔹 Fetch properties on load or filter/type change nikhil
 useEffect(() => {
-  fetchProperties();
-}, [activeType, filters]);
+  fetch(`${import.meta.env.VITE_API_URL}/api/properties`)
+    .then(res => res.json())
+    .then(data => {
+      setProperties(data);
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error("Error fetching properties:", err);
+      setLoading(false);
+    });
+}, []);
 
-const fetchProperties = async () => {
-  try {
-    setLoading(true);
-    const queryParams = new URLSearchParams({ type: activeType, ...filters });
-    const response = await fetch(`http://localhost:5000/api/properties?${queryParams}`);
-    const data = await response.json();
-    setProperties(data);
-    setFilteredProperties(data);
-  } catch (error) {
-    console.error("Error fetching properties:", error);
-  } finally {
-    setLoading(false);
+
+
+const filteredProperties = useMemo(() => {
+  let result = [...properties];
+
+  if (activeType !== "all") {
+    result = result.filter((p) => {
+      if (activeType === "sale" || activeType === "rent") {
+        return p.transaction_type?.toLowerCase() === activeType;
+      }
+
+      if (activeType === "plot") {
+        return p.property_type?.toLowerCase().includes("plot");
+      }
+
+      if (activeType === "pg") {
+        return p.property_type?.toLowerCase().includes("pg");
+      }
+
+      return true;
+    });
   }
-};
+
+  if (filters.location) {
+    result = result.filter(p =>
+      p.location?.toLowerCase().includes(filters.location.toLowerCase())
+    );
+  }
+
+  if (filters.minPrice) {
+    result = result.filter(p => p.price >= Number(filters.minPrice));
+  }
+
+  if (filters.maxPrice) {
+    result = result.filter(p => p.price <= Number(filters.maxPrice));
+  }
+  
+  return result;
+}, [properties, activeType, filters]);
+
 
 // 🔹 Detect if a filter comes from Navbar (query string)
 useEffect(() => {
@@ -127,14 +182,17 @@ const applyNavbarFilter = (filterType, value) => {
   }
 
   if (filterType === "type") {
-    const propType = value.toLowerCase();
-    filtered = properties.filter((p) => p.type.toLowerCase().includes(propType));
-  }
+  setActiveType(value.toLowerCase());
+}
 
-  setFilteredProperties(filtered);
+ 
 };
   
-  const handleTypeChange = (type) => setActiveType(type);
+  const handleTypeChange = (type) => {
+  console.log("handleTypeChange CALLED WITH:", type);
+  setActiveType(type);
+};
+
   const handleFilterChange = (newFilters) => setFilters(newFilters);
 
   // Area Converter
@@ -227,34 +285,44 @@ const applyNavbarFilter = (filterType, value) => {
        {/* 🏡 Your Existing Hero */}
        
       <div  className="hero-section">
-        <div className="hero-content">
-          <h1>Find Your Dream Property</h1>
-          <p>Discover the best real estate deals in your area</p>
-        </div>
       </div>
 
       <div className="container">
-        {/* 🏷️ Property Type Buttons */}
+        
+        {/* 🏷️ DESKTOP VIEW - Property Type Buttons */}
         <div className="container1 home-desktop-controls">
           <div className="property-types">
-          {["Dream Properties", "sale", "rent", "plot",  "pg"].map((type) => (
+          {[
+            { label: 'Dream Properties', value: 'all' },
+            { label: 'sale', value: 'sale' },
+            { label: 'rent', value: 'rent' },
+            { label: 'plot', value: 'plot' },
+            { label: 'pg', value: 'pg' }
+          ].map((t) => (
             <button
-              key={type}
-              className={`type-btn ${activeType === type ? "active" : ""}`}
-              onClick={() => handleTypeChange(type)}
+              key={t.value}
+              className={`type-btn ${activeType === t.value ? "active" : ""}`}
+              onClick={() => {
+                console.log("TYPE BUTTON CLICKED:", t.value);
+                handleTypeChange(t.value);
+              }}
             >
-              {type === "all"
+              {t.label === "all"
                 ? "All Properties"
-                : type.charAt(0).toUpperCase() + type.slice(1)}
+                : t.label.charAt(0).toUpperCase() + t.label.slice(1)}
             </button>
           ))}
           </div>
           {/* 🔹 Filters */}
           <PropertyFilters onFilterChange={handleFilterChange} />
+          
         </div>        
         {/* 🏡 Featured Properties with Side Ads */}
-        <Propertycards properties={filteredProperties} loading={loading} />
-        
+        <Propertycards
+          key={`${activeType}-${filteredProperties.length}`}
+          properties={filteredProperties}
+          loading={loading}
+        />
         <FortuneOptions/>
 
         {/* 🧩 Sell or Rent Section */}
@@ -473,59 +541,79 @@ const applyNavbarFilter = (filterType, value) => {
           </div>
 
         <BuilderProperties properties={filteredProperties} loading={loading} />
-        
+        <InteriorsProperties properties={filteredProperties} loading={loading} />
        
        <PgArticle/>
-
-        {/* 💡 Features Section (Converter, Loan Calculator, etc.) */}
-        <div className="hero-section-99acres">
-            <div className="features-section">
-              <div className="feature-card">
-                <h2>Add Your Property</h2>
-                <p>Easily list your property with location, type, size, price, and photos.</p>
-                <Link to="/post-property"><button className="add-btn">Add New Property</button></Link>
-              </div>
-
-              <div className="feature-card">
-                <h2>🌍 Area Converter</h2>
-                <p>Instantly convert between acres, hectares, and square meters.</p>
-                <input type="number" placeholder="Enter value" value={areaValue} onChange={(e) => setAreaValue(e.target.value)} />
-                <div>
-                  <select value={fromUnit} onChange={(e) => setFromUnit(e.target.value)}>
-                    {Object.keys(conversionRates).map(unit => (
-                      <option key={unit} value={unit}>{unit.replace('_',' ')}</option>
-                    ))}
-                  </select>
-                  <span>⇌</span>
-                  <select value={toUnit} onChange={(e) => setToUnit(e.target.value)}>
-                    {Object.keys(conversionRates).map(unit => (
-                      <option key={unit} value={unit}>{unit.replace('_',' ')}</option>
-                    ))}
-                  </select>
+       {/* 💡 Advice & Tools Section */}
+        <div className="advice-tools-section">
+          <div className="section-header">
+            <h2 className="section-title">Advice & Tools</h2>
+          </div>
+          
+          <div className="tools-carousel-container">
+            <button className="carousel-arrow left" onClick={() => scrollTools('left')}>
+              ‹
+            </button>
+            
+            <div className="tools-carousel" ref={toolsRef}>
+              <div className="tool-card">
+                <div className="tool-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                  </svg>
                 </div>
-                <button onClick={convertArea}>Convert</button>
-                {convertedResult && <p className={convertedResult.includes('⚠️') ? 'error' : 'success'}>{convertedResult}</p>}
+                <h3 className="tool-title">Add Your Property</h3>
+                <p className="tool-description">List your property with location, type, size, price, and photos.</p>
+                <Link to="/post-property" className="tool-link">View now →</Link>
               </div>
 
-              <div className="feature-card">
-                <h2>🏦 Loan Calculator</h2>
-                <p>Calculate EMI, total interest, and total payment.</p>
-                <input type="number" placeholder="Loan Amount (₹)" value={loanAmount} onChange={(e) => setLoanAmount(e.target.value)} />
-                <input type="number" placeholder="Annual Interest Rate (%)" value={loanRate} onChange={(e) => setLoanRate(e.target.value)} />
-                <input type="number" placeholder="Tenure (years)" value={loanTime} onChange={(e) => setLoanTime(e.target.value)} />
-                <button onClick={calculateLoan}>Calculate</button>
-                {loanResult && (
-                  <div>
-                    <p>EMI: ₹{loanResult.EMI.toFixed(2)}</p>
-                    <p>Total Interest: ₹{loanResult.totalInterest.toFixed(2)}</p>
-                    <p>Total Payment: ₹{loanResult.totalPayment.toFixed(2)}</p>
-                  </div>
-                )}
+              <div className="tool-card">
+                <div className="tool-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="9" x2="15" y2="9"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                  </svg>
+                </div>
+                <h3 className="tool-title">Area Converter</h3>
+                <p className="tool-description">Instantly convert between acres, hectares, and square meters.</p>
+                <Link to="/area-converter" className="tool-link">View now →</Link>
+              </div>
+
+              <div className="tool-card">
+                <div className="tool-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                </div>
+                <h3 className="tool-title">EMI Calculator</h3>
+                <p className="tool-description">Calculate EMI, total interest, and total payment for your home loan.</p>
+                <Link to="/emi-calculator" className="tool-link">View now →</Link>
+              </div>
+
+              <div className="tool-card">
+                <div className="tool-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10,9 9,9 8,9"></polyline>
+                  </svg>
+                </div>
+                <h3 className="tool-title">Best Home Loan Offers</h3>
+                <p className="tool-description">Compare and find the best home loan interest rates from top banks.</p>
+                <Link to="/home-loan-offers" className="tool-link">View now →</Link>
               </div>
             </div>
+            
+            <button className="carousel-arrow right" onClick={() => scrollTools('right')}>
+              ›
+            </button>
+          </div>
         </div>
-        
-
          {/* 🧩 find buy own */}
         <div
           className="hero-section-99acres"
@@ -580,6 +668,7 @@ const applyNavbarFilter = (filterType, value) => {
               Explore top apartments, villas, and builder floors to make your home-buying journey easy.
             </p>
             <button
+              onClick={() => navigate("/all-properties")}
               style={{
                 backgroundColor: "#007bff",
                 color: "#fff",
@@ -593,7 +682,6 @@ const applyNavbarFilter = (filterType, value) => {
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#0056b3")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#007bff")}
-              onClick={() => alert("Explore Buying clicked!")}
             >
               Explore Buying
             </button>
@@ -816,6 +904,7 @@ const applyNavbarFilter = (filterType, value) => {
                 Explore Residential, Agricultural, Industrial and Commercial Plots/Land
               </p>
               <button
+              onClick={() => navigate("/all-properties?propertyType=plot")}
                 style={{
                   backgroundColor: "#007bff",
                   color: "#fff",
@@ -829,7 +918,6 @@ const applyNavbarFilter = (filterType, value) => {
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#0056b3")}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#007bff")}
-                onClick={() => alert("Explore Plots/Land clicked!")}
               >
                 Explore Plots & Land
               </button>

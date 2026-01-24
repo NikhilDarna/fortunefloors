@@ -1,0 +1,835 @@
+.emi-calculator-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.breadcrumbs a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  margin: 0 8px;
+  color: #6c757d;
+}
+
+.breadcrumb-current {
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* Header */
+.emi-header {
+  text-align: center;
+  margin-bottom: 40px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.emi-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.emi-header p {
+  font-size: 1rem;
+  color: #6c757d;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Main Content */
+.emi-main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.emi-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+/* Input Section */
+.emi-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.loan-logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.loan-logo h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.loan-logo span {
+  color: #007bff;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.amount-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 15px;
+  font-size: 18px;
+  color: #6c757d;
+  font-weight: 600;
+}
+
+.amount-input,
+.tenure-input,
+.rate-input {
+  width: 100%;
+  padding: 15px 15px 15px 35px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.amount-input.error,
+.tenure-input.error,
+.rate-input.error {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.amount-input:focus,
+.tenure-input:focus,
+.rate-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.tenure-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tenure-suffix {
+  position: absolute;
+  right: 15px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.radio-label input[type="radio"] {
+  margin: 0;
+}
+
+.recalculate-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.recalculate-btn:hover {
+  background: #c82333;
+}
+
+/* Output Section */
+.emi-output-section {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.emi-amount-display {
+  text-align: center;
+  padding: 25px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.emi-amount-display p {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.emi-amount-display h3 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+/* Donut Chart */
+.donut-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.donut-chart {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.chart-amount {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.chart-label {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.legend-color.principal {
+  background: #28a745;
+}
+
+.legend-color.interest {
+  background: #ffc107;
+}
+
+.legend-item strong {
+  margin-left: auto;
+  color: #2c3e50;
+}
+
+/* Bank Offers */
+.bank-offers {
+  margin-top: 20px;
+}
+
+.bank-offers h4 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.bank-offer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: box-shadow 0.3s ease;
+}
+
+.bank-offer:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bank-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.bank-logo {
+  width: 60px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bank-placeholder {
+  font-size: 10px;
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.bank-details {
+  flex: 1;
+}
+
+.bank-rate {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.view-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.view-btn:hover {
+  background: #0056b3;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+  font-weight: 500;
+}
+
+/* Home Loan Offers Section */
+.home-loan-offers-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.offers-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.offers-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  display: inline-block;
+}
+
+.new-schemes-tag {
+  background: #007bff;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.offers-header p {
+  color: #6c757d;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.filter-tags {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: #f8f9fa;
+  color: #6c757d;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid #e9ecef;
+}
+
+.bank-offers-carousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.bank-offers-container {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 10px 0;
+}
+
+.bank-offers-container::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e9ecef;
+  color: #6c757d;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.carousel-arrow:hover {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-arrow.left {
+  left: -20px;
+}
+
+.carousel-arrow.right {
+  right: -20px;
+}
+
+.bank-offer-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 25px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.bank-offer-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+.bank-logo-name {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.bank-logo-placeholder {
+  width: 60px;
+  height: 40px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.bank-name-tag {
+  position: relative;
+}
+
+.bank-name-tag h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.recommended-tag {
+  background: #28a745;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  position: absolute;
+  top: -5px;
+  right: -10px;
+}
+
+.offer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row .value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.detail-row .label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.disbursement-info {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 15px 0;
+}
+
+.highlight {
+  color: #007bff;
+  font-weight: 600;
+}
+
+.cash-reward {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.reward-icon {
+  font-size: 1.2rem;
+}
+
+.reward-text {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.reward-amount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #007bff;
+  margin-left: auto;
+}
+
+.claim-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.claim-btn:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.offers-navigation {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.explore-more-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 15px 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.explore-more-btn:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.nav-arrow {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Responsive Design for Home Loan Offers */
+@media (max-width: 768px) {
+  .home-loan-offers-section {
+    padding: 25px;
+  }
+  
+  .offers-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .new-schemes-tag {
+    display: block;
+    margin-left: 0;
+    margin-top: 10px;
+  }
+  
+  .filter-tags {
+    gap: 10px;
+  }
+  
+  .tag {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+  
+  .bank-offers-carousel {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .bank-offer-card {
+    padding: 20px;
+  }
+  
+  .bank-logo-name {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .bank-logo-placeholder {
+    width: 50px;
+    height: 35px;
+    font-size: 12px;
+  }
+  
+  .bank-name-tag h3 {
+    font-size: 1.1rem;
+  }
+  
+  .recommended-tag {
+    position: static;
+    margin-top: 5px;
+    margin-right: 0;
+  }
+  
+  .detail-row .value {
+    font-size: 1rem;
+  }
+  
+  .claim-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .offers-header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .filter-tags {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .tag {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+  
+  .bank-offer-card {
+    padding: 15px;
+  }
+  
+  .detail-row {
+    padding: 6px 0;
+  }
+  
+  .detail-row .value {
+    font-size: 0.9rem;
+  }
+  
+  .cash-reward {
+    flex-direction: column;
+    text-align: center;
+    padding: 10px;
+  }
+  
+  .reward-amount {
+    margin: 5px 0 0 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .emi-calculator-page {
+    padding: 15px;
+  }
+  
+  .emi-header h1 {
+    font-size: 2rem;
+  }
+  
+  .emi-card {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 25px;
+  }
+  
+  .emi-amount-display h3 {
+    font-size: 1.8rem;
+  }
+  
+  .donut-chart {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .rewards-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .rewards-list {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .emi-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .emi-card {
+    padding: 20px;
+  }
+  
+  .emi-amount-display {
+    padding: 20px;
+  }
+  
+  .emi-amount-display h3 {
+    font-size: 1.6rem;
+  }
+  
+  .donut-chart {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .bank-offer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .view-btn {
+    align-self: flex-end;
+  }
+}

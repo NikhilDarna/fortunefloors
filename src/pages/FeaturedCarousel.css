@@ -1,27 +1,51 @@
-/* MAIN WRAPPER */
 .popular-main-container {
   display: flex;
-  width: 100%;
-  padding: 20px 40px;
-  gap: 25px;
+  width: 100%; /* ✅ VERY IMPORTANT */
+  padding: 20px 20px;
 }
 
-/* LEFT SECTION */
-.popular-left {
-  width: 70%;
+.popular-scroller {
+  cursor: grab;
 }
+
+.popular-scroller:active {
+  cursor: grabbing;
+}
+
+.popular-left {
+  flex: 1;      /* ✅ take remaining space only */
+  min-width: 0; /* ✅ prevents overflow */
+}
+
 
 /* RIGHT SIDE AD */
-.popular-right-ad {
-  width: 30%;
-}
+/* RIGHT SIDE AD */
 
 .popular-right-ad img {
-  width: 100%;
-  height: 380px;
-  object-fit: cover;
+  width: 100% !important;
+  height: auto;          /* ✅ auto resize */
+  max-width: 100%;
+  object-fit: cover;  /* ✅ keep aspect ratio */
   border-radius: 16px;
+  display: block;
 }
+
+
+/* controls auto height */
+.ad-wrapper {
+  width: auto;        /* ✅ shrink to image */
+  max-width: 260px;   /* optional control */
+}
+
+.ad-wrapper img {
+  width: 100%;
+  height: auto;       /* ✅ natural height */
+  object-fit: contain;
+  border-radius: 16px;
+  display: block;
+}
+
+
 
 /* HEADER */
 .popular-header {
@@ -85,13 +109,15 @@
   margin: 2px 0 !important;
   line-height: 1.2 !important;
 }
-
+.popular-right-ad{
+  width: 18% !important;
+}
 /* BUTTON FIX */
 .popular-card .property-card button,
 .popular-card .property-card  {
   margin-top: 6px !important;
 }
-.view-details-btn {
+.view-details-btn {   
   width: 30%;
   height: 10%;
   background: #1a55ff;
@@ -109,17 +135,7 @@
 
 /* ARROWS */
 .arrow-btn {
-  background: #333;
-  color: white;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  z-index: 10;
+  display: block !important;
 }
 
 .arrow-btn.left {
@@ -151,7 +167,7 @@
   }
 
   .popular-card {
-    width: 85%;
+    width: 100%;
     flex: 0 0 auto;
   }
 
@@ -193,11 +209,7 @@
     flex: 0 0 auto !important;
   }
 
-  .popular-right-ad {
-    display: block !important;
-    margin-top: 20px;
-    width: 100% !important;
-  }
+  
 
   .popular-right-ad img {
     width: 100%;

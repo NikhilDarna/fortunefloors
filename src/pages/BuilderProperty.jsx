@@ -1,18 +1,43 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./BuilderProperty.css";
 import PropertyCard from "../components/PropertyCard";
+import { useAuth } from "../context/AuthContext";
 
-import ad1 from "../assets/ad1.png"; // RIGHT AD
+import ad1 from "../assets/ad4.png"; // RIGHT AD
 
-const FeaturedSection = ({ properties = [], loading }) => {
+const FeaturedSection = () => {
+  const { user } = useAuth();
   const sliderRef = useRef(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    fetchBuilderProperties();
+  }, []);
+
+  const fetchBuilderProperties = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/builder-properties`);
+      if (response.ok) {
+        const data = await response.json();
+        setProperties(data);
+      } else {
+        console.error("Failed to fetch builder properties");
+      }
+    } catch (error) {
+      console.error("Error fetching builder properties:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Auto Scroll
   useEffect(() => {
@@ -48,29 +73,30 @@ const FeaturedSection = ({ properties = [], loading }) => {
       <div className="popular-left">
         <div className="popular-header">
           <h2>Builder Properties</h2>
-          <a href="/all-properties" className="see-all">See All</a>
+          <a href="/builder-properties" className="see-all">See All</a>
         </div>
 
         <div className="scroll-wrapper">
-          {!isMobile && (
-            <button className="arrow-btn left" onClick={() => scroll("left")}>
-              ‹
-            </button>
-          )}
+          
 
           <div className="popular-scroller" ref={sliderRef}>
-            {properties.map((property, index) => (
-              <div className="popular-card" key={index}>
-                <PropertyCard property={property} />
+            {loading ? (
+              <div className="loading">Loading builder properties...</div>
+            ) : properties.length === 0 ? (
+              <div className="no-properties">
+                <h3>No builder properties found</h3>
+                <p>Check back later for new builder listings</p>
               </div>
-            ))}
+            ) : (
+              properties.map((property, index) => (
+                <div className="popular-card" key={index}>
+                  <PropertyCard property={property} />
+                </div>
+              ))
+            )}
           </div>
 
-          {!isMobile && (
-            <button className="arrow-btn right" onClick={() => scroll("right")}>
-              ›
-            </button>
-          )}
+          
         </div>
       </div>
 

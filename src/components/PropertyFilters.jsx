@@ -14,14 +14,26 @@ const PropertyFilters = ({ onFilterChange }) => {
   const [above1Cr, setAbove1Cr] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/locations")
+    fetch(`${import.meta.env.VITE_API_URL}/api/locations`)
       .then((res) => res.json())
       .then((data) => setLocations(data))
       .catch((err) => console.error("Error fetching locations:", err));
   }, []);
 
   const handleFilterChange = (field, value) => {
-    const newFilters = { ...filters, [field]: value };
+    const sanitizePrice = (val) => {
+      if (val === "" || val === null || val === undefined) return "";
+      const num = Number(val);
+      if (Number.isNaN(num)) return "";
+      return Math.max(0, Math.floor(num));
+    };
+
+    let finalValue = value;
+    if (field === "minPrice" || field === "maxPrice") {
+      finalValue = sanitizePrice(value);
+    }
+
+    const newFilters = { ...filters, [field]: finalValue };
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
@@ -199,7 +211,15 @@ const PropertyFilters = ({ onFilterChange }) => {
             id="minPrice"
             placeholder="Enter minimum price"
             value={filters.minPrice}
-            onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+            min="0"
+            step="1"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v && v.startsWith("-")) return handleFilterChange("minPrice", v.replace(/-/g, ""));
+              handleFilterChange("minPrice", v);
+            }}
           />
         </div>
 
@@ -210,44 +230,29 @@ const PropertyFilters = ({ onFilterChange }) => {
             id="maxPrice"
             placeholder="Enter maximum price"
             value={filters.maxPrice}
-            onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+            min="0"
+            step="1"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v && v.startsWith("-")) return handleFilterChange("maxPrice", v.replace(/-/g, ""));
+              handleFilterChange("maxPrice", v);
+            }}
           />
         </div>
         
         {/* 🧭 Drag Min Price */}
         <div className="filter-group price-slider-group">
-        <label>Drag to Increase Minimum Price</label>
+       
           <div className="price-header">
-            <button
-              type="button"
-              onClick={handleAbove1CrClick}
-              className={`above-1cr-btn ${above1Cr ? "active" : ""}`}
-            >
-              {above1Cr ? "Showing Above ₹1 Cr" : "Above ₹1 Cr"}
-            </button>
+            
             {/* Clear Filters */}
             <div className="filter-actions">
               <button onClick={clearFilters} className="clear-filters-btn">
                 Clear Filters
               </button>
             </div>
-          </div>
-
-          <div className="price-slider">
-            <input
-              type="range"
-              min="0"
-              max="10000000"
-              step="10000"
-              value={minPriceSlider}
-              onChange={handleMinSliderChange}
-              disabled={above1Cr}
-            />
-          </div>
-
-          <div className="price-values">
-            <span>Min: ₹{minPriceSlider.toLocaleString()}</span>
-            <span>Max: ₹{(filters.maxPrice || 10000000).toLocaleString()}</span>
           </div>
         </div>
 

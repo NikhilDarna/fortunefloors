@@ -15,10 +15,13 @@
   font-weight: 700;
 }
 
+/* ======================
+   FORM
+====================== */
 .blog-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
 }
 
 .blog-form label {
@@ -33,6 +36,130 @@
   font-size: 16px;
 }
 
+/* ======================
+   QUILL WRAPPER
+====================== */
+.quill-wrapper {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+/* ======================
+   QUILL TOOLBAR
+====================== */
+.ql-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #f9fafb;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+
+  display: flex;
+  flex-wrap: wrap;           /* ✅ IMPORTANT */
+  gap: 6px;
+  padding: 8px;
+}
+
+.ql-toolbar .ql-formats {
+  margin-right: 6px;
+}
+
+/* Touch-friendly buttons */
+.ql-toolbar button,
+.ql-toolbar .ql-picker {
+  min-height: 36px;
+  min-width: 36px;
+}
+
+/* ======================
+   QUILL CONTAINER
+====================== */
+.ql-container {
+  border: none;
+  min-height: 260px;
+  font-size: 16px;
+}
+
+/* ======================
+   QUILL EDITOR
+====================== */
+.ql-editor {
+  min-height: 220px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 14px;
+  line-height: 1.7;
+  scroll-behavior: smooth;
+}
+
+/* Prevent placeholder glitch */
+.ql-editor::before {
+  position: absolute;
+}
+
+/* ======================
+   HEADING STYLES
+====================== */
+.ql-editor h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 20px 0 12px;
+}
+
+.ql-editor h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 18px 0 10px;
+}
+
+.ql-editor h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.ql-editor h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 14px 0 8px;
+}
+
+.ql-editor h5 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 12px 0 6px;
+}
+
+.ql-editor h6 {
+  font-size: 15px;
+  font-weight: 500;
+  margin: 10px 0 6px;
+}
+
+/* ======================
+   YOUTUBE / IFRAME
+====================== */
+.ql-editor iframe {
+  display: block;
+  width: 100%;
+  min-height: 280px;
+  margin: 18px 0;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .ql-editor iframe {
+    min-height: 200px;
+  }
+}
+
+/* ======================
+   SUBMIT BUTTON
+====================== */
 .blog-form button {
   padding: 12px;
   background: #005dff;
@@ -45,4 +172,33 @@
 
 .blog-form button:hover {
   background: #0044bb;
+}
+
+.blog-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ======================
+   MOBILE FIXES
+====================== */
+@media (max-width: 600px) {
+  .blog-container {
+    padding: 20px;
+  }
+
+  .ql-toolbar {
+    padding: 6px;
+  }
+
+  .ql-toolbar button,
+  .ql-toolbar .ql-picker {
+    min-height: 38px;
+    min-width: 38px;
+  }
+
+  .ql-editor {
+    font-size: 15px;
+    min-height: 180px;
+  }
 }

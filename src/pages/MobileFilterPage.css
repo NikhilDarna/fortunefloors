@@ -1,0 +1,131 @@
+/* HEADER CONTAINER */
+.filter-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 🔥 MAGICBRICKS STYLE */
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+  background: none !important;
+}
+
+/* BACK BUTTON */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 30%;
+  background: none;      /* ❌ remove background */
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6c8dbc;
+  cursor: pointer;
+}
+.back-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #688be5;
+  background: transparent;
+  color: #000;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: #2b9b09;
+  color: #fff;
+  border-color: transparent;
+}
+/* TITLE */
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* CLEAR BUTTON */
+.clear-btn {
+  background: none;      /* ❌ remove background */
+  border: none;
+  width: 30%;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e53935;        /* Magicbricks red */
+  cursor: pointer;
+}
+/* PAGE WRAPPER */
+.mobile-filter-page {
+  padding-bottom: 90px; /* space for bottom bar */
+  background: #fff;
+  min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+.filter-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 12px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+}
+
+.back-btn {
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-title {
+  font-size: 15px;
+}
+
+.clear-btn {
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: #e53935;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ===== BOTTOM BAR ===== */
+.filter-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: #fff;
+  border-top: 1px solid #eee;
+  z-index: 9999;
+}
+
+.bottom-clear-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #3b44c6;
+  font-weight: 600;
+}
+
+.bottom-apply-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  background: #2962ff;
+  color: #fff;
+  font-weight: 600;
+}

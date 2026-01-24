@@ -8,52 +8,30 @@ import mumbhai from "../assets/cities/mumbhai.jpg";
 import hyderabad from "../assets/cities/hyderabad.jpg";
 import kolkatha from "../assets/cities/kolkatha.jpg";
 import Ahmedabad from "../assets/cities/ahmedhabad.jpg";
-
+import { useNavigate } from "react-router-dom";
 
 const cities = [
-   {
-    name: "Hyderabad",
-    properties: "26,000+ Properties",
-    image: hyderabad,
-  },
-    {
-    name: "Delhi / NCR",
-    properties: "169,000+ Properties",
-    image: Delhi,
-  },
-  {
-    name: "Bangalore",
-    properties: "47,000+ Properties",
-    image: Bangalore,
-  },
-  {
-    name: "Pune",
-    properties: "37,000+ Properties",
-    image: Pune,
-  },
-  {
-    name: "Chennai",
-    properties: "36,000+ Properties",
-    image: chennai,
-  },
-  {
-    name: "Mumbai",
-    properties: "39,000+ Properties",
-    image: mumbhai,
-  },
-  {
-    name: "Kolkata",
-    properties: "31,000+ Properties",
-    image: kolkatha,
-  },
-  {
-    name: "Ahmedabad",
-    properties: "22,000+ Properties",
-    image: Ahmedabad,
-  },
+  { name: "Hyderabad", properties: "26,000+ Properties", image: hyderabad },
+  { name: "Delhi / NCR", properties: "169,000+ Properties", image: Delhi },
+  { name: "Bangalore", properties: "47,000+ Properties", image: Bangalore },
+  { name: "Pune", properties: "37,000+ Properties", image: Pune },
+  { name: "Chennai", properties: "36,000+ Properties", image: chennai },
+  { name: "Mumbai", properties: "39,000+ Properties", image: mumbhai },
+  { name: "Kolkata", properties: "31,000+ Properties", image: kolkatha },
+  { name: "Ahmedabad", properties: "22,000+ Properties", image: Ahmedabad },
 ];
 
 const TopCities = () => {
+  const navigate = useNavigate();
+
+  const handleCityClick = (cityName) => {
+  navigate(
+    `/all-properties?location=${encodeURIComponent(cityName)}&source=city`
+  );
+};
+
+
+
   return (
     <section className="top-cities-section">
       <h4 className="topcities">Top Cities</h4>
@@ -63,7 +41,12 @@ const TopCities = () => {
 
       <div className="top-cities-row">
         {cities.map((city, index) => (
-          <div className="city-card" key={index}>
+          <div
+            className="city-card"
+            key={index}
+            onClick={() => handleCityClick(city.name)}
+            style={{ cursor: "pointer" }}
+          >
             <img src={city.image} alt={city.name} className="city-image" />
             <div className="city-info">
               <h3>{city.name}</h3>

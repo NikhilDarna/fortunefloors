@@ -1,88 +1,216 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import './Register.css';
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "./Register.css";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'normal',
-    fullName: '',
-    phone: ''
-  });
-
-  const [error, setError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  // Add a body class while on the register page so we can hide site sections
   useEffect(() => {
-    document.body.classList.add('page-register');
-    return () => document.body.classList.remove('page-register');
+    document.body.classList.add("page-register");
+    return () => document.body.classList.remove("page-register");
   }, []);
+const OTP_ENABLED = import.meta.env.VITE_OTP_ENABLED === "true";
+useEffect(() => {
+  if (!OTP_ENABLED) {
+    setPhoneVerified(true);
+  }
+}, []);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "normal",
+    fullName: "",
+    phone: "",
+    agentLocation: "",
+    agentArea: ""
+  });
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Password strength regex
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [phoneExists, setPhoneExists] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+const [otp, setOtp] = useState("");
+const [phoneVerified, setPhoneVerified] = useState(false);
+const [otpLoading, setOtpLoading] = useState(false);
+
+
   const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = async (e) => {
+  const { name, value } = e.target;
+  setFormData({ ...formData, [name]: value });
 
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+  if (name === "password" && !strongPassword.test(value)) {
+    setPasswordError(
+      "Password must contain uppercase, lowercase, number & min 6 chars"
+    );
+  } else if (name === "password") {
+    setPasswordError("");
+  }
 
-    // Live check password
-    if (name === "password") {
-      if (!strongPassword.test(value)) {
-        setPasswordError(
-          "Password must contain: 1 uppercase, 1 lowercase, 1 number, min 6 characters"
-        );
-      } else {
-        setPasswordError("");
-      }
+  // 📱 CHECK PHONE EXISTS
+  if (name === "phone" && value.length >= 10) {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/check-phone`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: value }),
+        }
+      );
+
+      const data = await res.json();
+      setPhoneExists(data.exists);
+    } catch {
+      setPhoneExists(false);
     }
-  };
+  }
+};
+const sendOTP = async () => {
+  if (formData.phone.length !== 10) {
+    setError("Enter valid 10-digit phone number");
+    return;
+  }
+
+  setOtpLoading(true);
+  setError("");
+
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/register/send-otp`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: `+91${formData.phone}` }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setOtpSent(true);
+    } else {
+      setError("Failed to send OTP");
+    }
+  } catch {
+    setError("OTP network error");
+  }
+
+  setOtpLoading(false);
+};
+
+
+const verifyOTP = async () => {
+  if (otp.length !== 6) {
+    setError("Enter valid 6-digit OTP");
+    return;
+  }
+
+  setOtpLoading(true);
+  setError("");
+
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/register/verify-otp`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: `+91${formData.phone}`,
+          otp,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setPhoneVerified(true); // ✅ GREEN TICK
+    } else {
+      setError("Invalid OTP");
+    }
+  } catch {
+    setError("OTP verification failed");
+  }
+
+  setOtpLoading(false);
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
-    // Re-check password
     if (!strongPassword.test(formData.password)) {
-      setPasswordError(
-        "Password must contain: 1 uppercase, 1 lowercase, 1 number, min 6 characters"
-      );
+      setPasswordError("Weak password");
       setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setLoading(false);
       return;
     }
+   if (!phoneVerified) {
+setError("Please verify your phone number");
+setLoading(false);
+return;
+}
 
+
+if (phoneExists) {
+setError("Account already exists. Please login.");
+setLoading(false);
+return;
+}
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (response.ok) {
-        login(data.token, data.user);
-        navigate('/dashboard');
-      } else {
+      if (res.ok) {
+
+  // ✅ TEMP: store agent info for Agents pages (frontend only)
+  if (formData.role === "agent") {
+    const existingAgents = JSON.parse(localStorage.getItem("agents")) || [];
+
+    existingAgents.push({
+      id: Date.now(),
+      name: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      location: formData.agentLocation,
+      operatingArea: formData.agentArea,
+      rating: 0,
+      reviews:[],         // default rating
+      isVerified: false,    // admin will verify later
+      role: "agent"
+    });
+
+    localStorage.setItem("agents", JSON.stringify(existingAgents));
+  }
+
+  login(data.token, data.user);
+  navigate('/dashboard');
+}
+
+       else {
         setError(data.error || 'Registration failed');
       }
     } catch {
@@ -93,72 +221,92 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-form">
-          <h2>Join Fortune Real Estate</h2>
+    <div className="mb-login-page">
 
-          {error && <div className="error-message">{error}</div>}
+      {/* LEFT SECTION */}
+      <div className="mb-left-login">
+        <h2>Join FortuneFloors</h2>
+        <ul>
+          <li>✔ Post properties for FREE</li>
+          <li>✔ Get verified buyer & tenant leads</li>
+          <li>✔ Sell, Rent, PG & Commercial</li>
+          <li>✔ Manage listings from one dashboard</li>
+          <li>✔ Trusted by owners, agents & builders</li>
+        </ul>
+      </div>
 
-          <form onSubmit={handleSubmit}>
-            {/* Username + Email */}
-            <div className="form-row">
-              <div className="form-group">
-                <label>Username</label>
-                <input type="text" name="username" value={formData.username} onChange={handleChange} required />
-              </div>
+      {/* RIGHT SECTION */}
+      <div className="mb-right-login">
+        <div className="mb-login-scroll">
 
-              <div className="form-group">
-                <label>Email</label>
-                <input type="email" name="email" value={formData.email} onChange={handleChange} required />
-              </div>
-            </div>
+          <div className="mb-login-box">
+            <h3>Create Account</h3>
 
-            {/* Password + Confirm Password */}
-            <div className="form-row">
-              <div className="form-group">
-                <label>Password</label>
-                <input 
-                  type="password" 
-                  name="password" 
-                  value={formData.password} 
-                  onChange={handleChange} 
-                  required 
-                />
-                {passwordError && (
-                  <small style={{ color: "red" }}>{passwordError}</small>
-                )}
-              </div>
+            {error && <div className="mb-error">{error}</div>}
 
-              <div className="form-group">
-                <label>Confirm Password</label>
-                <input 
-                  type="password" 
-                  name="confirmPassword" 
-                  value={formData.confirmPassword} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </div>
-            </div>
+            <form onSubmit={handleSubmit}>
+              <input
+                name="username"
+                placeholder="Username"
+                onChange={handleChange}
+                required
+              />
 
-            {/* Full Name + Phone */}
-            <div className="form-row">
-              <div className="form-group">
-                <label>Full Name</label>
-                <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required />
-              </div>
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                onChange={handleChange}
+                required
+              />
 
-              <div className="form-group">
-                <label>Phone</label>
-                <input type="tel" name="phone" value={formData.phone} onChange={handleChange} />
-              </div>
-            </div>
+              <input
+                name="fullName"
+                placeholder="Full Name"
+                onChange={handleChange}
+                required
+              />
 
-            {/* Role */}
-            <div className="form-group">
-              <label>Account Type</label>
+              <input
+  name="phone"
+  placeholder="Phone"
+  value={formData.phone}
+  onChange={handleChange}
+  required
+/>
+
+{OTP_ENABLED && !phoneVerified && !otpSent && (
+  <button type="button" onClick={sendOTP}>Send OTP</button>
+)}
+
+{otpSent && !phoneVerified && (
+  <>
+    <input
+      placeholder="Enter OTP"
+      value={otp}
+      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+    />
+    <button type="button" onClick={verifyOTP}>
+      {otpLoading ? "Verifying..." : "Verify OTP"}
+    </button>
+  </>
+)}
+
+{phoneVerified && (
+  <div style={{ color: "green", fontWeight: "bold" }}>
+    ✔ Phone number verified
+  </div>
+)}
+
+              {phoneExists && (
+                <small style={{ color: "red" }}>
+                  Account already exists with this number.
+                  <Link to="/login"> Please login</Link>
+                </small>
+              )}
+
               <select name="role" value={formData.role} onChange={handleChange}>
+                <option value="">Select Role</option>
                 <option value="normal">General User</option>
                 <option value="agent">Real Estate Agent</option>
                 <option value="agency">Real Estate Agency</option>
@@ -166,22 +314,95 @@ const Register = () => {
                 <option value="furnisher">Furnisher</option>
                 <option value="pghostel">Pg/Hostel</option>
                 <option value="bankingloans">Banking Loans</option>
+                <option value="interiors">Interior Designer</option>
               </select>
-            </div>
+             
 
-            <button type="submit" className="auth-btn" disabled={loading}>
-              {loading ? 'Creating Account...' : 'Register'}
-            </button>
-          </form>
+              {formData.role === "agent" && (
+                <>
+                  <input
+                    name="agentLocation"
+                    placeholder="Agent Location"
+                    onChange={handleChange}
+                    required
+                  />
+                  <input
+                    name="agentArea"
+                    placeholder="Operating Area"
+                    onChange={handleChange}
+                    required
+                  />
+                </>
+              )}
+              {formData.role === "interiors" && (
+                <>
+                  <input
+                    name="interiorsLocation"
+                    placeholder="Agent Location"
+                    onChange={handleChange}
+                    required
+                  />
+                  <input
+                    name="interiorsArea"
+                    placeholder="Operating Area"
+                    onChange={handleChange}
+                    required
+                  />
+                </>
+              )}
 
-          <p className="auth-link">
-            Already have an account? <Link to="/login">Login here</Link>
-          </p>
+              <div className="mb-password">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  onChange={handleChange}
+                  required
+                />
+                <span onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? "🙈" : "👁️"}
+                </span>
+              </div>
+
+
+              {passwordError && (
+                <small style={{ color: "red" }}>{passwordError}</small>
+              )}
+
+              <div className="mb-password">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  onChange={handleChange}
+                  required
+                />
+                <span onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? "🙈" : "👁️"}
+                </span>
+              </div>
+
+
+              <button
+                className="mb-next"
+                type="submit"
+                disabled={!phoneVerified || loading}
+              >
+                {loading ? "Creating account..." : "Register"}
+              </button>
+            </form>
+
+            <p className="mb-signup">
+              Already have an account? <Link to="/login">Login</Link>
+            </p>
+
+          </div>
+
         </div>
       </div>
+
     </div>
   );
 };
 
 export default Register;
-         

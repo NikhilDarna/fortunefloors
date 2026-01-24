@@ -1,20 +1,27 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import navlogo from "../assets/logo.png";
 import "./Navbar.css";
 import { useAuth } from "../context/AuthContext";
-import { FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
+import { FaUserCircle, FaBars, FaTimes, FaMapMarkerAlt } from "react-icons/fa";
 import PropertyFilters from '../components/PropertyFilters';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [location, setLocation] = useState("Fetching...");
+  const location = useLocation();
+  const [currentCity, setCurrentCity] = useState("Fetching...");
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeLeftItem, setActiveLeftItem] = useState(null);
   const [activeRightItem, setActiveRightItem] = useState(null);
+  const [activeKey, setActiveKey] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openMobileItem, setOpenMobileItem] = useState(null);
+const [openMobileSub, setOpenMobileSub] = useState(null);
+const [activeRightSub, setActiveRightSub] = useState(null);
+
+
 
   const menuRef = useRef(null);
 
@@ -33,30 +40,135 @@ const Navbar = () => {
   document.addEventListener("click", handleClickOutside);
   return () => document.removeEventListener("click", handleClickOutside);
 }, []);
+const closeAllMenus = () => {
+  setActiveDropdown(null);
+  setActiveLeftItem(null);
+  setActiveRightItem(null);
+  setActiveRightSub(null);
+  setOpenMobileItem(null);
+  setOpenMobileSub(null);
+  setMobileMenuOpen(false);
+  document.body.classList.remove("menu-open");
+};
+// helper
+const disableTransactionType = (link, activeKey) => {
+  // Entire menus that must NEVER use type
+  if (["pg", "Agents", "Plots", "Commercial"].includes(activeKey)) return true;
 
+  // Individual links that must ignore type
+  return [
+    "Post Property",
+    "Agent Services",
+    "Commercial Listings",
+    "Plots",
+    "PGs / Hostels",
+    "Office Space"
+  ].includes(link);
+};
+
+
+useEffect(() => {
+  closeAllMenus();
+}, [location.pathname, location.search]);
+
+useEffect(() => {
+  const updateHeaderHeight = () => {
+    if (!menuRef.current) return;
+
+    const rect = menuRef.current.getBoundingClientRect();
+    const height = rect.height;
+
+    document.documentElement.style.setProperty(
+      "--ff-header-height",
+      `${height}px`
+    );
+  };
+
+  requestAnimationFrame(updateHeaderHeight);
+  window.addEventListener("resize", updateHeaderHeight);
+
+  return () => window.removeEventListener("resize", updateHeaderHeight);
+}, []);
 
   // Try to auto-detect city using Nominatim (optional)
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-          );
-          const data = await res.json();
-          setLocation(data.address?.city || data.address?.town || "Unknown");
-        } catch (err) {
-          setLocation("Unknown");
-        }
-      });
-    }
+    // List of supported cities
+    const supportedCities = [
+      "Hyderabad", "Adilabad", "Warangal", "Nizamabad", "Karimnagar", 
+      "Khammam", "Ramagundam", "Mahabubnagar", "Nalgonda", "Suryapet",
+      "Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata", "Pune"
+    ];
+    
+    // Set default location immediately
+    setCurrentCity("Hyderabad"); // Default city
+    
+    const detectLocation = async () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            try {
+              const { latitude, longitude } = pos.coords;
+              const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+              );
+              const data = await res.json();
+              console.log("Location data:", data); // Debug log
+              
+              // Try multiple ways to get the city name
+              let detectedCity = data.address?.city || 
+                               data.address?.town || 
+                               data.address?.village || 
+                               data.address?.county ||
+                               data.address?.state ||
+                               data.name ||
+                               "";
+              
+              // Clean up the city name and check if it's in our supported list
+              detectedCity = detectedCity.trim();
+              const matchedCity = supportedCities.find(city => 
+                city.toLowerCase() === detectedCity.toLowerCase() ||
+                detectedCity.toLowerCase().includes(city.toLowerCase()) ||
+                city.toLowerCase().includes(detectedCity.toLowerCase())
+              );
+              
+              setCurrentCity(matchedCity || "Hyderabad"); // Use matched city or default
+            } catch (err) {
+              console.error("Error fetching location:", err);
+              setCurrentCity("Hyderabad"); // Default city
+            }
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+            setCurrentCity("Hyderabad"); // Default city
+          }
+        );
+      } else {
+        setCurrentCity("Hyderabad"); // Default city if geolocation not supported
+      }
+    };
+
+    detectLocation();
   }, []);
 
   const handleLogout = () => {
     logout();
     window.location.href = "/";
   };
+const buildFilteredUrl = (newParams = {}, forcedType) => {
+  // ❌ DO NOT reuse old URL params
+  const params = new URLSearchParams();  
+
+  // Always respect current menu click
+  if (forcedType) {
+    params.set("type", forcedType);
+  }
+
+  Object.entries(newParams).forEach(([k, v]) => {
+    params.set(k, v);
+  });
+
+  return `/all-properties?${params.toString()}`;
+};
 
   const dropdowns = {
     Buy: {
@@ -71,7 +183,7 @@ const Navbar = () => {
           img: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
         "Property Types": {
-          links: [`Flats in ${location}`, `Houses in ${location}`, "Villas", "Commercial Spaces"],
+          links: [`Flats in ${currentCity}`, `Houses in ${currentCity}`, "Villas", "Commercial Spaces"],
           img: "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
       },
@@ -80,11 +192,11 @@ const Navbar = () => {
       left: ["Popular Choices", "Property Types"],
       right: {
         "Popular Choices": {
-          links: ["Owner Properties", "Verified Homes", "Furnished", "Bachelor Friendly"],
+          links: ["Owner Properties","Ready to Move", "Verified Homes", "Furnished", "Bachelor Friendly"],
           img: "https://images.pexels.com/photos/259962/pexels-photo-259962.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
         "Property Types": {
-          links: [`Flats for Rent in ${location}`, `Houses for Rent in ${location}`, "PGs / Hostels", "Office Space"],
+          links: [`Flats for Rent in ${currentCity}`, `Houses for Rent in ${currentCity}`, "PGs / Hostels", "Office Space"],
           img: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=600",
         },
       },
@@ -164,6 +276,15 @@ const Navbar = () => {
         },
       },
     },
+    Plots: {
+      left: ["Explore"],
+      right: {
+        Explore: {
+          links: ["Plots"],
+          img: "https://images.pexels.com/photos/279746/pexels-photo-279746.jpeg?auto=compress&cs=tinysrgb&w=600",
+        },
+      },
+    },
   };
   const handleAgentClick = (option) => {
   switch (option) {
@@ -185,419 +306,555 @@ const Navbar = () => {
   }
 };
 
-const handleLinkClick = (link) => {
-  let toUrl = "/all-properties";
+  const isActiveRoute = (path) => {
+    try {
+      if (!path) return false;
+      // exact match
+      if (location.pathname === path) return true;
+      // treat all-properties as matching many filters
+      if (path === '/all-properties' && location.pathname === '/all-properties') return true;
+    } catch (e) {
+      return false;
+    }
+    return false;
+  };
 
-  /* ================= BUY ================= */
+  const getTopRoute = (item) => {
+    if (!item) return null;
+    if (item.toLowerCase() === 'pg') return '/pg';
+    if (item === 'Buy' || item === 'Rent' || item === 'Commercial' || item === 'Sell') return '/all-properties';
+    if (item === 'Agents') return '/agents';
+    if (item === 'Plots') return '/plots';
+    return null;
+  };
 
-  if (link === "Ready to Move") {
-    toUrl += "?readyToMove=true";
-  }
-
-  else if (link === "Owner Properties") {
-    toUrl += "?directFromOwner=true";
-  }
-
-  else if (link === "Semi Furnishing") {
-    toUrl += "?furnishing=semi-furnished";
-  }
-
-  else if (link === "Furnishing" || link === "Furnished") {
-    toUrl += "?furnishing=fully-furnished";
-  }
-
-  else if (link === "Villas") {
-    toUrl = "/all-properties?propertyType=villa";
-  }
-
-  else if (link === "Commercial Spaces") {
-    toUrl = "/all-properties?category=commercial";
-  }
-
-  /* ================= RENT ================= */
-
-  else if (link === "Bachelor Friendly") {
-    toUrl += "?bachelorFriendly=true";
-  }
-
-  else if (link === "Office Space") {
-  toUrl = "/all-properties?category=commercial&listingSubType=office";
-}
-else if (link === "Shops") {
-  toUrl = "/all-properties?category=commercial&listingSubType=shop";
-}
-else if (link === "Warehouses") {
-  toUrl = "/all-properties?category=commercial&listingSubType=warehouse";
-}
-else if (link === "Showrooms") {
-  toUrl = "/all-properties?category=commercial&listingSubType=showroom";
-}
-
-  else if (link === "Verified Homes") {
-  toUrl += "?status=approved";
-}
-
-  /* ================= LOCATION BASED ================= */
-
-  else if (link.toLowerCase().includes("flats in")) {
-    const city = link.split("in ")[1];
-    toUrl = `/all-properties?propertyType=flat&location=${encodeURIComponent(city)}`;
-  }
-
-  else if (link.toLowerCase().includes("houses in")) {
-    const city = link.split("in ")[1];
-    toUrl = `/all-properties?propertyType=house&location=${encodeURIComponent(city)}`;
-  }
-
-  else if (link.toLowerCase().includes("flats for rent in")) {
-    const city = link.split("in ")[1];
-    toUrl = `/all-properties?type=rent&propertyType=flat&location=${encodeURIComponent(city)}`;
-  }
-
-  else if (link.toLowerCase().includes("houses for rent in")) {
-    const city = link.split("in ")[1];
-    toUrl = `/all-properties?type=rent&propertyType=house&location=${encodeURIComponent(city)}`;
-  }
-  /* ================= SELL ================= */
-
-else if (link === "Post Property") {
-  navigate("/post-property");
-  return;
-}
-
-else if (link === "Commercial Listings") {
-  toUrl = "/all-properties?category=commercial";
-}
-
-  /* ================= PG ================= */
-
-  else if (link === "PGs / Hostels") {
-    toUrl += "?propertyType=pg";
-  }
-
-  else if (link.includes("Luxury PG")) {
-    toUrl += "?propertyType=pg&listingSubType=luxury";
-  }
-
-  else if (link.includes("Deluxe PG")) {
-    toUrl += "?propertyType=pg&listingSubType=deluxe";
-  }
-
-  else if (link.includes("Normal PG")) {
-    toUrl += "?propertyType=pg&listingSubType=normal";
-  }
-
-  else if (link.includes("Share")) {
-    const count = link.split("-")[0];
-    toUrl += `?propertyType=pg&sharing=${count}`;
-  }
-
-  /* ================= BUDGET ================= */
-
-  else if (link.includes("Under 30L")) {
-    toUrl += "?maxPrice=3000000";
-  }
-
-  else if (link.includes("30L–50L")) {
-    toUrl += "?minPrice=3000000&maxPrice=5000000";
-  }
-
-  else if (link.includes("50L–1Cr")) {
-    toUrl += "?minPrice=5000000&maxPrice=10000000";
-  }
-
-  else if (link.includes("Above 1Cr")) {
-    toUrl += "?minPrice=10000000";
-  }
-  // ⛔ Agent menu items are NOT property filters
-if (
-  link === "Top Rated Agents" ||
-  link === "Nearby Agents" ||
-  link === "Verified Partners"
-) {
-  navigate("/agents");
-  return;
-}
-
-
- navigate(toUrl);
-
-
-
-  setMobileMenuOpen(false);
-  setActiveDropdown(null);
-  setActiveLeftItem(null);
-  setActiveRightItem(null);
+  const getItemKey = (item) => {
+  if (item === "Buy") return "Buy";
+  if (item === "Rent") return "Rent";
+  if (item === "Sell") return "Sell";
+  if (item === "Commercial") return "Commercial";
+  if (item === "Agents") return "Agents";
+  if (item === "Plots") return "Plots";
+  if (item.toLowerCase() === "pg") return "pg";
+  return null;
 };
+useEffect(() => {
+  if (user?.role === "agent") {
+    navigate("/dashboard");
+  }
+}, [user, navigate]);
+
+
+
+  // Compute a single active key from current location so only one nav item is active
+useEffect(() => {
+  const p = location.pathname;
+  const q = new URLSearchParams(location.search);
+
+  const type = q.get("type");
+  const propertyType = q.get("propertyType");
+  const category = q.get("category");
+
+  let key = null;
+
+  // STATIC PAGES
+  if (p === "/") key = "Home";
+  else if (p.startsWith("/blogs")) key = "Blogs";
+  else if (p.startsWith("/property-expo")) key = "Property Expo";
+  else if (p.startsWith("/post-property")) key = "Post Property";
+  else if (p.startsWith("/agents")) key = "Agents";
+  else if (p.startsWith("/pg")) key = "pg";
+  else if (p.startsWith("/plots")) key = "Plots";
+
+  // 🔥 QUERY-BASED NAV (MOST IMPORTANT)
+  else if (p.startsWith("/all-properties")) {
+    if (propertyType === "pg") key = "pg";
+    else if (propertyType === "plot") key = "Plots";
+    else if (category === "commercial") key = "Commercial";
+    else if (type === "rent") key = "Rent";
+    else if (type === "sale") key = "Sell";
+    else key = "Buy";
+  }
+
+  setActiveKey(key);
+}, [location.pathname, location.search]);
+
+
+
+
+
+ const handleLinkClick = (link) => {
+  // 🔥 NAVIGATION LINKS (NOT FILTERS)
+  
+  const params = {};
+  let forcedType;
+
+  // 🔒 APPLY type ONLY when allowed
+  if (!disableTransactionType(link, activeKey)) {
+    if (activeKey === "Rent") forcedType = "rent";
+    else if (activeKey === "Sell") forcedType = "sale";
+    else if (activeKey === "Buy") forcedType = "buy";
+  }
+
+  if (link === "Post Property") {
+    navigate("/post-property");
+ 
+  closeAllMenus();
+  return;
+}
+
+// ================= AGENT REGISTER =================
+if (
+  link === "Join as Agent" ||
+  link === "Register as Agent"
+) {
+  navigate("/register?role=agent");
+  closeAllMenus();
+  return;
+}
+
+// ================= AGENT DASHBOARD =================
+if (link === "Agent Dashboard") {
+  navigate("/dashboard");
+  closeAllMenus();
+  return;
+}
+
+// ================= AGENT LISTINGS / PROMOTE =================
+if (
+  link === "Promote Listings" ||
+  link === "Listings"
+) {
+  navigate("/agents/top-rated"); // all agents
+  closeAllMenus();
+  return;
+}
+
+// ================= FIND AGENTS =================
+if (link === "Top Rated Agents") {
+  navigate("/agents/top-rated");
+  closeAllMenus();
+  return;
+}
+
+if (link === "Nearby Agents") {
+  navigate("/agents/nearby");
+  closeAllMenus();
+  return;
+}
+
+if (link === "Verified Partners") {
+  navigate("/agents/verified");
+  closeAllMenus();
+  return;
+}
+
+
+if (link === "Commercial Listings") {
+  navigate("/all-properties?category=commercial");
+  closeAllMenus();
+  return;
+}
+
+
+  // 🔴 Only Buy / Rent / Sell control transaction
+ // Only force transaction for REAL property filters
+if (activeKey === "Rent" && !["Post Property", "Agent Services"].includes(link)) {
+  forcedType = "rent";
+}
+else if (activeKey === "Buy" && !["Post Property", "Agent Services"].includes(link)) {
+  forcedType = "buy";
+}
+else if (activeKey === "Sell" && !["Post Property", "Agent Services", "Commercial Listings"].includes(link)) {
+  forcedType = "sale";
+}
+
+
+  // ================= COMMON =================
+  if (link === "Ready to Move") params.readyToMove = "true";
+  if (link === "Owner Properties") params.directFromOwner = "true";
+  if (link === "Semi Furnishing") params.furnishing = "semi-furnished";
+
+  if (link === "Villas") params.propertyType = "villa";
+
+  // ================= COMMERCIAL =================
+  if (link === "Commercial Spaces") {
+    params.category = "commercial";
+    forcedType = undefined;
+  }
+
+  if (["Office Space", "Shops", "Warehouses", "Showrooms"].includes(link)) {
+    params.category = "commercial";
+    params.listingSubType = link.toLowerCase().replace(" ", "");
+    forcedType = undefined; // 🔥 never filter by transaction
+  }
+
+  // ================= RENT ONLY =================
+  if (link === "Bachelor Friendly") params.bachelorFriendly = "true";
+  if (link === "Verified Homes") params.status = "approved";
+
+  // ================= LOCATION =================
+  if (link.toLowerCase().includes("flats"))
+    params.propertyType = "flat/apartment";
+
+  if (link.toLowerCase().includes("houses"))
+    params.propertyType = "independent house / villa";
+
+// ================= PG FILTERS =================
+
+// ================= PG FILTERS =================
+
+// Category
+if (["For Men", "For Girls", "Women", "Co-living"].includes(link)) {
+  params.propertyType = "pg";
+  params.pgCategory = link
+    .replace("For ", "")
+    .trim()
+    .toLowerCase()
+    .replace("-", "");
+  forcedType = undefined;
+}
+
+// Subtype (keep category also)
+if (["Luxury PG", "Deluxe PG", "Normal PG"].includes(link)) {
+  params.propertyType = "pg";
+  params.listingSubType = link.split(" ")[0].toLowerCase();
+
+  // 👇 keep already selected category
+  const currentCat = new URLSearchParams(location.search).get("pgCategory");
+  if (currentCat) params.pgCategory = currentCat;
+
+  forcedType = undefined;
+}
+
+
+// Sharing
+if (link.includes("Share")) {
+  params.propertyType = "pg";
+  params.sharing = link.split("-")[0];
+  forcedType = undefined;
+}
+  // ================= PLOTS =================
+  if (link === "Plots") {
+    params.propertyType = "plot";
+    forcedType = undefined;
+  }
+
+  // ================= BUDGET =================
+  if (link.includes("Under 30L")) params.maxPrice = "3000000";
+  if (link.includes("30L–50L")) {
+    params.minPrice = "3000000";
+    params.maxPrice = "5000000";
+  }
+  if (link.includes("50L–1Cr")) {
+    params.minPrice = "5000000";
+    params.maxPrice = "10000000";
+  }
+  if (link.includes("Above 1Cr")) params.minPrice = "10000000";
+
+  // ================= NAVIGATION =================
+  navigate(buildFilteredUrl(params, forcedType));
+  closeAllMenus();
+};
+
+
+
+
+
  
   return (
-    <header className="ff-navbar" ref={menuRef}>
-      <div className="ff-topbar unified">
-        {/* Left Section */}
-        <div className="ff-left">
-          <Link
-            to="/"
-            className="ff-logo-wrapper"
-            onClick={() => {
-              navigate("/");
-              setMobileMenuOpen(false);
-              setActiveDropdown(null);
-              setActiveLeftItem(null);
-              setActiveRightItem(null);
-            }}
-          > <h1>FortuneFloors.com</h1>
-            {/* <img src={navlogo} alt="Logo" className="ff-logo" /> */}
-          </Link>
-        </div>
+  <header className="ff-navbar" ref={menuRef}>
 
-        {/* Center Menu */}
-        <div className={`ff-menu ${mobileMenuOpen ? "active" : ""}`}>
-          {/* HOME + optional admin Post Article (kept separate so clicks don't collide) */}
-          <div className="ff-dropdown home-block">
-            <span
-              className="ff-menu-name"
-              onClick={() => {
-                navigate("/");
-                setMobileMenuOpen(false);
-                setActiveDropdown(null);
-                setActiveLeftItem(null);
-                setActiveRightItem(null);
-              }}
-            >
-              Home
-            </span>
+    {/* ======================= TOP ROW ======================= */}
+    <div className="ff-top-row">
+
+      {/* LOGO */}
+      <div className="ff-left">
+        <Link
+          to="/"
+          className="ff-logo-wrapper"
+          onClick={() => {
+            navigate("/");
+            setMobileMenuOpen(false);
+            setActiveDropdown(null);
+            setActiveLeftItem(null);
+            setActiveRightItem(null);
+          }}
+        >
+          <h1>
+            <span className="red">F</span>ortune
+            <span className="red">F</span>loors.
+            <span className="red">C</span>om
+          </h1>
+        </Link>
+        {/* LOCATION */}
+        <div className="ff-location">
+          <FaMapMarkerAlt className="location-icon" />
+          <span
+            onClick={() => {
+              const newCity = prompt("Enter your city:", currentCity);
+              if (newCity) setCurrentCity(newCity);
+            }}
+          >
+            {currentCity}
+          </span>
+        </div>
+      </div>
+
+      {/* RIGHT ACTIONS */}
+      <div className="ff-right">
+
+        
+
+        {/* POST PROPERTY */}
+        <span
+          onClick={() => {
+            navigate("/post-property");
+            closeAllMenus();
+          }}
+          className={`ff-post-btn ${activeKey === "Post Property" ? "active-post" : ""}`}
+        >
+          <span className="postpropert-btn0">Post Property</span><span className="postpropert-btn">for Free</span>
+        </span>
+        {user && (
+              <div className="profile-user">
+                👋 Hi, <strong>{user.name || user.username || user.fullName || "User"}</strong>
+              </div>
+            )}
+        {/* PROFILE */}
+        <div
+          className="profile-wrapper"
+          onClick={(e) => {
+            e.stopPropagation(); // 🛑 stop document click
+            setShowProfileMenu((prev) => !prev);
+          }}
+          onMouseEnter={() => window.innerWidth > 900 && setShowProfileMenu(true)}
+          onMouseLeave={() => window.innerWidth > 900 && setShowProfileMenu(false)}
+        >
+          <FaUserCircle className="profile-icon" />
+          {showProfileMenu && (
+          <div className="profile-menu">
 
             
+
+            {!user ? (
+              <>
+                <Link to="/login">Login</Link>
+                <Link to="/register">Register</Link>
+              </>
+            ) : (
+              <>
+                <Link to="/profile">My Profile</Link>
+                <Link to="/dashboard">Dashboard</Link>
+                {user?.role === "admin" && <Link to="/admin">Admin Panel</Link>}
+                <Link to="/wishlist">Wishlist</Link>
+                <button onClick={handleLogout}>Logout</button>
+              </>
+            )}
           </div>
+          )}
 
-          
+        </div>
 
-          {/* Render the big dropdowns (Buy / Rent / Sell / etc) */}
-          {Object.keys(dropdowns).map((item) => (
-            <div
-              key={item}
-              className="ff-dropdown"
-              onMouseEnter={() => {
-                if (window.innerWidth > 900) {
-                  setActiveDropdown(item);
-                  const firstLeft = dropdowns[item].left?.[0] || null;
-                  setActiveLeftItem(firstLeft);
-                  setActiveRightItem(null);
-                }
-              }}
-              onMouseLeave={() => {
-                if (window.innerWidth > 900) {
-                  setActiveDropdown(null);
-                  setActiveLeftItem(null);
-                  setActiveRightItem(null);
-                }
-              }}
-            >
-              <span
-                className="ff-menu-name"
-                onClick={() => {
-                  const newVal = activeDropdown === item ? null : item;
-                  setActiveDropdown(newVal);
-                  if (newVal) {
-                    const firstLeft = dropdowns[item].left?.[0] || null;
-                    setActiveLeftItem(firstLeft);
-                    setActiveRightItem(null);
-                  } else {
-                    setActiveLeftItem(null);
-                    setActiveRightItem(null);
-                  }
-                }}
+        {/* HAMBURGER (MOBILE) */}
+        <div
+          className="hamburger"
+          onClick={(e) => {
+            e.stopPropagation();
+            const next = !mobileMenuOpen;
+            setMobileMenuOpen(next);
+            document.body.classList.toggle("menu-open", next);
+            setActiveDropdown(null);
+            setActiveLeftItem(null);
+            setActiveRightItem(null);
+          }}
+        >
+          {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+        </div>
+      </div>
+    </div>
+
+    {/* ======================= MENU ROW ======================= */}
+    <div className={`ff-menu-row ${mobileMenuOpen ? "active" : ""}`}>
+  <div className="ff-menu">
+
+    {/* HOME */}
+    <span
+      className={`ff-menu-name ${activeKey === "Home" ? "active-route" : ""}`}
+      onClick={() => {
+        navigate("/");
+        closeAllMenus();
+      }}
+    >
+      Home
+    </span>
+
+    {/* MAIN DROPDOWNS */}
+    {Object.keys(dropdowns).map((item) => (
+      <div key={item} className="ff-dropdown">
+
+        {/* MAIN ITEM */}
+        <span
+          className={`ff-menu-name ${
+            activeKey === getItemKey(item) ? "active-route" : ""
+          }`}
+          onClick={() => {
+
+  // 🔥 FIRST: reset URL & backend state
+  if (item === "Buy") navigate(buildFilteredUrl({}, "buy"));
+  else if (item === "Rent") navigate(buildFilteredUrl({}, "rent"));
+  else if (item === "Sell") navigate(buildFilteredUrl({}, "sale"));
+  else if (item === "Commercial") navigate(buildFilteredUrl({ category: "commercial" }));
+  else if (item === "pg") navigate(buildFilteredUrl({ propertyType: "pg" }));
+  else if (item === "Plots") navigate(buildFilteredUrl({ propertyType: "plot" }));
+
+  // 🔽 THEN open dropdown UI
+  if (window.innerWidth <= 900) {
+    setOpenMobileItem(openMobileItem === item ? null : item);
+    setOpenMobileSub(null);
+  } else {
+    setActiveDropdown(activeDropdown === item ? null : item);
+    setActiveLeftItem(dropdowns[item].left?.[0]);
+  }
+}}
+
+        >
+          {item}
+        </span>
+
+        {/* DESKTOP MEGA MENU */}
+        {activeDropdown === item && window.innerWidth > 900 && (
+          <div className="ff-dropdown-panel center-popup">
+
+            <div className="panel-left">
+              {dropdowns[item].left.map((left) => (
+                <div
+                key={left}
+                className={`left-item ${activeLeftItem === left ? "active" : ""}`}
+                onMouseEnter={() => setActiveLeftItem(left)}
+                onClick={() => handleLinkClick(left)}   // 🔴 THIS LINE IS MISSING
               >
-                {item}
-              </span>
+                {left}
+              </div>
 
-              {/* Desktop dropdown panel */}
-              {activeDropdown === item && window.innerWidth > 900 && (
-                <div className="ff-dropdown-panel center-popup">
-                  <div className="panel-left">
-                    {dropdowns[item].left.map((leftItem) => (
+              ))}
+            </div>
+
+           <div className="panel-middle">
+            {dropdowns[item].right[activeLeftItem]?.links?.map((link) => {
+
+              const hasSub =
+                dropdowns[item].right[activeLeftItem]?.right?.[link];
+
+              return (
+                <div
+  key={link}
+  className="dropdown-link-wrapper grid-row"
+  onMouseEnter={() => hasSub && setActiveRightSub(link)}
+  onMouseLeave={() => hasSub && setActiveRightSub(null)}
+>
+  {/* LEFT (MAIN LINK) */}
+  <div
+  className="dropdown-link"
+  onClick={() => handleLinkClick(link)}
+>
+
+    {link}
+  </div>
+
+  {/* RIGHT (SUB LINKS) */}
+  <div className="dropdown-sub-cell">
+    {hasSub && activeRightSub === link &&
+      hasSub.links.map((sub) => (
+        <div
+          key={sub}
+          className="dropdown-sub-link"
+          onClick={() => handleLinkClick(sub)}
+        >
+          {sub}
+        </div>
+      ))}
+  </div>
+</div>
+
+              );
+            })}
+           </div>
+
+
+
+
+            <div className="panel-image">
+              <img src={dropdowns[item].right[activeLeftItem]?.img} alt="" />
+            </div>
+
+          </div>
+        )}
+
+        {/* ✅ MOBILE SUBMENU */}
+        {window.innerWidth <= 900 && openMobileItem === item && (
+          <div className="mobile-submenu">
+            {dropdowns[item].left.map((left) => (
+              <div key={left} className="mobile-left-block">
+
+                <div
+                  className="mobile-left-title"
+                  onClick={() =>
+                    setOpenMobileSub(openMobileSub === left ? null : left)
+                  }
+                >
+                  {left}
+                </div>
+
+                {openMobileSub === left && (
+                  <div className="mobile-right-links">
+                    {dropdowns[item].right[left]?.links?.map((link) => (
                       <div
-                        key={leftItem}
-                        className={`left-item ${activeLeftItem === leftItem ? "active" : ""}`}
-                        onMouseEnter={() => {
-                          setActiveLeftItem(leftItem);
-                          setActiveRightItem(null);
-                        }}
+                        key={link}
+                        className="mobile-link"
+                        onClick={() => handleLinkClick(link)}
                       >
-                        {leftItem}
+                        {link}
                       </div>
                     ))}
                   </div>
-
-                  <div className="panel-middle">
-                    {dropdowns[item].right[activeLeftItem]?.links?.map((link) => {
-                      const middleData = dropdowns[item].right[activeLeftItem];
-                      const hasSubmenu = middleData?.right && middleData.right[link];
-
-                      return (
-                        <div
-                          key={link}
-                          className={`dropdown-link ${activeRightItem === link ? "active" : ""}`}
-                          onMouseEnter={() => {
-                            if (hasSubmenu) setActiveRightItem(link);
-                            else setActiveRightItem(null);
-                          }}
-                          onClick={() => {
-                            if (!hasSubmenu) handleLinkClick(link);
-                          }}
-                        >
-                          {link} {hasSubmenu && "›"}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Right column: third-level menu or image preview */}
-                  {(() => {
-                    const middleData = dropdowns[item].right[activeLeftItem] || {};
-                    const thirdData = middleData.right?.[activeRightItem] || null;
-
-                    if (thirdData?.links?.length) {
-                      return (
-                        <div className="panel-right-third">
-                          {thirdData.links.map((subLink) => (
-                            <div
-                              key={subLink}
-                              className="dropdown-sublink"
-                              onClick={() => handleLinkClick(subLink)}
-                            >
-                              {subLink}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="panel-image">
-                        <img src={dropdowns[item].right[activeLeftItem]?.img} alt="preview" />
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-
-              {/* Mobile dropdown rendering */}
-              {activeDropdown === item && window.innerWidth <= 900 && (
-                <div className="mobile-submenu">
-                  {dropdowns[item].left.map((leftItem) => (
-                    <div key={leftItem}>
-                      <div className="mobile-left-item">{leftItem}</div>
-                      {dropdowns[item].right[leftItem]?.links?.map((link) => (
-                        <div key={link} className="mobile-link" onClick={() => handleLinkClick(link)}>
-                          {link}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-          {/* Articles link (separate dropdown cell) */}
-          <div className="ff-dropdown">
-            <Link
-              to="/blogs"
-              className="ff-menu-name"
-              onClick={(e) => {
-                // stopPropagation to be safe in mobile/menu states
-                e.stopPropagation();
-                setMobileMenuOpen(false);
-                setActiveDropdown(null);
-              }}
-            >
-              Blogs
-            </Link>
-          </div>
-          {/* Admin only: Post New Article */}
-            {user?.role === "admin" && (
-              <Link
-                to="/admin/post-Blogs"
-                className="ff-menu-name admin-article-link"
-                onClick={(e) => {
-                  // Prevent parent Home click from firing
-                  e.stopPropagation();
-                }}
-              >
-                Post New Blog
-              </Link>
-            )}
-            <Link
-              to="/property-expo"
-              className="ff-menu-name"
-              onClick={(e) => {
-                // stopPropagation to be safe in mobile/menu states
-                e.stopPropagation();
-                setMobileMenuOpen(false);
-                setActiveDropdown(null);
-              }}
-            >
-              Property Expo
-            </Link>
-        </div>
-
-        {/* Right Section (desktop) */}
-        <div className="ff-right">
-          <div className="ff-location">📍 {location}</div>
-
-          <Link to="/post-property" className="ff-post-btn">
-            Post Property
-          </Link>
-
-          <div
-            className="profile-wrapper"
-            onMouseEnter={() => setShowProfileMenu(true)}
-            onMouseLeave={() => setShowProfileMenu(false)}
-          >
-            <FaUserCircle className="profile-icon" />
-            {showProfileMenu && (
-              <div className="profile-menu">
-                {!user ? (
-                  <>
-                    <Link to="/login">Login</Link>
-                    <Link to="/register">Register</Link>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/profile">My Profile</Link>
-                    <Link to="/dashboard">Dashboard</Link>
-                    {user?.role === "admin" && <Link to="/admin">Admin Panel</Link>}
-                    <Link to="/wishlist">Wishlist</Link>
-                    <button onClick={handleLogout}>Logout</button>
-                  </>
                 )}
+
               </div>
-            )}
+            ))}
           </div>
+        )}
 
-          <div
-            className="hamburger"
-            onClick={(e) => {
-              e.stopPropagation();
-
-              const newState = !mobileMenuOpen;
-              setMobileMenuOpen(newState);
-
-              // prevent body scroll when menu is open
-              document.body.classList.toggle("menu-open", newState);
-
-              setActiveDropdown(null);
-              setActiveLeftItem(null);
-              setActiveRightItem(null);
-            }}
-          >
-            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
-          </div>
-
-        </div>
       </div>
-    </header>
-  );
+    ))}
+
+    {/* STATIC LINKS */}
+    <span 
+      className={`ff-menu-name ${activeKey === "Blogs" ? "active-route" : ""}`}
+      onClick={() => {
+        navigate("/blogs");
+        closeAllMenus();
+      }}
+    >
+      Blogs
+    </span>
+
+    <span 
+      className={`ff-menu-name ${activeKey === "Property Expo" ? "active-route" : ""}`}
+      onClick={() => {
+        navigate("/property-expo");
+        closeAllMenus();
+      }}
+    >
+      Property Expo
+    </span>
+
+  </div>
+</div>
+
+  </header>
+);
+
 };
 
 export default Navbar;

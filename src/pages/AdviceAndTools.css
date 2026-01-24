@@ -1,0 +1,253 @@
+.advice-tools-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 60px 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tools-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  position: relative;
+  display: inline-block;
+  margin: 0;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  border-radius: 2px;
+}
+
+.tools-carousel-container {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.tools-carousel {
+  display: flex;
+  gap: 30px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 20px 0;
+}
+
+.tools-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e9ecef;
+  color: #6c757d;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.carousel-arrow:hover {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-arrow.left {
+  left: -25px;
+}
+
+.carousel-arrow.right {
+  right: -25px;
+}
+
+.tool-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  min-width: 280px;
+  max-width: 320px;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border-color: #007bff;
+}
+
+.tool-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.tool-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.tool-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+}
+
+.tool-description {
+  font-size: 0.95rem;
+  color: #6c757d;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.tool-link {
+  display: inline-flex;
+  align-items: center;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.tool-link:hover {
+  color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .advice-tools-page {
+    padding: 40px 15px;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .tools-carousel-container {
+    margin-bottom: 30px;
+  }
+  
+  .tool-card {
+    min-width: 250px;
+    max-width: 280px;
+    padding: 25px;
+  }
+  
+  .tool-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 15px;
+  }
+  
+  .tool-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .tool-title {
+    font-size: 1.1rem;
+  margin: 0 0 8px 0;
+  }
+  
+  .tool-description {
+    font-size: 0.9rem;
+    margin: 0 0 15px 0;
+  }
+  
+  .carousel-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .carousel-arrow.left {
+    left: -20px;
+  }
+  
+  .carousel-arrow.right {
+    right: -20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .advice-tools-page {
+    padding: 30px 10px;
+  }
+  
+  .section-title {
+    font-size: 1.8rem;
+  }
+  
+  .tools-carousel {
+    gap: 20px;
+    padding: 15px 0;
+  }
+  
+  .tool-card {
+    min-width: 200px;
+    max-width: 240px;
+    padding: 20px;
+  }
+  
+  .tool-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+  
+  .tool-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .tool-title {
+    font-size: 1rem;
+    margin: 0 0 6px 0;
+  }
+  
+  .tool-description {
+    font-size: 0.85rem;
+    margin: 0 0 12px 0;
+  }
+}
